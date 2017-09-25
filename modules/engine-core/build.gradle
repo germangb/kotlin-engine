@@ -1,0 +1,4 @@
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.4"
+    compile "org.joml:joml:1.9.3"
+}

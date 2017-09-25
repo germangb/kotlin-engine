@@ -1,0 +1,3 @@
+include ":modules:engine-core"
+include ":modules:engine-game"
+include ":modules:engine-lwjgl"
