@@ -156,7 +156,7 @@ class LwjglAudioAL : Audio, Destroyable {
     /**
      * Remove from the streaming pile
      */
-    fun removeStream(stream: FloatStreamedSound) {
+    fun removeStream(stream: GenericStreamedSound) {
         streamers.remove(stream)
     }
 

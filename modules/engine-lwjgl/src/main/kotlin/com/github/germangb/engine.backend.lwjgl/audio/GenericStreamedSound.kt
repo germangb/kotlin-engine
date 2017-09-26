@@ -100,7 +100,7 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
             destroyed = true
             AL10.alDeleteBuffers(buffers)
             AL10.alDeleteSources(source)
-            //audio.removeStream(this)
+            audio.removeStream(this)
         }
     }
 
