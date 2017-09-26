@@ -1,21 +1,28 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
-import com.github.germangb.engine.backend.lwjgl.glCheckError
+import com.github.germangb.engine.backend.lwjgl.core.glCheckError
+import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
 
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class LwjglGraphics : Graphics {
+class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
     /**
      * Instancing draw call builder
      */
-    val instancer: LwjglInstancer by lazy { LwjglInstancer() }
+    private val instancer by lazy { LwjglInstancer() }
+    private val windowFramebuffer = LwjglFramebuffer(0, width, height, emptyList())
+
+    override fun destroy() {
+        instancer.destroy()
+    }
 
     /**
      * Create OpenGL texture
@@ -56,7 +63,7 @@ class LwjglGraphics : Graphics {
             textures.map { it as LwjglTexture }
                     .filterIndexed { i, _ -> !targets[i].isDepth() }
                     .forEachIndexed { index, texture ->
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+index, GL_TEXTURE_2D, texture.id, 0)
+                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, texture.id, 0)
                     }
 
             // depth target
@@ -115,12 +122,28 @@ class LwjglGraphics : Graphics {
 
             attributes.forEachIndexed { index, attribute ->
                 glEnableVertexAttribArray(index)
-                glVertexAttribPointer(index, attribute.size, GL_FLOAT, false, stride*4, offset)
-                offset += attribute.size*4
+                glVertexAttribPointer(index, attribute.size, GL_FLOAT, false, stride * 4, offset)
+                offset += attribute.size * 4
             }
+
+            glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
+            glEnableVertexAttribArray(attributes.size+0)
+            glEnableVertexAttribArray(attributes.size+1)
+            glEnableVertexAttribArray(attributes.size+2)
+            glEnableVertexAttribArray(attributes.size+3)
+            glVertexAttribPointer(attributes.size+0, 4, GL_FLOAT, false, 16 * 4, 0 * 4L)
+            glVertexAttribPointer(attributes.size+1, 4, GL_FLOAT, false, 16 * 4, 4 * 4L)
+            glVertexAttribPointer(attributes.size+2, 4, GL_FLOAT, false, 16 * 4, 8 * 4L)
+            glVertexAttribPointer(attributes.size+3, 4, GL_FLOAT, false, 16 * 4, 12 * 4L)
+            glVertexAttribDivisor(attributes.size+0, 1)
+            glVertexAttribDivisor(attributes.size+1, 1)
+            glVertexAttribDivisor(attributes.size+2, 1)
+            glVertexAttribDivisor(attributes.size+3, 1)
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
             glBindVertexArray(0)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
         }
 
 
@@ -130,7 +153,7 @@ class LwjglGraphics : Graphics {
     /**
      * Create a shader program
      */
-    override fun createShaderProgram(vertexSource: String, fragmentSource: String, attributes: List<VertexAttribute>): ShaderProgram {
+    override fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram {
         var vertexShader = -1
         var fragmentShader = -1
         var program = -1
@@ -162,7 +185,7 @@ class LwjglGraphics : Graphics {
             glLinkProgram(program)
         }
 
-        return LwjglShaderProgram(program, vertexShader, fragmentShader, attributes)
+        return LwjglShaderProgram(program, vertexShader, fragmentShader)
     }
 
     /**
@@ -176,16 +199,14 @@ class LwjglGraphics : Graphics {
      * Render a mesh using instance rendering
      */
     override fun render(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        instancer.begin(mesh as LwjglMesh, program as LwjglShaderProgram, framebuffer as LwjglFramebuffer)
+        instancer.action()
+        instancer.end()
     }
 
     /**
      * Render to default framebuffer
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit) {
-        instancer.begin(mesh as LwjglMesh, program as LwjglShaderProgram)
-        instancer.action()
-        instancer.end()
-    }
+    override fun render(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit) = render(mesh, program, windowFramebuffer, action)
 
 }

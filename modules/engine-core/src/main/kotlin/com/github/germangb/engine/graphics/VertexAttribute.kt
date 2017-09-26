@@ -19,5 +19,15 @@ enum class VertexAttribute(val size: Int) {
     /**
      * Texture coordinate
      */
-    UV(2)
+    UV(2),
+
+    /**
+     * Bone IDs
+     */
+    BONE_ID(4),
+
+    /**
+     * Bone weights
+     */
+    BONE_WEIGHT(4)
 }

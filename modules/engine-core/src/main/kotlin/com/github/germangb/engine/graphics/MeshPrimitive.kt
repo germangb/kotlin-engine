@@ -4,6 +4,16 @@ enum class MeshPrimitive {
     /**
      * Triangles primitive
      */
-    TRIANGLES
+    TRIANGLES,
+
+    /**
+     * Triangle strip
+     */
+    TRIANGLE_STRIP,
+
+    /**
+     * Individual lines
+     */
+    LINES
 }
 

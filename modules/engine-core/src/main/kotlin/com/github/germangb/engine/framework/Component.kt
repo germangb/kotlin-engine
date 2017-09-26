@@ -1,4 +1,4 @@
-package com.github.germangb.engine.scene
+package com.github.germangb.engine.framework
 
 abstract class Component {
     internal lateinit var iactor: Actor
@@ -14,7 +14,7 @@ abstract class Component {
     val actor get() = iactor
 
     /**
-     * Called when the actor is added to the scene
+     * Called when the actor is added to the framework
      */
     abstract fun init()
 

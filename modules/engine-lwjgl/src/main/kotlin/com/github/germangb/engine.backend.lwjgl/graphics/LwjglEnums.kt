@@ -1,10 +1,20 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
+import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.graphics.TexelFormat
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL14.*
 import org.lwjgl.opengl.GL30.*
+
+/**
+ * Primitive enums
+ */
+val MeshPrimitive.glEnum: Int get() = when(this) {
+    MeshPrimitive.TRIANGLES -> GL_TRIANGLES
+    MeshPrimitive.TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
+    MeshPrimitive.LINES -> GL_LINES
+}
 
 /**
  * Test function to GLEnum

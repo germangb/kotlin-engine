@@ -1,6 +1,7 @@
-package com.github.germangb.engine.backend.lwjgl.graphics
+package com.github.germangb.engine.backend.lwjgl.resources
 
-import com.github.germangb.engine.backend.lwjgl.stackMemory
+import com.github.germangb.engine.backend.lwjgl.graphics.LwjglTexture
+import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.graphics.Graphics
 import com.github.germangb.engine.graphics.Texture
 import org.lwjgl.stb.STBImage.*
@@ -19,12 +20,12 @@ fun loadTextureSTB(gfx: Graphics, path: String): Texture? {
         val data = stbi_load(path, width, height, channels, 3)
 
         if (data == null) {
-            System.err.println(stbi_failure_reason())
+            System.err.println("${stbi_failure_reason()} ($path)")
         } else {
             val id = glGenTextures()
             glBindTexture(GL_TEXTURE_2D, id)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width[0], height[0], 0, GL_RGB, GL_UNSIGNED_BYTE, data)
             glBindTexture(GL_TEXTURE_2D, 0)
 

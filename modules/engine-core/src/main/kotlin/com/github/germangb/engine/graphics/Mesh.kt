@@ -1,11 +1,12 @@
 package com.github.germangb.engine.graphics
 
+import com.github.germangb.engine.core.Destroyable
 import java.nio.ByteBuffer
 
 /**
  * Vertex data
  */
-interface Mesh {
+interface Mesh : Destroyable {
     /**
      * Vertex attributes in buffer
      */
@@ -15,6 +16,11 @@ interface Mesh {
      * Mesh primitive
      */
     val primitive: MeshPrimitive
+
+    /**
+     * Number of indices to be rendered
+     */
+    var indices: Int
 
     /**
      * Set vertex data

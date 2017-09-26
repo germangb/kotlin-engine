@@ -1,4 +1,4 @@
-package com.github.germangb.engine.scene
+package com.github.germangb.engine.framework
 
 enum class UpdateMode {
     /**

@@ -19,6 +19,12 @@ class LwjglFramebufferState : FramebufferState {
         }
     }
 
+    override fun lineWidth(width: Float) = glLineWidth(width)
+
+    override fun pointSize(size: Float) = glPointSize(size)
+
+    override fun viewPort(x: Int, y: Int, width: Int, height: Int) = glViewport(x, y, width, height)
+
     override fun clearColorBuffer() = glClear(GL_COLOR_BUFFER_BIT)
 
     override fun clearDepthBuffer() = glClear(GL_DEPTH_BUFFER_BIT)

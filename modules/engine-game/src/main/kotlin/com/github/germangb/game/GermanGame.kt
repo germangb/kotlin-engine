@@ -1,59 +1,73 @@
 package com.github.germangb.game
 
+import com.github.germangb.engine.audio.FloatAudioStreamer
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
-import com.github.germangb.engine.graphics.Mesh
-import com.github.germangb.engine.graphics.MeshPrimitive
-import com.github.germangb.engine.graphics.ShaderProgram
-import com.github.germangb.engine.graphics.VertexAttribute
+import com.github.germangb.engine.graphics.TestFunction
+import com.github.germangb.engine.resources.DumbAssetManager
+import com.github.germangb.engine.resources.TextureAsset
+
+/**
+ * Procedural audio demo
+ */
+class ProceduralAudio : FloatAudioStreamer() {
+    var phase = 0
+    var modul = 0
+    override fun invoke(buffer: FloatArray, size: Int) {
+        // generate samples
+        (0 until size)
+                .map {
+                    // modulated frequency
+                    val PI2 = 3.141516 * 2
+                    val modPhase = 512 + java.lang.Math.sin(0.001 * modul++) * 200
+                    java.lang.Math.cos(PI2 * (it + phase) * 512 / 16_000 + modPhase)
+                }
+                .forEachIndexed { index, d -> buffer[index] = d.toFloat() }
+
+        phase += size
+    }
+
+}
 
 class GermanGame(val backend: Backend) : Application {
+    val manager = DumbAssetManager(backend.resources)
 
-    lateinit var triangle: Mesh
-    lateinit var shader: ShaderProgram
+    val audio by lazy {
+        val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
+
+        (0 until samples.capacity())
+                .map { java.lang.Math.cos(2 * 3.141592 * it * 520 / 16_000) }
+                .forEach { samples.put(it.toFloat()) }
+
+        samples.flip()
+        val audio = backend.audio.createSampler(samples, 16000)
+        samples.clear()
+
+        backend.buffers.free(samples)
+        audio
+    }
+
+    override fun destroy() {
+        audio.destroy()
+    }
 
     override fun init() {
-        val vertex = backend.memory.malloc(1000)
-        with(vertex) {
-            putFloat(0f); putFloat(0f); putFloat(0f)
-            putFloat(1f); putFloat(0f); putFloat(0f)
-            putFloat(1f); putFloat(1f); putFloat(0f)
-            flip()
-        }
+        // load texture
+        val tex = TextureAsset(manager, "hellknight.png")
 
-        val index = backend.memory.malloc(1000)
-        with(index) {
-            putInt(0)
-            putInt(1)
-            putInt(2)
-            flip()
-        }
-
-        triangle = backend.graphics.createMesh(vertex, index, MeshPrimitive.TRIANGLES, listOf(VertexAttribute.POSITION))
-
-        //Language("GLSL")
-        val vert = """#version 450
-layout(location = 0) in vec3 a_position;
-void main() {
-    gl_Position = vec4(a_position, 1.0);
-}"""
-        //Language("GLSL")
-        val frag = """#version 450
-out vec4 frag_color;
-void main() {
-    frag_color = vec4(1.0);
-}"""
-        shader = backend.graphics.createShaderProgram(vert, frag, listOf(VertexAttribute.POSITION))
+        // procedural music
+        val music = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
+        music.play()
     }
 
     override fun update() {
-        backend.graphics.state {
-            clearColor(0.2f, 0.2f, 0.2f, 1f)
-            clearColorBuffer()
-        }
-
-        backend.graphics.render(triangle, shader) {
-            instance()
+        with(backend.graphics) {
+            state {
+                clearColor(0.2f, 0.2f, 0.2f, 1f)
+                clearColorBuffer()
+                clearDepthBuffer()
+                depthTest(TestFunction.LESS)
+            }
         }
     }
 }

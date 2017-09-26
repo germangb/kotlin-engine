@@ -1,12 +1,14 @@
-package com.github.germangb.engine.backend.lwjgl
+package com.github.germangb.engine.backend.lwjgl.core
 
+import com.github.germangb.engine.backend.lwjgl.audio.LwjglAudioAL
+import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
 import com.github.germangb.engine.core.Application
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.system.exitProcess
 
-class LwjglRuntime(val app: Application) {
+class LwjglRuntime(val backend: LwjglBackend, val app: Application) {
 
     /**
      * Kickstart LWJGL
@@ -38,6 +40,7 @@ class LwjglRuntime(val app: Application) {
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {
             try {
+                (backend.audio as LwjglAudioAL).updateStreaming()
                 app.update()
             } catch (e: Exception) {
                 glfwSetWindowShouldClose(window, true)
@@ -47,6 +50,9 @@ class LwjglRuntime(val app: Application) {
             }
         }
 
+        app.destroy()
+        (backend.graphics as LwjglGraphics).destroy()
+        (backend.audio as LwjglAudioAL).destroy()
         glfwDestroyWindow(window)
         glfwTerminate()
     }

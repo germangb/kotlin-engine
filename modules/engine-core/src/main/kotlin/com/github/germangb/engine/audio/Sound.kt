@@ -1,10 +1,12 @@
 package com.github.germangb.engine.audio
 
-interface Sound {
+import com.github.germangb.engine.core.Destroyable
+
+interface Sound : Destroyable {
     /**
      * Start sound playback
      */
-    fun play()
+    fun play(loop: Boolean = false)
 
     /**
      * Pause playback

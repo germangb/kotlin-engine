@@ -4,6 +4,8 @@ import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.VertexAttribute
 import java.nio.ByteBuffer
+import org.lwjgl.opengl.GL15.*
+import org.lwjgl.opengl.GL30.*
 
 /**
  * OpenGL mesh
@@ -11,14 +13,14 @@ import java.nio.ByteBuffer
 class LwjglMesh(val vbo: Int,
                 val ibo: Int,
                 val vao: Int,
-                val indices: Int,
+                override var indices: Int,
                 override val primitive: MeshPrimitive,
                 override val attributes: List<VertexAttribute>) : Mesh {
-
-    /**
-     * Attribute offset
-     */
-    val offset: Map<VertexAttribute, Int> = mutableMapOf()
+    override fun destroy() {
+        glDeleteBuffers(vbo)
+        glDeleteBuffers(ibo)
+        glDeleteVertexArrays(vao)
+    }
 
     /**
      * Buffer stride
@@ -27,14 +29,7 @@ class LwjglMesh(val vbo: Int,
 
     init {
         var istride = 0
-        var ioffset = 0
-
-        // compute stride & attribute offset
-        attributes.forEach {
-            (offset as MutableMap)[it] = ioffset
-            istride += it.size
-            ioffset += it.size
-        }
+        attributes.forEach { istride += it.size }
         stride = istride
     }
 
@@ -42,14 +37,19 @@ class LwjglMesh(val vbo: Int,
      * Update a portion of the vertex buffer
      */
     override fun setVertexData(data: ByteBuffer, offset: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+        glBufferSubData(GL_ARRAY_BUFFER, offset, data)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
     }
 
     /**
      * Update a portion of the index buffer
      */
     override fun setIndexData(data: ByteBuffer, offset: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        indices = data.capacity()/4
     }
 
 }

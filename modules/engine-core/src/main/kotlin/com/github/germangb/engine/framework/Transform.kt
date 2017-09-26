@@ -1,4 +1,4 @@
-package com.github.germangb.engine.scene
+package com.github.germangb.engine.framework
 
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
@@ -10,7 +10,7 @@ class Transform {
     val local = Matrix4()
 
     /**
-     * World transform (used by scene)
+     * World transform (used by framework)
      */
     internal val iworld = Matrix4()
 

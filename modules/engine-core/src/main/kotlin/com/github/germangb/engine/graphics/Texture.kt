@@ -1,11 +1,12 @@
 package com.github.germangb.engine.graphics
 
+import com.github.germangb.engine.core.Destroyable
 import java.nio.ByteBuffer
 
 /**
  * Texture data
  */
-interface Texture {
+interface Texture : Destroyable {
     /**
      * Texture width
      */

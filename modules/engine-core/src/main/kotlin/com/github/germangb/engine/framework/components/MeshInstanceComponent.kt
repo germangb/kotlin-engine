@@ -1,7 +1,7 @@
-package com.github.germangb.engine.scene.components
+package com.github.germangb.engine.framework.components
 
-import com.github.germangb.engine.scene.Actor
-import com.github.germangb.engine.scene.Component
+import com.github.germangb.engine.framework.Actor
+import com.github.germangb.engine.framework.Component
 
 /**
  * When parented to a MeshInstancerComponent, renders an instance of the mesh

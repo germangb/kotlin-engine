@@ -1,6 +1,8 @@
 package com.github.germangb.engine.core
 
+import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.Graphics
+import com.github.germangb.engine.resources.AssetLoader
 
 /**
  * Engine backend
@@ -12,12 +14,17 @@ interface Backend {
     val graphics: Graphics
 
     /**
-     * Resources backend
+     * Audio
      */
-    val resources: ResourceLoader
+    val audio: Audio
 
     /**
-     * Memory allocator
+     * Resources backend
      */
-    val memory: MemoryAllocator
+    val resources: AssetLoader
+
+    /**
+     * Buffer management
+     */
+    val buffers: BufferManager
 }

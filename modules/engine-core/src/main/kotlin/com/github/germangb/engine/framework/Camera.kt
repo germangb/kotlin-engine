@@ -1,4 +1,4 @@
-package com.github.germangb.engine.scene
+package com.github.germangb.engine.framework
 
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c

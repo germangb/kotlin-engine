@@ -1,6 +1,6 @@
 package com.github.germangb.engine.core
 
-interface Application {
+interface Application : Destroyable {
     /**
      * Called to init application
      */

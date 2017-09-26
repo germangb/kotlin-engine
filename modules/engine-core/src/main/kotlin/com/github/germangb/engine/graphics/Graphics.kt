@@ -24,7 +24,7 @@ interface Graphics {
     /**
      * Create a shader program
      */
-    fun createShaderProgram(vertexSource: String, fragmentSource: String, attributes: List<VertexAttribute>): ShaderProgram
+    fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
      * Default framebuffer state

@@ -1,4 +1,4 @@
-package com.github.germangb.engine.scene
+package com.github.germangb.engine.framework
 
 import kotlin.reflect.KClass
 
@@ -7,8 +7,8 @@ import kotlin.reflect.KClass
  */
 class Actor internal constructor(val scene: Scene, private val pparent: Actor?) {
     init {
-        // register actor in the scene
-        scene.iactors.add(this)
+        // register actor in the framework
+        //scene.iactors.add(this)
     }
 
     /**
@@ -72,10 +72,18 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
         }
     }
 
+    /**
+     * Get a component by type
+     */
     fun <T: Component> getComponent(comp: KClass<T>): T? {
         @Suppress("UNCHECKED_CAST")
         return icomponents.firstOrNull { it::class == comp } as T?
     }
+
+    /**
+     * Get a component by type
+     */
+    inline fun <reified T: Component> getComponent() = getComponent(T::class)
 
     /**
      * In what order is this actor updated
@@ -109,6 +117,10 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
             transform.iworld.set(pparent.transform.iworld)
             transform.iworld.mul(transform.local)
         }
+
+        children.forEach {
+            it.updateTransforms()
+        }
     }
 
     /**
@@ -128,5 +140,17 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
         val actor = Actor(scene, this)
         def.invoke(actor)
         ichildren.add(actor)
+    }
+
+    /**
+     * Find an actor by name
+     */
+    fun findActor(name: String): Actor? {
+        if (this.name == name) return this
+        children.forEach {
+            val act = it.findActor(name)
+            if (act != null) return act
+        }
+        return null
     }
 }

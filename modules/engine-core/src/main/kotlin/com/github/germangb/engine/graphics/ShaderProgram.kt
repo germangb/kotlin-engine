@@ -1,11 +1,8 @@
 package com.github.germangb.engine.graphics
 
+import com.github.germangb.engine.core.Destroyable
+
 /**
  * Shader program
  */
-interface ShaderProgram {
-    /**
-     * Input attributes
-     */
-    val attributes: List<VertexAttribute>
-}
+interface ShaderProgram : Destroyable

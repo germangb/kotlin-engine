@@ -1,10 +1,11 @@
-package com.github.germangb.engine.core
+package com.github.germangb.engine.resources
 
+import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.scene.Actor
+import com.github.germangb.engine.framework.Actor
 
-interface ResourceLoader {
+interface AssetLoader {
     /**
      * Load a texture
      */
@@ -16,7 +17,7 @@ interface ResourceLoader {
     fun loadMesh(path: String): Mesh?
 
     /**
-     * Load an acor blueprint
+     * Load audio
      */
-    fun loadActor(path: String): (Actor.() -> Unit)?
+    fun loadSound(path: String): Audio?
 }
