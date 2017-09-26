@@ -32,6 +32,7 @@ class ProceduralAudio : FloatAudioStreamer() {
 class GermanGame(val backend: Backend) : Application {
     val manager = DumbAssetManager(backend.resources)
 
+    // sampled audio
     val audio by lazy {
         val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
 
@@ -55,7 +56,7 @@ class GermanGame(val backend: Backend) : Application {
         // load texture
         val tex = TextureAsset(manager, "hellknight.png")
 
-        // procedural music
+        // procedural streamed music
         val music = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
         music.play()
     }

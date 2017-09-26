@@ -8,14 +8,15 @@ import org.lwjgl.openal.AL10.*
  */
 class FloatStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: FloatAudioStreamer) : GenericStreamedSound(audio, bufferSize, sampling, stereo) {
     companion object {
-        val AL_BUFFER = FloatArray(1024)
+        val AL_BUFFER = FloatArray(AL_BUFFER_SIZE)
     }
+
     /**
      * Initialize buffer
      */
     override fun initBuffer() {
         for (alBuffer in buffers) {
-            streamer.invoke(AL_BUFFER, AL_BUFFER_SIZE)
+            streamer.invoke(AL_BUFFER, AL_BUFFER.size)
             alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             alSourceQueueBuffers(source, alBuffer)
         }

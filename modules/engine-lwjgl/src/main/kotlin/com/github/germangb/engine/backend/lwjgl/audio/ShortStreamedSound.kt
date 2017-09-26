@@ -8,7 +8,7 @@ import org.lwjgl.openal.AL10
  */
 class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioStreamer) : GenericStreamedSound(audio, bufferSize, sampling, stereo) {
     companion object {
-        val AL_BUFFER = ShortArray(1024)
+        val AL_BUFFER = ShortArray(AL_BUFFER_SIZE)
     }
 
     /**
@@ -16,7 +16,7 @@ class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, st
      */
     override fun initBuffer() {
         for (alBuffer in buffers) {
-            streamer.invoke(AL_BUFFER, AL_BUFFER_SIZE)
+            streamer.invoke(AL_BUFFER, AL_BUFFER.size)
             AL10.alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             AL10.alSourceQueueBuffers(source, alBuffer)
         }
