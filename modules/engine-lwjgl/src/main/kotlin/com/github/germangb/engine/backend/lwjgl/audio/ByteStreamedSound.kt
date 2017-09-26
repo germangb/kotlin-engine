@@ -1,11 +1,12 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
+import com.github.germangb.engine.audio.ByteAudioStreamer
 import org.lwjgl.openal.AL10
 
 /**
  * rovide Float32 audio streaming
  */
-class ByteStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: (ByteArray, Int) -> Unit) : GenericStreamedSound(audio, bufferSize, sampling, stereo) {
+class ByteStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ByteAudioStreamer) : GenericStreamedSound(audio, bufferSize, sampling, stereo) {
     companion object {
         val AL_BUFFER = ByteArray(1024)
     }
