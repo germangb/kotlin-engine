@@ -19,7 +19,7 @@ interface AssetLoader {
     /**
      * Load audio
      */
-    fun loadSound(path: String, forceMono: Boolean = false): Audio?
+    fun loadAudio(path: String, forceMono: Boolean = false): Audio?
 
     /**
      * Load a generic resource (stream is managed by YOU!)

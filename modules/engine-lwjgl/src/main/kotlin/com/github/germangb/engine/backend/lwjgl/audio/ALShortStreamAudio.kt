@@ -1,21 +1,20 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.FloatAudioDecoder
+import com.github.germangb.engine.audio.ShortAudioDecoder
 import org.lwjgl.openal.AL10.*
-import org.lwjgl.openal.EXTFloat32.*
 
 /**
  * rovide Float32 audio streaming
  */
-class ALFloatStreamedAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: FloatAudioDecoder) : ALGenericStreamedAudio(audio, bufferSize, sampling, streamer) {
+open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, streamer) {
     companion object {
-        val AL_BUFFER = FloatArray(AL_BUFFER_SIZE)
+        val AL_BUFFER = ShortArray(AL_BUFFER_SIZE)
     }
 
     /**
      * AL format
      */
-    private val alFormat = if(stereo) AL_FORMAT_STEREO_FLOAT32 else AL_FORMAT_MONO_FLOAT32
+    private val alFormat = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
 
     /**
      * Initialize buffer

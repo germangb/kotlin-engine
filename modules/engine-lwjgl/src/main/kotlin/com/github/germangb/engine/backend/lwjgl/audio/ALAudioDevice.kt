@@ -136,14 +136,14 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Currently active audio streamers
      */
-    private val streamers = mutableListOf<ALGenericStreamedAudio>()
+    private val streamers = mutableListOf<ALGenericStreamAudio>()
 
     /**
      * Create float 32bit streamer
      */
     override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: FloatAudioDecoder): Audio =
             if (alCaps.AL_EXT_FLOAT32) {
-                val stream = ALFloatStreamedAudio(this, bufferSize, sampling, stereo, sampler)
+                val stream = ALFloatStreamAudio(this, bufferSize, sampling, stereo, sampler)
                 addStream(stream)
             } else {
                 DummyAudio
@@ -153,7 +153,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
      * Create float 16bit streamer
      */
     override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ShortAudioDecoder): Audio {
-        val stream = ALShortStreamedAudio(this, bufferSize, sampling, stereo, sampler)
+        val stream = ALShortStreamAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream
     }
@@ -162,7 +162,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
      * Create float 8bit streamer
      */
     override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ByteAudioDecoder): Audio {
-        val stream = ALByteStreamedAudio(this, bufferSize, sampling, stereo, sampler)
+        val stream = ALByteStreamAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream
     }
@@ -170,14 +170,14 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Remove from the streaming pile
      */
-    fun removeStream(stream: ALGenericStreamedAudio) {
+    fun removeStream(stream: ALGenericStreamAudio) {
         streamers.remove(stream)
     }
 
     /**
      * Add a streamed sound
      */
-    fun addStream(stream: ALGenericStreamedAudio): ALGenericStreamedAudio {
+    fun addStream(stream: ALGenericStreamAudio): ALGenericStreamAudio {
         streamers.add(stream)
         return stream
     }

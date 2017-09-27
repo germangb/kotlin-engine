@@ -3,7 +3,7 @@ package com.github.germangb.engine.backend.lwjgl.resources
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
-import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamedSound
+import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamAudio
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.graphics.Mesh
@@ -61,7 +61,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
     /**
      * Load stream of audio
      */
-    override fun loadSound(path: String, forceMono: Boolean): Audio? {
+    override fun loadAudio(path: String, forceMono: Boolean): Audio? {
         var sound: Audio? = null
 
         stackMemory {
@@ -81,7 +81,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
 
                 // create decoder & return sound
                 val decoder = VorbisSTBAudioDecoder(handle, info.channels())
-                val vorbisSound = VorbisSTBStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
+                val vorbisSound = VorbisSTBStreamAudio(audio, info.sample_rate(), info.channels() == 2, decoder)
                 sound = audio.addStream(vorbisSound)
             }
         }

@@ -50,7 +50,7 @@ class GermanGame(val backend: Backend) : Application {
     }
 
     val music by lazy {
-        backend.assets.loadSound("musics.ogg")
+        backend.assets.loadAudio("music.ogg")
     }
 
     override fun destroy() {
@@ -66,8 +66,8 @@ class GermanGame(val backend: Backend) : Application {
         music?.play()
 
         // procedural streamed music
-        //val procedural = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
-        //procedural.play()
+        val procedural = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
+        procedural.play()
     }
 
     override fun update() {

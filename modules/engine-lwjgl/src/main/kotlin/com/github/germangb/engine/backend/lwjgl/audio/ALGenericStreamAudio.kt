@@ -9,7 +9,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * Generic audio streaming
  */
-abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Audio {
+abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Audio {
     companion object {
         val AL_BUFFER_SIZE = 512
         val STREAM_CLOSED = "The audio stream is closed"
@@ -43,6 +43,11 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
      */
     private var stopped = true
 
+    /**
+     * Total decoded samples
+     */
+    private var decodedSamples = 0
+
     init {
         alGenBuffers(buffers)
     }
@@ -72,7 +77,15 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
      */
     fun updateStreaming() {
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
-        updateBuffer()
+
+        if (state == AudioState.PLAYING) {
+            updateBuffer()
+
+            if(state == AudioState.PLAYING) {
+                //TODO check end of stream
+                //decoder.length < decodedSamples
+            }
+        }
     }
 
     override fun play(loop: Boolean) {
@@ -104,6 +117,7 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
             alSourceStop(source)
             istate = AudioState.STOPPED
             stopped = true
+            decodedSamples = 0
             emptyBuffer()
         }
     }
