@@ -112,14 +112,14 @@ class ALAudioDevice : AudioDevice, Destroyable {
         val buffer = alGenBuffers()
         val format = if(stereo) AL_FORMAT_STEREO8 else AL_FORMAT_MONO8
         alBufferData(buffer, format, samples, sampling)
-        return OpenALSampledAudio(this, buffer)
+        return ALSampledAudio(this, buffer)
     }
 
     override fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
         val format = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
         alBufferData(buffer, format, samples, sampling)
-        return OpenALSampledAudio(this, buffer)
+        return ALSampledAudio(this, buffer)
     }
 
     override fun createSampler(samples: FloatBuffer, sampling: Int, stereo: Boolean) =
@@ -127,7 +127,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
                 val buffer = alGenBuffers()
                 val format = if (stereo) AL_FORMAT_STEREO_FLOAT32 else AL_FORMAT_MONO_FLOAT32
                 alBufferData(buffer, format, samples, sampling)
-                OpenALSampledAudio(this, buffer)
+                ALSampledAudio(this, buffer)
             } else {
                 //TODO fallback to 16bit
                 DummyAudio

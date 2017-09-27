@@ -7,7 +7,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * AudioDevice inside of a buffer
  */
-class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Audio {
+class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Audio {
     companion object {
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }
