@@ -2,11 +2,11 @@ package com.github.germangb.engine.audio
 
 import com.github.germangb.engine.core.Destroyable
 
-interface Sound : Destroyable {
+interface Audio : Destroyable {
     /**
      * Get sound state
      */
-    val state: SoundState
+    val state: AudioState
 
     /**
      * Start sound playback

@@ -1,24 +1,24 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.GenericAudioDecoder
-import com.github.germangb.engine.audio.Sound
-import com.github.germangb.engine.audio.SoundState
+import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.AudioState
 import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
 import org.lwjgl.openal.AL10.*
 
 /**
  * Generic audio streaming
  */
-abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Sound {
+abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Audio {
     companion object {
         val AL_BUFFER_SIZE = 512
         val STREAM_CLOSED = "The audio stream is closed"
     }
 
     /**
-     * Sound state
+     * Audio state
      */
-    private var istate = SoundState.STOPPED
+    private var istate = AudioState.STOPPED
 
     /**
      * Get stream state
@@ -87,14 +87,14 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
         }
 
         alSourcePlay(source)
-        istate = SoundState.PLAYING
+        istate = AudioState.PLAYING
     }
 
     override fun pause() {
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
         alSourcePause(source)
-        istate = SoundState.PAUSED
+        istate = AudioState.PAUSED
     }
 
     override fun stop() {
@@ -102,7 +102,7 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
 
         if (!stopped) {
             alSourceStop(source)
-            istate = SoundState.STOPPED
+            istate = AudioState.STOPPED
             stopped = true
             emptyBuffer()
         }
@@ -113,7 +113,7 @@ abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int,
             destroyed = true
             alDeleteBuffers(buffers)
             alDeleteSources(source)
-            istate = SoundState.STOPPED
+            istate = AudioState.STOPPED
             audio.removeStream(this)
         }
     }

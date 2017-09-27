@@ -1,6 +1,6 @@
 package com.github.germangb.engine.resources
 
-import com.github.germangb.engine.audio.Sound
+import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.Texture
 import java.io.InputStream
@@ -19,7 +19,7 @@ interface AssetLoader {
     /**
      * Load audio
      */
-    fun loadSound(path: String, forceMono: Boolean = false): Sound?
+    fun loadSound(path: String, forceMono: Boolean = false): Audio?
 
     /**
      * Load a generic resource (stream is managed by YOU!)

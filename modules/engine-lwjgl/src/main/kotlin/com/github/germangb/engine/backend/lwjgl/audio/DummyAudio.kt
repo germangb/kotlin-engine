@@ -1,13 +1,13 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.Sound
-import com.github.germangb.engine.audio.SoundState
+import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.AudioState
 
 /**
  * An audio thing that does NOTHING
  */
-object DummyAudio : Sound {
-    override val state = SoundState.STOPPED
+object DummyAudio : Audio {
+    override val state = AudioState.STOPPED
     override fun play(loop: Boolean) = Unit
     override fun pause() = Unit
     override fun stop() = Unit

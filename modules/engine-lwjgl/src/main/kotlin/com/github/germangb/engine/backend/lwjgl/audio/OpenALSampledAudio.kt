@@ -1,23 +1,23 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.Sound
-import com.github.germangb.engine.audio.SoundState
+import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.AudioState
 import org.lwjgl.openal.AL10.*
 
 /**
  * AudioDevice inside of a buffer
  */
-class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Sound {
+class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Audio {
     companion object {
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }
 
     /**
-     * Sound state
+     * Audio state
      */
-    private var istate = SoundState.STOPPED
+    private var istate = AudioState.STOPPED
 
-    /** Sound state property */
+    /** Audio state property */
     override val state get() = istate
 
     /**
@@ -42,7 +42,7 @@ class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: I
             }
             alSourcei(it, AL_LOOPING, if(loop) AL_TRUE else AL_FALSE)
             alSourcePlay(it)
-            istate = SoundState.PLAYING
+            istate = AudioState.PLAYING
         }
     }
 
@@ -54,7 +54,7 @@ class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: I
                 alSourcei(it, AL_BUFFER, buffer)
             }
             alSourcePause(it)
-            istate = SoundState.PAUSED
+            istate = AudioState.PAUSED
         }
     }
 
@@ -69,7 +69,7 @@ class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: I
 
             // free the source
             audio.addAvailableSource(this, it)
-            istate = SoundState.STOPPED
+            istate = AudioState.STOPPED
             currentSource = -1
         }
     }
@@ -82,7 +82,7 @@ class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: I
                 currentSource = -1
             }
             destroyed = true
-            istate = SoundState.STOPPED
+            istate = AudioState.STOPPED
         }
     }
 

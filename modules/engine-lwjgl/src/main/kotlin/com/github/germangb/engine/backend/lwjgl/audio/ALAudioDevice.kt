@@ -41,7 +41,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Relation of sound to source
      */
-    private val busySources = mutableMapOf<Sound, Int?>()
+    private val busySources = mutableMapOf<Audio, Int?>()
 
     /** AL audio capabilities */
     private val alCaps: ALCapabilities
@@ -49,7 +49,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Get an available source
      */
-    fun getAvailableSource(sound: Sound): Int? {
+    fun getAvailableSource(sound: Audio): Int? {
         busySources[sound]?.let {
             return it
         }
@@ -67,7 +67,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Add a source to the pool
      */
-    fun addAvailableSource(sound: Sound, source: Int) {
+    fun addAvailableSource(sound: Audio, source: Int) {
         busySources[sound] = null
         sourcePool.add(source)
     }
@@ -108,14 +108,14 @@ class ALAudioDevice : AudioDevice, Destroyable {
         alcCloseDevice(device)
     }
 
-    override fun createSampler(samples: ByteBuffer, sampling: Int, stereo: Boolean): Sound {
+    override fun createSampler(samples: ByteBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
         val format = if(stereo) AL_FORMAT_STEREO8 else AL_FORMAT_MONO8
         alBufferData(buffer, format, samples, sampling)
         return OpenALSampledAudio(this, buffer)
     }
 
-    override fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean): Sound {
+    override fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
         val format = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
         alBufferData(buffer, format, samples, sampling)
@@ -141,7 +141,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Create float 32bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: FloatAudioDecoder): Sound =
+    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: FloatAudioDecoder): Audio =
             if (alCaps.AL_EXT_FLOAT32) {
                 val stream = ALFloatStreamedAudio(this, bufferSize, sampling, stereo, sampler)
                 addStream(stream)
@@ -152,7 +152,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Create float 16bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ShortAudioDecoder): Sound {
+    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ShortAudioDecoder): Audio {
         val stream = ALShortStreamedAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream
@@ -161,7 +161,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Create float 8bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ByteAudioDecoder): Sound {
+    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ByteAudioDecoder): Audio {
         val stream = ALByteStreamedAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream

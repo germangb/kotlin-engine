@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.resources
 
-import com.github.germangb.engine.audio.Sound
+import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamedSound
@@ -61,8 +61,8 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
     /**
      * Load stream of audio
      */
-    override fun loadSound(path: String, forceMono: Boolean): Sound? {
-        var sound: Sound? = null
+    override fun loadSound(path: String, forceMono: Boolean): Audio? {
+        var sound: Audio? = null
 
         stackMemory {
             // open file
