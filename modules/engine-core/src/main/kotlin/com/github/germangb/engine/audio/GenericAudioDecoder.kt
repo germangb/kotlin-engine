@@ -7,7 +7,7 @@ sealed class GenericAudioDecoder<in T> {
     /**
      * Decode a frame of samples
      */
-    abstract fun provide(buffer: T, size: Int)
+    abstract fun decode(buffer: T, size: Int)
 
     /**
      * Called at the beginning of playback.

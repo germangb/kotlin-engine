@@ -13,7 +13,7 @@ import com.github.germangb.engine.resources.TextureAsset
 class ProceduralAudio : FloatAudioDecoder() {
     var phase = 0
     var modul = 0
-    override fun provide(buffer: FloatArray, size: Int) {
+    override fun decode(buffer: FloatArray, size: Int) {
         // generate samples
         (0 until size)
                 .map {

@@ -22,7 +22,7 @@ class FloatStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, st
      */
     override fun initBuffer() {
         for (alBuffer in buffers) {
-            streamer.provide(AL_BUFFER, AL_BUFFER.size)
+            streamer.decode(AL_BUFFER, AL_BUFFER.size)
             alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             alSourceQueueBuffers(source, alBuffer)
         }
@@ -37,7 +37,7 @@ class FloatStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, st
         // Reuse processed buffers
         for (i in 0 until processed) {
             val alBuffer = alSourceUnqueueBuffers(source)
-            streamer.provide(AL_BUFFER, AL_BUFFER_SIZE)
+            streamer.decode(AL_BUFFER, AL_BUFFER_SIZE)
             alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             alSourceQueueBuffers(source, alBuffer)
         }

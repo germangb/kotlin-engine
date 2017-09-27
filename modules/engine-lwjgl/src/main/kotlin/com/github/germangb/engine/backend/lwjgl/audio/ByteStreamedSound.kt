@@ -21,7 +21,7 @@ class ByteStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, ste
      */
     override fun initBuffer() {
         for (alBuffer in buffers) {
-            streamer.provide(AL_BUFFER, AL_BUFFER.size)
+            streamer.decode(AL_BUFFER, AL_BUFFER.size)
             //AL10.alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             alSourceQueueBuffers(source, alBuffer)
         }
@@ -36,7 +36,7 @@ class ByteStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, ste
         // Reuse processed buffers
         for (i in 0 until processed) {
             val alBuffer = alSourceUnqueueBuffers(source)
-            streamer.provide(AL_BUFFER, AL_BUFFER_SIZE)
+            streamer.decode(AL_BUFFER, AL_BUFFER_SIZE)
             //alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
             alSourceQueueBuffers(source, alBuffer)
         }

@@ -25,7 +25,7 @@ class VorbisAudioDecoder(val handle: Long, val channels: Int) : Destroyable, Sho
     /**
      * Decode some samples
      */
-    override fun provide(buffer: ShortArray, size: Int) {
+    override fun decode(buffer: ShortArray, size: Int) {
         stb_vorbis_get_samples_short_interleaved(handle, channels, buffer)
     }
 }
