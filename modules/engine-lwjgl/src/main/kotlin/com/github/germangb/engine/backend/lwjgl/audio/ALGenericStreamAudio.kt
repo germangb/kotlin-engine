@@ -1,8 +1,8 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.GenericAudioDecoder
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.audio.AudioState
+import com.github.germangb.engine.audio.GenericAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
 import org.lwjgl.openal.AL10.*
 
@@ -16,6 +16,15 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     }
 
     /**
+     * AL audio buffers
+     */
+    private val buffers = IntArray(bufferSize / AL_BUFFER_SIZE + 1)
+
+    init {
+        alGenBuffers(buffers)
+    }
+
+    /**
      * Audio state
      */
     private var istate = AudioState.STOPPED
@@ -26,12 +35,9 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     override val state get() = istate
 
     /**
-     * AL audio buffers
+     * AL Source
      */
-    val buffers = IntArray(bufferSize / AL_BUFFER_SIZE + 1)
-
-    //TODO temporary source
-    val source = alGenSources()
+    private val source = alGenSources()
 
     /**
      * Is this sound destroyed?
@@ -39,23 +45,36 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     private var destroyed = false
 
     /**
-     * Is this streaming stopped?
-     */
-    private var stopped = true
-
-    /**
-     * Total decoded samples
+     * Total decoded samples count
      */
     private var decodedSamples = 0
 
-    init {
-        alGenBuffers(buffers)
-    }
+    /** Set AL buffer data */
+    abstract fun fillBufferAL(buffer: Int)
 
     /**
      * Initialize buffer
      */
-    abstract fun initBuffer()
+    private fun initBuffer() {
+        for (alBuffer in buffers) {
+            fillBufferAL(alBuffer)
+            alSourceQueueBuffers(source, alBuffer)
+        }
+    }
+
+    /**
+     * Fil playback buffer with processed buffers
+     */
+    private fun updateBuffer() {
+        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+
+        // Reuse processed buffers
+        for (i in 0 until processed) {
+            val alBuffer = alSourceUnqueueBuffers(source)
+            fillBufferAL(alBuffer)
+            alSourceQueueBuffers(source, alBuffer)
+        }
+    }
 
     /**
      * Empty playback buffer
@@ -68,11 +87,6 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     }
 
     /**
-     * Fil playback buffer with processed buffers
-     */
-    abstract fun updateBuffer()
-
-    /**
      * Ensure buffer is always full
      */
     fun updateStreaming() {
@@ -81,7 +95,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
         if (state == AudioState.PLAYING) {
             updateBuffer()
 
-            if(state == AudioState.PLAYING) {
+            if (state == AudioState.PLAYING) {
                 //TODO check end of stream
                 //decoder.length < decodedSamples
             }
@@ -91,10 +105,9 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     override fun play(loop: Boolean) {
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
-        if (stopped) {
+        if (state == AudioState.STOPPED) {
             decoder.reset()
             initBuffer()
-            stopped = false
         } else {
             updateBuffer()
         }
@@ -113,10 +126,9 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     override fun stop() {
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
-        if (!stopped) {
+        if (state != AudioState.STOPPED) {
             alSourceStop(source)
             istate = AudioState.STOPPED
-            stopped = true
             decodedSamples = 0
             emptyBuffer()
         }

@@ -5,16 +5,16 @@ import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.math.Vector3c
 import org.lwjgl.openal.AL
+import org.lwjgl.openal.AL10.*
 import org.lwjgl.openal.ALC
 import org.lwjgl.openal.ALC10.*
-import org.lwjgl.openal.AL10.*
-import org.lwjgl.openal.EXTFloat32.*
 import org.lwjgl.openal.ALCapabilities
+import org.lwjgl.openal.EXTFloat32.AL_FORMAT_MONO_FLOAT32
+import org.lwjgl.openal.EXTFloat32.AL_FORMAT_STEREO_FLOAT32
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
-import java.util.*
 
 /**
  * OpenAL audio
@@ -33,44 +33,8 @@ class ALAudioDevice : AudioDevice, Destroyable {
         }
     }
 
-    /**
-     * Pool of sources
-     */
-    private val sourcePool: Queue<Int>
-
-    /**
-     * Relation of sound to source
-     */
-    private val busySources = mutableMapOf<Audio, Int?>()
-
     /** AL audio capabilities */
     private val alCaps: ALCapabilities
-
-    /**
-     * Get an available source
-     */
-    fun getAvailableSource(sound: Audio): Int? {
-        busySources[sound]?.let {
-            return it
-        }
-
-        // get a source from pool
-        if (sourcePool.isNotEmpty()) {
-            val source = sourcePool.poll()
-            busySources[sound] = source
-            return source
-        }
-
-        return null
-    }
-
-    /**
-     * Add a source to the pool
-     */
-    fun addAvailableSource(sound: Audio, source: Int) {
-        busySources[sound] = null
-        sourcePool.add(source)
-    }
 
     /**
      * AudioDevice device
@@ -95,12 +59,6 @@ class ALAudioDevice : AudioDevice, Destroyable {
 
         // reset error
         alGetError()
-
-        // generate a pool of audio sources
-        sourcePool = LinkedList<Int>()
-        (0 until 64).forEach {
-            sourcePool.add(alGenSources())
-        }
     }
 
     override fun destroy() {
@@ -110,14 +68,14 @@ class ALAudioDevice : AudioDevice, Destroyable {
 
     override fun createSampler(samples: ByteBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
-        val format = if(stereo) AL_FORMAT_STEREO8 else AL_FORMAT_MONO8
+        val format = if (stereo) AL_FORMAT_STEREO8 else AL_FORMAT_MONO8
         alBufferData(buffer, format, samples, sampling)
         return ALSampledAudio(this, buffer)
     }
 
     override fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
-        val format = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
+        val format = if (stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
         alBufferData(buffer, format, samples, sampling)
         return ALSampledAudio(this, buffer)
     }

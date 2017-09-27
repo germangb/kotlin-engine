@@ -14,31 +14,13 @@ open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: I
     /**
      * AL format
      */
-    private val alFormat = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
+    private val alFormat = if (stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
 
     /**
-     * Initialize buffer
+     * Fill with 16bit audio
      */
-    override fun initBuffer() {
-        for (alBuffer in buffers) {
-            streamer.decode(AL_BUFFER, AL_BUFFER.size)
-            alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
-            alSourceQueueBuffers(source, alBuffer)
-        }
-    }
-
-    /**
-     * Fil playback buffer with processed buffers
-     */
-    override fun updateBuffer() {
-        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
-
-        // Reuse processed buffers
-        for (i in 0 until processed) {
-            val alBuffer = alSourceUnqueueBuffers(source)
-            streamer.decode(AL_BUFFER, AL_BUFFER_SIZE)
-            alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
-            alSourceQueueBuffers(source, alBuffer)
-        }
+    override fun fillBufferAL(buffer: Int) {
+        streamer.decode(AL_BUFFER, AL_BUFFER.size)
+        alBufferData(buffer, alFormat, AL_BUFFER, sampling)
     }
 }
