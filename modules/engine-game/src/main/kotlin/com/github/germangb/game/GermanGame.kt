@@ -50,7 +50,7 @@ class GermanGame(val backend: Backend) : Application {
     }
 
     val music by lazy {
-        backend.assets.loadSound("music.ogg")
+        backend.assets.loadSound("musics.ogg")
     }
 
     override fun destroy() {

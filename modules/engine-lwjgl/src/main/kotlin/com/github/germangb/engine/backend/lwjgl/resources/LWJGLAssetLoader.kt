@@ -15,8 +15,20 @@ import org.lwjgl.stb.STBImage.stbi_load
 import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
 import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
 import org.lwjgl.stb.STBVorbisInfo
+import org.lwjgl.system.MemoryUtil.NULL
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 
 class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : AssetLoader {
+    /**
+     * Load a generic resource
+     */
+    override fun loadGeneric(path: String) = try {
+        FileInputStream(path)
+    } catch (e: FileNotFoundException) {
+        null
+    }
+
     /**
      * Load texture file
      */
@@ -57,19 +69,21 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
             val error = mallocInt(1)
             val handle = stb_vorbis_open_filename(path, error, null)
 
-            // decode info
-            val info = STBVorbisInfo.callocStack(this)
-            stb_vorbis_get_info(handle, info)
+            if (handle != NULL) {
+                // decode info
+                val info = STBVorbisInfo.callocStack(this)
+                stb_vorbis_get_info(handle, info)
 
 //            System.err.println("file = $path")
 //            System.err.println("#channels = ${info.channels()}")
 //            System.err.println("#sampling = ${info.sample_rate()}")
 //            System.err.println("#frame_size = ${info.max_frame_size()}")
 
-            // create decoder & return sound
-            val decoder = VorbisSTBAudioDecoder(handle, info.channels())
-            val vorbisSound = VorbisSTBStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
-            sound = audio.addStream(vorbisSound)
+                // create decoder & return sound
+                val decoder = VorbisSTBAudioDecoder(handle, info.channels())
+                val vorbisSound = VorbisSTBStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
+                sound = audio.addStream(vorbisSound)
+            }
         }
 
         return sound
