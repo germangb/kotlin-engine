@@ -6,7 +6,7 @@ import com.github.germangb.engine.audio.SoundState
 /**
  * An audio thing that does NOTHING
  */
-object DummySoundAL : Sound {
+object DummyAudio : Sound {
     override val state = SoundState.STOPPED
     override fun play(loop: Boolean) = Unit
     override fun pause() = Unit

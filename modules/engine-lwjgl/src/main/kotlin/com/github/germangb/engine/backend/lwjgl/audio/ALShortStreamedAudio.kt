@@ -6,7 +6,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * rovide Float32 audio streaming
  */
-open class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : GenericStreamedSound(audio, bufferSize, sampling, streamer) {
+open class ALShortStreamedAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamedAudio(audio, bufferSize, sampling, streamer) {
     companion object {
         val AL_BUFFER = ShortArray(AL_BUFFER_SIZE)
     }

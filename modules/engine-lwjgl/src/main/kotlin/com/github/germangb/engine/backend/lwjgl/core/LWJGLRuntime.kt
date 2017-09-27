@@ -1,14 +1,14 @@
 package com.github.germangb.engine.backend.lwjgl.core
 
-import com.github.germangb.engine.backend.lwjgl.audio.LwjglAudioAL
-import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
+import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
+import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.core.Application
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.system.exitProcess
 
-class LwjglRuntime(val backend: LwjglBackend, val app: Application) {
+class LWJGLRuntime(val backend: LWJGLBackend, val app: Application) {
 
     /**
      * Kickstart LWJGL
@@ -40,7 +40,7 @@ class LwjglRuntime(val backend: LwjglBackend, val app: Application) {
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {
             try {
-                (backend.audio as LwjglAudioAL).updateStreaming()
+                (backend.audio as ALAudioDevice).updateStreaming()
                 app.update()
             } catch (e: Exception) {
                 glfwSetWindowShouldClose(window, true)
@@ -51,8 +51,8 @@ class LwjglRuntime(val backend: LwjglBackend, val app: Application) {
         }
 
         app.destroy()
-        (backend.graphics as LwjglGraphics).destroy()
-        (backend.audio as LwjglAudioAL).destroy()
+        (backend.graphics as GLGraphicsDevice).destroy()
+        (backend.audio as ALAudioDevice).destroy()
         glfwDestroyWindow(window)
         glfwTerminate()
     }

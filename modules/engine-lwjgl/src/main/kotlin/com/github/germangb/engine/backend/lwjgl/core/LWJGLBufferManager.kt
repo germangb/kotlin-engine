@@ -7,7 +7,7 @@ import java.nio.*
 /**
  * Low level buffers management from by LWJGL
  */
-class LwjglMemoryAllocator : BufferManager {
+class LWJGLBufferManager : BufferManager {
     /**
      * Heap allocated buffers
      */

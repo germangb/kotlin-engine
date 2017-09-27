@@ -1,7 +1,7 @@
 package com.github.germangb.engine.core
 
-import com.github.germangb.engine.audio.Audio
-import com.github.germangb.engine.graphics.Graphics
+import com.github.germangb.engine.audio.AudioDevice
+import com.github.germangb.engine.graphics.GraphicsDevice
 import com.github.germangb.engine.resources.AssetLoader
 
 /**
@@ -9,14 +9,14 @@ import com.github.germangb.engine.resources.AssetLoader
  */
 interface Backend {
     /**
-     * Graphics backend
+     * GraphicsDevice backend
      */
-    val graphics: Graphics
+    val graphics: GraphicsDevice
 
     /**
-     * Audio
+     * AudioDevice
      */
-    val audio: Audio
+    val audio: AudioDevice
 
     /**
      * Resources backend

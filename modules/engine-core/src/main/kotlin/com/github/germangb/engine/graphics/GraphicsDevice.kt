@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 /**
  * Low level graphics API
  */
-interface Graphics {
+interface GraphicsDevice {
     /**
      * Create a texture
      */
@@ -29,7 +29,7 @@ interface Graphics {
     /**
      * Default framebuffer state
      */
-    fun state(action: FramebufferState.() -> Unit)
+    fun state(action: GraphicsState.() -> Unit)
 
     /**
      * Perform a render call

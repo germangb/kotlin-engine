@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.graphics.utils
 
-import com.github.germangb.engine.backend.lwjgl.graphics.LwjglTexture
+import com.github.germangb.engine.backend.lwjgl.graphics.GLTexture
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL13.*
 
@@ -14,7 +14,7 @@ object TextureBinder {
 /**
  * Bind texture and return texture unit
  */
-fun LwjglTexture.bind(): Int {
+fun GLTexture.bind(): Int {
     val unit = TextureBinder.count
     glActiveTexture(GL_TEXTURE0+unit)
     glBindTexture(GL_TEXTURE_2D, id)

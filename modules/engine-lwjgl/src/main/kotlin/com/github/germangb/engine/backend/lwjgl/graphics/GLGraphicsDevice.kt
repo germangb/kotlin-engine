@@ -13,12 +13,12 @@ import java.nio.ByteBuffer
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
+class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
-    private val instancer by lazy { LwjglInstancer() }
-    private val windowFramebuffer = LwjglFramebuffer(0, width, height, emptyList())
+    private val instancer by lazy { GLInstancer() }
+    private val windowFramebuffer = GLFramebuffer(0, width, height, emptyList())
 
     override fun destroy() {
         instancer.destroy()
@@ -39,7 +39,7 @@ class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
             glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
             glBindTexture(GL_TEXTURE_2D, 0)
         }
-        return LwjglTexture(id, width, height)
+        return GLTexture(id, width, height)
     }
 
     /**
@@ -60,14 +60,14 @@ class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
             // color targets
-            textures.map { it as LwjglTexture }
+            textures.map { it as GLTexture }
                     .filterIndexed { i, _ -> !targets[i].isDepth() }
                     .forEachIndexed { index, texture ->
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, texture.id, 0)
                     }
 
             // depth target
-            textures.map { it as LwjglTexture }
+            textures.map { it as GLTexture }
                     .filterIndexed { index, _ -> targets[index].isDepth() }
                     .forEach {
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, it.id, 0)
@@ -82,7 +82,7 @@ class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
         }
-        return LwjglFramebuffer(fbo, width, height, textures)
+        return GLFramebuffer(fbo, width, height, textures)
     }
 
     /**
@@ -147,7 +147,7 @@ class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
         }
 
 
-        return LwjglMesh(vbo, ibo, vao, indexData.capacity()/4, primitive, attributes)
+        return GLMesh(vbo, ibo, vao, indexData.capacity()/4, primitive, attributes)
     }
 
     /**
@@ -185,21 +185,21 @@ class LwjglGraphics(width: Int, height: Int) : Graphics, Destroyable {
             glLinkProgram(program)
         }
 
-        return LwjglShaderProgram(program, vertexShader, fragmentShader)
+        return GLShaderProgram(program, vertexShader, fragmentShader)
     }
 
     /**
      * GL state
      */
-    override fun state(action: FramebufferState.() -> Unit) {
-        LwjglFramebufferState().action()
+    override fun state(action: GraphicsState.() -> Unit) {
+        GLGraphicsState().action()
     }
 
     /**
      * Render a mesh using instance rendering
      */
     override fun render(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
-        instancer.begin(mesh as LwjglMesh, program as LwjglShaderProgram, framebuffer as LwjglFramebuffer)
+        instancer.begin(mesh as GLMesh, program as GLShaderProgram, framebuffer as GLFramebuffer)
         instancer.action()
         instancer.end()
     }

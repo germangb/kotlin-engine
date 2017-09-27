@@ -4,7 +4,7 @@ import com.github.germangb.engine.graphics.Texture
 import java.nio.ByteBuffer
 import org.lwjgl.opengl.GL11.*
 
-class LwjglTexture(val id: Int, override val width: Int, override val height: Int) : Texture {
+class GLTexture(val id: Int, override val width: Int, override val height: Int) : Texture {
     override fun destroy() {
         glDeleteTextures(id)
     }

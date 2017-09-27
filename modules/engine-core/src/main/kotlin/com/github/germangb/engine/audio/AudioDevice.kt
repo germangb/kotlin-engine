@@ -8,7 +8,7 @@ import java.nio.ShortBuffer
 /**
  * Manage audio
  */
-interface Audio {
+interface AudioDevice {
     /**
      * Set listener orientation (for 3D audio rendering)
      */

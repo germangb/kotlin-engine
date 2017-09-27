@@ -6,9 +6,9 @@ import org.lwjgl.opengl.GL20.*
 /**
  * OpenGL shader program
  */
-class LwjglShaderProgram(val program: Int,
-                         val vertex: Int,
-                         val fragment: Int) : ShaderProgram {
+class GLShaderProgram(val program: Int,
+                      val vertex: Int,
+                      val fragment: Int) : ShaderProgram {
     override fun destroy() {
         glDeleteShader(vertex)
         glDeleteShader(fragment)

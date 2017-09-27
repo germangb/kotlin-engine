@@ -1,13 +1,13 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
-import com.github.germangb.engine.graphics.FramebufferState
+import com.github.germangb.engine.graphics.GraphicsState
 import com.github.germangb.engine.graphics.TestFunction
 import org.lwjgl.opengl.GL11.*
 
 /**
  * Manage state
  */
-class LwjglFramebufferState : FramebufferState {
+class GLGraphicsState : GraphicsState {
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
 
     override fun depthTest(func: TestFunction) {

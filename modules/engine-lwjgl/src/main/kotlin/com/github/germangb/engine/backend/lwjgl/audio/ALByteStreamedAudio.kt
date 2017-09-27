@@ -6,7 +6,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * rovide Float32 audio streaming
  */
-class ByteStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: ByteAudioDecoder) : GenericStreamedSound(audio, bufferSize, sampling, streamer) {
+class ALByteStreamedAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: ByteAudioDecoder) : ALGenericStreamedAudio(audio, bufferSize, sampling, streamer) {
     companion object {
         val AL_BUFFER = ByteArray(AL_BUFFER_SIZE)
     }

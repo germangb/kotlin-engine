@@ -1,6 +1,6 @@
 package com.github.germangb.engine.graphics
 
-interface FramebufferState {
+interface GraphicsState {
     /**
      * Clear color buffer
      */

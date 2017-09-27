@@ -10,12 +10,12 @@ import org.lwjgl.opengl.GL30.*
 /**
  * OpenGL mesh
  */
-class LwjglMesh(val vbo: Int,
-                val ibo: Int,
-                val vao: Int,
-                override var indices: Int,
-                override val primitive: MeshPrimitive,
-                override val attributes: List<VertexAttribute>) : Mesh {
+class GLMesh(val vbo: Int,
+             val ibo: Int,
+             val vao: Int,
+             override var indices: Int,
+             override val primitive: MeshPrimitive,
+             override val attributes: List<VertexAttribute>) : Mesh {
     override fun destroy() {
         glDeleteBuffers(vbo)
         glDeleteBuffers(ibo)

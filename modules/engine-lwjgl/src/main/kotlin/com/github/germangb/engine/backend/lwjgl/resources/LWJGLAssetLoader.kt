@@ -1,11 +1,11 @@
 package com.github.germangb.engine.backend.lwjgl.resources
 
 import com.github.germangb.engine.audio.Sound
-import com.github.germangb.engine.backend.lwjgl.audio.LwjglAudioAL
-import com.github.germangb.engine.backend.lwjgl.audio.VorbisAudioDecoder
-import com.github.germangb.engine.backend.lwjgl.audio.VorbisStreamedSound
+import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
+import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
+import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamedSound
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
-import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
+import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.Texture
@@ -16,7 +16,7 @@ import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
 import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
 import org.lwjgl.stb.STBVorbisInfo
 
-class LwjglAssetLoader(val audio: LwjglAudioAL, val gfx: LwjglGraphics) : AssetLoader {
+class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : AssetLoader {
     /**
      * Load texture file
      */
@@ -67,8 +67,8 @@ class LwjglAssetLoader(val audio: LwjglAudioAL, val gfx: LwjglGraphics) : AssetL
 //            System.err.println("#frame_size = ${info.max_frame_size()}")
 
             // create decoder & return sound
-            val decoder = VorbisAudioDecoder(handle, info.channels())
-            val vorbisSound = VorbisStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
+            val decoder = VorbisSTBAudioDecoder(handle, info.channels())
+            val vorbisSound = VorbisSTBStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
             sound = audio.addStream(vorbisSound)
         }
 

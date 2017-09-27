@@ -7,7 +7,7 @@ import org.lwjgl.stb.STBVorbis.*
 /**
  * Decode Vorbis stream
  */
-class VorbisAudioDecoder(val handle: Long, val channels: Int) : Destroyable, ShortAudioDecoder {
+class VorbisSTBAudioDecoder(val handle: Long, val channels: Int) : Destroyable, ShortAudioDecoder {
     /**
      * Compute length
      */

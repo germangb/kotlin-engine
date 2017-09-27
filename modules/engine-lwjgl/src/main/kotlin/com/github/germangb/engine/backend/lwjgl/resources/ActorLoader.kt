@@ -1,10 +1,9 @@
 package com.github.germangb.engine.backend.lwjgl.resources
 
-import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
+import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.addJoint
 import com.github.germangb.engine.framework.components.addSkinnedMeshInstance
-import com.github.germangb.engine.framework.components.addSkinnedMeshInstancer
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.math.Matrix4
@@ -16,7 +15,7 @@ import org.lwjgl.assimp.Assimp.*
 /**
  * Load actor blueprint using Assimp
  */
-fun loadActorAssimp(manager: AssetManager, loader: LwjglAssetLoader, graphics: LwjglGraphics, path: String): (Actor.() -> Unit)? {
+fun loadActorAssimp(manager: AssetManager, loader: LWJGLAssetLoader, graphics: GLGraphicsDevice, path: String): (Actor.() -> Unit)? {
     System.err.println("+ Loading actor blueprint ($path) using Assimp...")
 
     val flags = aiProcess_Triangulate or aiProcess_FlipUVs or aiProcess_GenSmoothNormals or aiProcess_LimitBoneWeights

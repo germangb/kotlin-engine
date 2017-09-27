@@ -8,7 +8,7 @@ import com.github.germangb.engine.math.*
 import org.lwjgl.opengl.GL20.*
 import java.nio.FloatBuffer
 
-class LwjglUniforms(val program: LwjglShaderProgram, val uniformData: FloatBuffer) : Uniforms {
+class GLUniforms(val program: GLShaderProgram, val uniformData: FloatBuffer) : Uniforms {
     /**
      * Get uniform location
      */
@@ -34,7 +34,7 @@ class LwjglUniforms(val program: LwjglShaderProgram, val uniformData: FloatBuffe
 
     override fun Texture.bindsTo(name: String) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform1i(unif, (this as LwjglTexture).bind())
+        if (unif >= 0) glUniform1i(unif, (this as GLTexture).bind())
     }
 
     override fun Vector2c.bindsTo(name: String) {

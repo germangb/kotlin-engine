@@ -7,10 +7,10 @@ import org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0
 /**
  * Lwjgl framebuffer
  */
-class LwjglFramebuffer(val id: Int,
-                       override val width: Int,
-                       override val height: Int,
-                       override val targets: List<Texture>) : Framebuffer {
+class GLFramebuffer(val id: Int,
+                    override val width: Int,
+                    override val height: Int,
+                    override val targets: List<Texture>) : Framebuffer {
     /**
      * Draw buffers
      */

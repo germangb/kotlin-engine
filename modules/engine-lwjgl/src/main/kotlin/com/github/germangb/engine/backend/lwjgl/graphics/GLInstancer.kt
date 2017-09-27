@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL31.*
 
-class LwjglInstancer : Instancer, Destroyable {
+class GLInstancer : Instancer, Destroyable {
     override val transform = Matrix4()
 
     companion object {
@@ -26,11 +26,11 @@ class LwjglInstancer : Instancer, Destroyable {
 
     private val uniformData = JEmalloc.je_malloc(10000).asFloatBuffer()
 
-    lateinit var shaderProgram: LwjglShaderProgram
-    lateinit var activeMesh: LwjglMesh
+    lateinit var shaderProgram: GLShaderProgram
+    lateinit var activeMesh: GLMesh
 
     init {
-        glCheckError("Error in LwjglInstancer.init while creating vertex buffer") {
+        glCheckError("Error in GLInstancer.init while creating vertex buffer") {
             glBindBuffer(GL_ARRAY_BUFFER, buffer)
             glBufferData(GL_ARRAY_BUFFER, data, GL_STREAM_DRAW)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -43,7 +43,7 @@ class LwjglInstancer : Instancer, Destroyable {
         JEmalloc.je_free(data)
         JEmalloc.je_free(uniformData)
 
-        glCheckError("Error in LwjglInstancer.free() while deleting vertex buffer") {
+        glCheckError("Error in GLInstancer.free() while deleting vertex buffer") {
             glDeleteBuffers(buffer)
         }
     }
@@ -51,13 +51,13 @@ class LwjglInstancer : Instancer, Destroyable {
     /**
      * Begin draw call
      */
-    fun begin(mesh: LwjglMesh, program: LwjglShaderProgram, fbo: LwjglFramebuffer) {
+    fun begin(mesh: GLMesh, program: GLShaderProgram, fbo: GLFramebuffer) {
         count = 0
         shaderProgram = program
         activeMesh = mesh
         transform.identity()
 
-        glCheckError("Error in LwjglInstancer.begin()") {
+        glCheckError("Error in GLInstancer.begin()") {
             glUseProgram(program.program)
             glBindVertexArray(mesh.vao)
             glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
@@ -88,7 +88,7 @@ class LwjglInstancer : Instancer, Destroyable {
 
     fun end() {
         flush()
-        glCheckError("Error in LwjglInstancer.end()") {
+        glCheckError("Error in GLInstancer.end()") {
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
             glUseProgram(0)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
@@ -104,7 +104,7 @@ class LwjglInstancer : Instancer, Destroyable {
     }
 
     override fun uniforms(action: Uniforms.() -> Unit) {
-        LwjglUniforms(shaderProgram, uniformData).action()
+        GLUniforms(shaderProgram, uniformData).action()
     }
 
 }

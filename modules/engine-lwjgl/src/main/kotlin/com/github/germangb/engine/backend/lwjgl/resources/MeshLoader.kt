@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.resources
 
-import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
+import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.VertexAttribute
@@ -8,7 +8,7 @@ import org.lwjgl.assimp.AIBone
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.system.jemalloc.JEmalloc
 
-fun loadMesh(graphics: LwjglGraphics, aiMesh: AIMesh, skinned: Boolean, boneIds: Map<String, Int> = emptyMap()) : Mesh {
+fun loadMesh(graphics: GLGraphicsDevice, aiMesh: AIMesh, skinned: Boolean, boneIds: Map<String, Int> = emptyMap()) : Mesh {
     val primitive = MeshPrimitive.TRIANGLES
 
     val attributes = if (skinned) {

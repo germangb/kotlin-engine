@@ -5,9 +5,9 @@ import com.github.germangb.engine.audio.SoundState
 import org.lwjgl.openal.AL10.*
 
 /**
- * Audio inside of a buffer
+ * AudioDevice inside of a buffer
  */
-class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) : Sound {
+class OpenALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Sound {
     companion object {
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }

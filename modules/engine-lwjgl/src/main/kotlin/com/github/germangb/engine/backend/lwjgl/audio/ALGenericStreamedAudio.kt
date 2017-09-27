@@ -4,13 +4,12 @@ import com.github.germangb.engine.audio.GenericAudioDecoder
 import com.github.germangb.engine.audio.Sound
 import com.github.germangb.engine.audio.SoundState
 import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
-import org.lwjgl.openal.AL10
-import org.lwjgl.openal.EXTFloat32
+import org.lwjgl.openal.AL10.*
 
 /**
  * Generic audio streaming
  */
-abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Sound {
+abstract class ALGenericStreamedAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Sound {
     companion object {
         val AL_BUFFER_SIZE = 512
         val STREAM_CLOSED = "The audio stream is closed"
@@ -32,7 +31,7 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
     val buffers = IntArray(bufferSize / AL_BUFFER_SIZE + 1)
 
     //TODO temporary source
-    val source = AL10.alGenSources()
+    val source = alGenSources()
 
     /**
      * Is this sound destroyed?
@@ -45,7 +44,7 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
     private var stopped = true
 
     init {
-        AL10.alGenBuffers(buffers)
+        alGenBuffers(buffers)
     }
 
     /**
@@ -57,9 +56,9 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
      * Empty playback buffer
      */
     private fun emptyBuffer() {
-        val processed = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED)
+        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
         for (i in 0 until processed) {
-            AL10.alSourceUnqueueBuffers(source)
+            alSourceUnqueueBuffers(source)
         }
     }
 
@@ -87,14 +86,14 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
             updateBuffer()
         }
 
-        AL10.alSourcePlay(source)
+        alSourcePlay(source)
         istate = SoundState.PLAYING
     }
 
     override fun pause() {
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
-        AL10.alSourcePause(source)
+        alSourcePause(source)
         istate = SoundState.PAUSED
     }
 
@@ -102,7 +101,7 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
         if (!stopped) {
-            AL10.alSourceStop(source)
+            alSourceStop(source)
             istate = SoundState.STOPPED
             stopped = true
             emptyBuffer()
@@ -112,8 +111,8 @@ abstract class GenericStreamedSound(val audio: LwjglAudioAL, bufferSize: Int, va
     override fun destroy() {
         if (!destroyed) {
             destroyed = true
-            AL10.alDeleteBuffers(buffers)
-            AL10.alDeleteSources(source)
+            alDeleteBuffers(buffers)
+            alDeleteSources(source)
             istate = SoundState.STOPPED
             audio.removeStream(this)
         }
