@@ -21,7 +21,7 @@ interface Backend {
     /**
      * Resources backend
      */
-    val resources: AssetLoader
+    val assets: AssetLoader
 
     /**
      * Buffer management

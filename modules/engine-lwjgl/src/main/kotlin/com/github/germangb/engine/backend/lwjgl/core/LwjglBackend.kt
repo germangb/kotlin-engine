@@ -11,6 +11,6 @@ import com.github.germangb.engine.graphics.Graphics
  */
 class LwjglBackend(override val graphics: Graphics,
                    override val audio: Audio,
-                   override val resources: AssetLoader,
+                   override val assets: AssetLoader,
                    override val buffers: BufferManager) : Backend
 

@@ -1,9 +1,8 @@
 package com.github.germangb.engine.resources
 
-import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.Sound
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.framework.Actor
 
 interface AssetLoader {
     /**
@@ -19,5 +18,5 @@ interface AssetLoader {
     /**
      * Load audio
      */
-    fun loadSound(path: String): Audio?
+    fun loadSound(path: String, forceMono: Boolean = false): Sound?
 }

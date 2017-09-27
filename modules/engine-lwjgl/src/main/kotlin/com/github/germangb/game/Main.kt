@@ -9,9 +9,9 @@ import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
 
 fun main(args: Array<String>) {
     val gfx = LwjglGraphics(640, 480)
-    val res = LwjglAssetLoader(gfx)
-    val mem = LwjglMemoryAllocator()
     val audio = LwjglAudioAL()
+    val res = LwjglAssetLoader(audio, gfx)
+    val mem = LwjglMemoryAllocator()
 
     val backend = LwjglBackend(gfx, audio, res, mem)
 

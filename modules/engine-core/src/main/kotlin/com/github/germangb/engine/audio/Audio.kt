@@ -1,5 +1,6 @@
 package com.github.germangb.engine.audio
 
+import com.github.germangb.engine.math.Vector3c
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
@@ -8,6 +9,11 @@ import java.nio.ShortBuffer
  * Manage audio
  */
 interface Audio {
+    /**
+     * Set listener orientation (for 3D audio rendering)
+     */
+    fun setListener(position: Vector3c, look: Vector3c, up: Vector3c)
+
     /**
      * Create sampled audio (8bit sigled samples)
      */
@@ -26,15 +32,15 @@ interface Audio {
     /**
      * Create audio streamer of Float32 audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: FloatAudioStreamer): Sound
+    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: FloatAudioDecoder): Sound
 
     /**
      * Create audio streamer of 16bit audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ShortAudioStreamer): Sound
+    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ShortAudioDecoder): Sound
 
     /**
      * Create audio streamer of 8bit audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ByteAudioStreamer): Sound
+    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ByteAudioDecoder): Sound
 }

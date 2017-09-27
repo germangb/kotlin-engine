@@ -1,15 +1,43 @@
 package com.github.germangb.engine.backend.lwjgl.resources
 
-import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.Sound
+import com.github.germangb.engine.backend.lwjgl.audio.LwjglAudioAL
+import com.github.germangb.engine.backend.lwjgl.audio.VorbisAudioDecoder
+import com.github.germangb.engine.backend.lwjgl.audio.VorbisStreamedSound
+import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.graphics.LwjglGraphics
-import com.github.germangb.engine.resources.AssetLoader
 import com.github.germangb.engine.graphics.Mesh
+import com.github.germangb.engine.graphics.TexelFormat
+import com.github.germangb.engine.graphics.Texture
+import com.github.germangb.engine.resources.AssetLoader
+import org.lwjgl.stb.STBImage.stbi_failure_reason
+import org.lwjgl.stb.STBImage.stbi_load
+import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
+import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
+import org.lwjgl.stb.STBVorbisInfo
 
-class LwjglAssetLoader(private val gfx: LwjglGraphics) : AssetLoader {
+class LwjglAssetLoader(val audio: LwjglAudioAL, val gfx: LwjglGraphics) : AssetLoader {
     /**
      * Load texture file
      */
-    override fun loadTexture(path: String) = loadTextureSTB(gfx, path)
+    override fun loadTexture(path: String): Texture? {
+        var texture: Texture? = null
+
+        stackMemory {
+            val width = mallocInt(1)
+            val height = mallocInt(1)
+            val channels = mallocInt(1)
+            val data = stbi_load(path, width, height, channels, 3)
+
+            if (data == null) {
+                System.err.println("${stbi_failure_reason()} ($path)")
+            } else {
+                texture = gfx.createTexture(data, width[0], height[0], TexelFormat.RGB8)
+            }
+        }
+
+        return texture
+    }
 
     /**
      * Load mesh
@@ -21,7 +49,29 @@ class LwjglAssetLoader(private val gfx: LwjglGraphics) : AssetLoader {
     /**
      * Load stream of audio
      */
-    override fun loadSound(path: String): Audio? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun loadSound(path: String, forceMono: Boolean): Sound? {
+        var sound: Sound? = null
+
+        stackMemory {
+            // open file
+            val error = mallocInt(1)
+            val handle = stb_vorbis_open_filename(path, error, null)
+
+            // decode info
+            val info = STBVorbisInfo.callocStack(this)
+            stb_vorbis_get_info(handle, info)
+
+//            System.err.println("file = $path")
+//            System.err.println("#channels = ${info.channels()}")
+//            System.err.println("#sampling = ${info.sample_rate()}")
+//            System.err.println("#frame_size = ${info.max_frame_size()}")
+
+            // create decoder & return sound
+            val decoder = VorbisAudioDecoder(handle, info.channels())
+            val vorbisSound = VorbisStreamedSound(audio, info.sample_rate(), info.channels() == 2, decoder)
+            sound = audio.addStream(vorbisSound)
+        }
+
+        return sound
     }
 }

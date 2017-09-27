@@ -1,6 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.Sound
+import com.github.germangb.engine.audio.SoundState
 import org.lwjgl.openal.AL10.*
 
 /**
@@ -10,6 +11,14 @@ class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) :
     companion object {
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }
+
+    /**
+     * Sound state
+     */
+    private var istate = SoundState.STOPPED
+
+    /** Sound state property */
+    override val state get() = istate
 
     /**
      * Current audio source
@@ -33,6 +42,7 @@ class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) :
             }
             alSourcei(it, AL_LOOPING, if(loop) AL_TRUE else AL_FALSE)
             alSourcePlay(it)
+            istate = SoundState.PLAYING
         }
     }
 
@@ -44,6 +54,7 @@ class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) :
                 alSourcei(it, AL_BUFFER, buffer)
             }
             alSourcePause(it)
+            istate = SoundState.PAUSED
         }
     }
 
@@ -58,6 +69,7 @@ class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) :
 
             // free the source
             audio.addAvailableSource(this, it)
+            istate = SoundState.STOPPED
             currentSource = -1
         }
     }
@@ -70,6 +82,7 @@ class SampledSoundAL(private val audio: LwjglAudioAL, private val buffer: Int) :
                 currentSource = -1
             }
             destroyed = true
+            istate = SoundState.STOPPED
         }
     }
 

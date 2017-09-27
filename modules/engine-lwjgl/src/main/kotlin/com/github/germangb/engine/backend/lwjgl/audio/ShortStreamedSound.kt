@@ -1,24 +1,29 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.ShortAudioStreamer
-import org.lwjgl.openal.AL10
+import com.github.germangb.engine.audio.ShortAudioDecoder
+import org.lwjgl.openal.AL10.*
 
 /**
  * rovide Float32 audio streaming
  */
-class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioStreamer) : GenericStreamedSound(audio, bufferSize, sampling, stereo) {
+open class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : GenericStreamedSound(audio, bufferSize, sampling, streamer) {
     companion object {
         val AL_BUFFER = ShortArray(AL_BUFFER_SIZE)
     }
+
+    /**
+     * AL format
+     */
+    private val alFormat = if(stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
 
     /**
      * Initialize buffer
      */
     override fun initBuffer() {
         for (alBuffer in buffers) {
-            streamer.invoke(AL_BUFFER, AL_BUFFER.size)
-            AL10.alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
-            AL10.alSourceQueueBuffers(source, alBuffer)
+            streamer.provide(AL_BUFFER, AL_BUFFER.size)
+            alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
+            alSourceQueueBuffers(source, alBuffer)
         }
     }
 
@@ -26,14 +31,14 @@ class ShortStreamedSound(audio: LwjglAudioAL, bufferSize: Int, sampling: Int, st
      * Fil playback buffer with processed buffers
      */
     override fun updateBuffer() {
-        val processed = AL10.alGetSourcei(source, AL10.AL_BUFFERS_PROCESSED)
+        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
 
         // Reuse processed buffers
         for (i in 0 until processed) {
-            val alBuffer = AL10.alSourceUnqueueBuffers(source)
-            streamer.invoke(AL_BUFFER, AL_BUFFER_SIZE)
-            AL10.alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
-            AL10.alSourceQueueBuffers(source, alBuffer)
+            val alBuffer = alSourceUnqueueBuffers(source)
+            streamer.provide(AL_BUFFER, AL_BUFFER_SIZE)
+            alBufferData(alBuffer, alFormat, AL_BUFFER, sampling)
+            alSourceQueueBuffers(source, alBuffer)
         }
     }
 }

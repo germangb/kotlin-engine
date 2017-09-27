@@ -1,6 +1,6 @@
 package com.github.germangb.game
 
-import com.github.germangb.engine.audio.FloatAudioStreamer
+import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.graphics.TestFunction
@@ -10,10 +10,10 @@ import com.github.germangb.engine.resources.TextureAsset
 /**
  * Procedural audio demo
  */
-class ProceduralAudio : FloatAudioStreamer() {
+class ProceduralAudio : FloatAudioDecoder() {
     var phase = 0
     var modul = 0
-    override fun invoke(buffer: FloatArray, size: Int) {
+    override fun provide(buffer: FloatArray, size: Int) {
         // generate samples
         (0 until size)
                 .map {
@@ -26,13 +26,13 @@ class ProceduralAudio : FloatAudioStreamer() {
 
         phase += size
     }
+    override fun reset() = Unit
 
 }
 
 class GermanGame(val backend: Backend) : Application {
-    val manager = DumbAssetManager(backend.resources)
+    val manager = DumbAssetManager(backend.assets)
 
-    // sampled audio
     val audio by lazy {
         val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
 
@@ -48,17 +48,25 @@ class GermanGame(val backend: Backend) : Application {
         audio
     }
 
+    val music by lazy {
+        backend.assets.loadSound("music.ogg")
+    }
+
     override fun destroy() {
         audio.destroy()
+        music?.destroy()
     }
 
     override fun init() {
         // load texture
         val tex = TextureAsset(manager, "hellknight.png")
 
+        // vorbis
+        music?.play()
+
         // procedural streamed music
-        val music = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
-        music.play()
+        //val procedural = backend.audio.createStream(16000, 16_000, false, ProceduralAudio())
+        //procedural.play()
     }
 
     override fun update() {
