@@ -3,29 +3,34 @@ package com.github.germangb.engine.audio
 /**
  * Provider of audio samples
  */
-sealed class GenericAudioDecoder<in T> {
+interface GenericAudioDecoder<in T> {
+    /**
+     * Stream length in samples. A value < 0 means stream has no ending
+     */
+    val length: Int
+
     /**
      * Decode a frame of samples
      */
-    abstract fun decode(buffer: T, size: Int)
+    fun decode(buffer: T, size: Int)
 
     /**
      * Called at the beginning of playback.
      */
-    abstract fun reset()
+    fun reset()
 }
 
 /**
  * Float32 sampled streamer
  */
-abstract class FloatAudioDecoder : GenericAudioDecoder<FloatArray>()
+interface FloatAudioDecoder : GenericAudioDecoder<FloatArray>
 
 /**
  * 16bit signed sampled streamer
  */
-abstract class ShortAudioDecoder : GenericAudioDecoder<ShortArray>()
+interface ShortAudioDecoder : GenericAudioDecoder<ShortArray>
 
 /**
  * 8bit signed sampled streamer
  */
-abstract class ByteAudioDecoder : GenericAudioDecoder<ByteArray>()
+interface ByteAudioDecoder : GenericAudioDecoder<ByteArray>

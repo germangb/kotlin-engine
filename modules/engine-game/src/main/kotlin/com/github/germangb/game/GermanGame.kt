@@ -10,7 +10,7 @@ import com.github.germangb.engine.resources.TextureAsset
 /**
  * Procedural audio demo
  */
-class ProceduralAudio : FloatAudioDecoder() {
+class ProceduralAudio : FloatAudioDecoder {
     var phase = 0
     var modul = 0
     override fun decode(buffer: FloatArray, size: Int) {
@@ -26,8 +26,9 @@ class ProceduralAudio : FloatAudioDecoder() {
 
         phase += size
     }
-    override fun reset() = Unit
 
+    override fun reset() = Unit
+    override val length = -1
 }
 
 class GermanGame(val backend: Backend) : Application {
