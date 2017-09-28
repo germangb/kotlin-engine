@@ -88,7 +88,7 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Create a mesh
      */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: List<VertexAttribute>): Mesh {
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: List<VertexAttribute>, usage: MeshUsage): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -97,16 +97,15 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
         glCheckError("Error in createMesh while creating vbo") {
             vbo = glGenBuffers()
             glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(GL_ARRAY_BUFFER, vertexData, GL_STATIC_DRAW)
+            glBufferData(GL_ARRAY_BUFFER, vertexData, usage.glEnum)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
         }
-
 
         // create ibo first
         glCheckError("Error in createMesh while creating vbo") {
             ibo = glGenBuffers()
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, GL_STATIC_DRAW)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, usage.glEnum)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
         }
 

@@ -5,7 +5,6 @@ import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.resources.DumbAssetManager
-import com.github.germangb.engine.resources.TextureAsset
 import java.nio.FloatBuffer
 
 /**
@@ -15,12 +14,13 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
     var phase = 0
     var modul = 0
     var pitchShiftTarget = 0f
-    var pitchShift= 0f
+    var pitchShift = 0f
 
-    override fun decode(buffer: FloatBuffer): Int {
-        // generate samples
+    override fun decode(buffer: FloatBuffer) {
         pitchShiftTarget = backend.input.mouse.x.toFloat()
         //pitchShift += (pitchShiftTarget - pitchShift) * 0.1f
+
+        // generate samples
         (0 until buffer.limit())
                 .map {
                     // modulated frequency
@@ -28,10 +28,9 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
                     val modPhase = 512 + java.lang.Math.sin(0.001 * modul++) * 200
                     java.lang.Math.cos(PI2 * (it + phase) * (512 + pitchShift) / 16_000 + modPhase)
                 }
-                .forEachIndexed { index, d -> buffer.put(index, d.toFloat()) }
+                .forEachIndexed { index, d -> buffer.put(d.toFloat()) }
 
         phase += buffer.limit()
-        return buffer.limit()
     }
 
     override fun reset() = Unit
@@ -74,7 +73,7 @@ class GermanGame(val backend: Backend) : Application {
 
         // procedural streamed music
         val procedural = backend.audio.createAudio(ProceduralAudio(backend), 16_00, 16_000, false)
-        procedural.play()
+        //procedural.play()
     }
 
     override fun update() {

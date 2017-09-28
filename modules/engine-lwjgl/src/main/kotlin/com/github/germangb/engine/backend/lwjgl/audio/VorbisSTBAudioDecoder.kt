@@ -31,8 +31,11 @@ class VorbisSTBAudioDecoder(val handle: Long, val channels: Int) : Destroyable, 
     /**
      * Decode some samples
      */
-    override fun decode(buffer: ShortBuffer): Int {
+    override fun decode(buffer: ShortBuffer) {
+        val position = stb_vorbis_get_sample_offset(handle)
         stb_vorbis_get_samples_short_interleaved(handle, channels, buffer)
-        return buffer.limit()
+        val decoded = nstb_vorbis_get_sample_offset(handle) - position
+
+        buffer.position(buffer.position() + decoded)
     }
 }

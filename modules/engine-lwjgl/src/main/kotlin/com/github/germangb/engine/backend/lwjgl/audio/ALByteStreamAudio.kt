@@ -16,13 +16,15 @@ class ALByteStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, st
      * Fill with 8bit audio
      */
     override fun processBuffer(buffer: Int, size: Int): Int {
-        audio.byteBuffer.clear().limit(size)
-        val decoded = streamer.decode(audio.byteBuffer)
-        audio.byteBuffer.limit(decoded)
+        audio.byteBuffer.clear()
+        val position = audio.byteBuffer.position()
+        streamer.decode(audio.byteBuffer)
+        audio.byteBuffer.flip()
 
-        if (decoded > 0) {
+        if (audio.byteBuffer.limit() > position) {
             alBufferData(buffer, alFormat, audio.byteBuffer, sampling)
         }
-        return decoded
+
+        return audio.byteBuffer.limit() - position
     }
 }

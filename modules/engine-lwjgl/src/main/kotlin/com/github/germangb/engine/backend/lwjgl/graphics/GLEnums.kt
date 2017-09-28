@@ -1,16 +1,25 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
 import com.github.germangb.engine.graphics.MeshPrimitive
+import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.graphics.TexelFormat
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL14.*
+import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
+
+/** Buffer usage */
+val MeshUsage.glEnum get() = when(this) {
+    MeshUsage.STATIC -> GL_STATIC_DRAW
+    MeshUsage.DYNAMIC -> GL_DYNAMIC_DRAW
+    MeshUsage.STREAM -> GL_STREAM_DRAW
+}
 
 /**
  * Primitive enums
  */
-val MeshPrimitive.glEnum: Int get() = when(this) {
+val MeshPrimitive.glEnum get() = when(this) {
     MeshPrimitive.TRIANGLES -> GL_TRIANGLES
     MeshPrimitive.TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
     MeshPrimitive.LINES -> GL_LINES
@@ -19,7 +28,7 @@ val MeshPrimitive.glEnum: Int get() = when(this) {
 /**
  * Test function to GLEnum
  */
-val TestFunction.glEnum: Int get() = when(this) {
+val TestFunction.glEnum get() = when(this) {
     TestFunction.EQUAL -> GL_EQUAL
     TestFunction.NOT_EQUAL -> GL_NOTEQUAL
     TestFunction.LESS -> GL_LESS
@@ -32,7 +41,7 @@ val TestFunction.glEnum: Int get() = when(this) {
 /**
  * Convert texel format to GLEnum
  */
-val TexelFormat.glEnum: Int get() = when(this) {
+val TexelFormat.glEnum get() = when(this) {
     TexelFormat.RGBA8 -> GL_RGBA8
     TexelFormat.RGB8 -> GL_RGB8
     TexelFormat.RG8 -> GL_RG8
@@ -48,7 +57,7 @@ val TexelFormat.glEnum: Int get() = when(this) {
 /**
  * Convert texel format to GLEnum
  */
-val TexelFormat.dataFormat: Int get() = when(this) {
+val TexelFormat.dataFormat get() = when(this) {
     TexelFormat.RGBA8 -> GL_RGBA
     TexelFormat.RGB8 -> GL_RGB
     TexelFormat.RG8 -> GL_RG

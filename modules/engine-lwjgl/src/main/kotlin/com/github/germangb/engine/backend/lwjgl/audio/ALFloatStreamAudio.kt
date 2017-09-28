@@ -18,13 +18,15 @@ class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, s
      * Fill with float32 audio
      */
     override fun processBuffer(buffer: Int, size: Int): Int {
-        audio.floatBuffer.clear().limit(size)
-        val decoded = streamer.decode(audio.floatBuffer)
-        audio.floatBuffer.limit(decoded)
+        audio.floatBuffer.clear()
+        val position = audio.floatBuffer.position()
+        streamer.decode(audio.floatBuffer)
+        audio.floatBuffer.flip()
 
-        if (decoded > 0) {
+        if (audio.floatBuffer.limit() > position) {
             alBufferData(buffer, alFormat, audio.floatBuffer, sampling)
         }
-        return decoded
+
+        return audio.floatBuffer.limit() - position
     }
 }

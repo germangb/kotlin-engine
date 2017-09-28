@@ -1,5 +1,6 @@
 package com.github.germangb.engine.audio
 
+import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
@@ -7,7 +8,7 @@ import java.nio.ShortBuffer
 /**
  * Provider of audio samples
  */
-interface GenericAudioDecoder<in T> {
+interface GenericAudioDecoder<in T: Buffer> {
     /**
      * Stream length in samples. A value < 0 means stream has no ending
      */
@@ -16,7 +17,7 @@ interface GenericAudioDecoder<in T> {
     /**
      * Decode a frame of samples. Return the number of decoded samples
      */
-    fun decode(buffer: T): Int
+    fun decode(buffer: T)
 
     /**
      * Called at the beginning of playback.

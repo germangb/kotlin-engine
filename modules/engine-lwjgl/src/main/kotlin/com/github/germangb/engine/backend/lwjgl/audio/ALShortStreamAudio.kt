@@ -16,13 +16,15 @@ open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: I
      * Fill with 16bit audio
      */
     override fun processBuffer(buffer: Int, size: Int): Int {
-        audio.shortBuffer.clear().limit(size)
-        val decoded = streamer.decode(audio.shortBuffer)
-        audio.shortBuffer.limit(decoded)
+        audio.shortBuffer.clear()
+        val position = audio.shortBuffer.position()
+        streamer.decode(audio.shortBuffer)
+        audio.shortBuffer.flip()
 
-        if (decoded > 0) {
+        if (audio.shortBuffer.limit() > position) {
             alBufferData(buffer, alFormat, audio.shortBuffer, sampling)
         }
-        return decoded
+
+        return audio.shortBuffer.limit() - position
     }
 }
