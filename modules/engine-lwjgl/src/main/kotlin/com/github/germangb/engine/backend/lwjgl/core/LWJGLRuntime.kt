@@ -2,18 +2,23 @@ package com.github.germangb.engine.backend.lwjgl.core
 
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
+import com.github.germangb.engine.backend.lwjgl.input.GLFWInputDevice
+import com.github.germangb.engine.backend.lwjgl.resources.LWJGLAssetLoader
 import com.github.germangb.engine.core.Application
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.system.exitProcess
 
-class LWJGLRuntime(val backend: LWJGLBackend, val app: Application) {
+class LWJGLRuntime {
+    val gfx: GLGraphicsDevice
+    val audio: ALAudioDevice
+    val res: LWJGLAssetLoader
+    val mem: LWJGLBufferManager
+    val input: GLFWInputDevice
+    val window: Long
 
-    /**
-     * Kickstart LWJGL
-     */
-    fun start() {
+    init {
         if (!glfwInit()) {
             System.err.println("Can't init glfw")
             exitProcess(1)
@@ -24,7 +29,7 @@ class LWJGLRuntime(val backend: LWJGLBackend, val app: Application) {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
-        val window = glfwCreateWindow(640, 480, "OpenGL", 0L, 0L)
+        window = glfwCreateWindow(640, 480, "OpenGL", 0L, 0L)
         glfwMakeContextCurrent(window)
 
         GL.createCapabilities()
@@ -35,12 +40,25 @@ class LWJGLRuntime(val backend: LWJGLBackend, val app: Application) {
         System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
         glGetError()
 
+        gfx = GLGraphicsDevice(640, 480)
+        audio = ALAudioDevice()
+        res = LWJGLAssetLoader(audio, gfx)
+        mem = LWJGLBufferManager()
+        input = GLFWInputDevice(window)
+
+    }
+
+    /**
+     * Kickstart LWJGL
+     */
+    fun start(app: Application) {
         app.init()
 
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {
             try {
-                (backend.audio as ALAudioDevice).updateStreaming()
+                audio.updateStreaming()
+                input.updateInput()
                 app.update()
             } catch (e: Exception) {
                 glfwSetWindowShouldClose(window, true)
@@ -51,8 +69,9 @@ class LWJGLRuntime(val backend: LWJGLBackend, val app: Application) {
         }
 
         app.destroy()
-        (backend.graphics as GLGraphicsDevice).destroy()
-        (backend.audio as ALAudioDevice).destroy()
+        gfx.destroy()
+        audio.destroy()
+        input.destroy()
         glfwDestroyWindow(window)
         glfwTerminate()
     }

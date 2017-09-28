@@ -2,6 +2,7 @@ package com.github.germangb.engine.core
 
 import com.github.germangb.engine.audio.AudioDevice
 import com.github.germangb.engine.graphics.GraphicsDevice
+import com.github.germangb.engine.input.InputDevice
 import com.github.germangb.engine.resources.AssetLoader
 
 /**
@@ -14,9 +15,14 @@ interface Backend {
     val graphics: GraphicsDevice
 
     /**
-     * AudioDevice
+     * AudioDevice backend
      */
     val audio: AudioDevice
+
+    /**
+     * InputDevice backend
+     */
+    val input: InputDevice
 
     /**
      * Resources backend

@@ -1,33 +1,15 @@
 package com.github.germangb.engine.graphics
 
 enum class VertexAttribute(val size: Int) {
-    /**
-     * 3D position
-     */
-    POSITION(3),
+    /** vec2 */
+    FLOAT(2),
 
-    /**
-     * 2D position
-     */
-    POSITION2(2),
+    /** vec2 */
+    VEC2(2),
 
-    /**
-     * 3D normal
-     */
-    NORMAL(3),
+    /** vec3 */
+    VEC3(3),
 
-    /**
-     * Texture coordinate
-     */
-    UV(2),
-
-    /**
-     * Bone IDs
-     */
-    BONE_ID(4),
-
-    /**
-     * Bone weights
-     */
-    BONE_WEIGHT(4)
+    /** vec4 */
+    VEC4(4)
 }

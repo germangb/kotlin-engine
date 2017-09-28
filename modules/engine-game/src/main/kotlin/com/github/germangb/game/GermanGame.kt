@@ -11,17 +11,22 @@ import java.nio.FloatBuffer
 /**
  * Procedural audio demo
  */
-object ProceduralAudio : FloatAudioDecoder {
+class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
     var phase = 0
     var modul = 0
+    var pitchShiftTarget = 0f
+    var pitchShift= 0f
+
     override fun decode(buffer: FloatBuffer): Int {
         // generate samples
+        pitchShiftTarget = backend.input.mouse.x.toFloat()
+        //pitchShift += (pitchShiftTarget - pitchShift) * 0.1f
         (0 until buffer.limit())
                 .map {
                     // modulated frequency
                     val PI2 = 3.141516 * 2
                     val modPhase = 512 + java.lang.Math.sin(0.001 * modul++) * 200
-                    java.lang.Math.cos(PI2 * (it + phase) * 512 / 16_000 + modPhase)
+                    java.lang.Math.cos(PI2 * (it + phase) * (512 + pitchShift) / 16_000 + modPhase)
                 }
                 .forEachIndexed { index, d -> buffer.put(index, d.toFloat()) }
 
@@ -36,7 +41,7 @@ object ProceduralAudio : FloatAudioDecoder {
 class GermanGame(val backend: Backend) : Application {
     val manager = DumbAssetManager(backend.assets)
 
-    val audio by lazy {
+    val audio = let {
         val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
 
         (0 until samples.capacity())
@@ -51,7 +56,7 @@ class GermanGame(val backend: Backend) : Application {
         audio
     }
 
-    val music by lazy {
+    val music = let {
         backend.assets.loadAudio("music.ogg")
     }
 
@@ -62,14 +67,14 @@ class GermanGame(val backend: Backend) : Application {
 
     override fun init() {
         // load texture
-        val tex = TextureAsset(manager, "hellknight.png")
+        //val tex = TextureAsset(manager, "hellknight.png")
 
         // vorbis
         music?.play()
 
         // procedural streamed music
-        val procedural = backend.audio.createAudio(ProceduralAudio, 16_000, 16_000, false)
-        //procedural.play()
+        val procedural = backend.audio.createAudio(ProceduralAudio(backend), 16_00, 16_000, false)
+        procedural.play()
     }
 
     override fun update() {

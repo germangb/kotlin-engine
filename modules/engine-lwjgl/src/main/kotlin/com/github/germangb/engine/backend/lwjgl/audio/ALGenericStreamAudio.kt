@@ -46,7 +46,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
     private fun updateBuffer() {
         releaseProcessed()
 
-        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+        //val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
         var queued = alGetSourcei(source, AL_BUFFERS_QUEUED)
         //println("P: $processed, Q: $queued")
 
@@ -59,7 +59,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
                 audio.bufferQueue.push(alBuffer)
                 break
             } else {
-                if (decodedSamples < decoder.length) {
+                if (decoder.length < 0 || decodedSamples < decoder.length) {
                     decodedSamples += decoded
                     alSourceQueueBuffers(source, alBuffer)
                 } else {
