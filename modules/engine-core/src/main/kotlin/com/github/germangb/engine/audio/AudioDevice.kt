@@ -17,30 +17,30 @@ interface AudioDevice {
     /**
      * Create sampled audio (8bit sigled samples)
      */
-    fun createSampler(samples: ByteBuffer, sampling: Int, stereo: Boolean = false): Audio
+    fun createAudio(samples: ByteBuffer, sampling: Int, stereo: Boolean = false): Audio
 
     /**
      * Create sampled audio (16bit signed samples)
      */
-    fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean = false): Audio
+    fun createAudio(samples: ShortBuffer, sampling: Int, stereo: Boolean = false): Audio
 
     /**
      * Create sampled audio (float32 samples)
      */
-    fun createSampler(samples: FloatBuffer, sampling: Int, stereo: Boolean = false): Audio
+    fun createAudio(samples: FloatBuffer, sampling: Int, stereo: Boolean = false): Audio
 
     /**
      * Create audio streamer of Float32 audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: FloatAudioDecoder): Audio
+    fun createAudio(sampler: FloatAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean = false): Audio
 
     /**
      * Create audio streamer of 16bit audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ShortAudioDecoder): Audio
+    fun createAudio(sampler: ShortAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean = false): Audio
 
     /**
      * Create audio streamer of 8bit audio
      */
-    fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean = false, sampler: ByteAudioDecoder): Audio
+    fun createAudio(sampler: ByteAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean = false): Audio
 }

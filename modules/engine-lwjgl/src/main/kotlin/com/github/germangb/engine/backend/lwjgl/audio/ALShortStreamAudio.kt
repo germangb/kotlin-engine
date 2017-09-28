@@ -4,13 +4,9 @@ import com.github.germangb.engine.audio.ShortAudioDecoder
 import org.lwjgl.openal.AL10.*
 
 /**
- * rovide Float32 audio streaming
+ * provide 16bit signed audio streaming
  */
-open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, streamer) {
-    companion object {
-        val AL_BUFFER = ShortArray(AL_BUFFER_SIZE)
-    }
-
+open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, stereo, streamer) {
     /**
      * AL format
      */
@@ -19,8 +15,14 @@ open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: I
     /**
      * Fill with 16bit audio
      */
-    override fun fillBufferAL(buffer: Int) {
-        streamer.decode(AL_BUFFER, AL_BUFFER.size)
-        alBufferData(buffer, alFormat, AL_BUFFER, sampling)
+    override fun processBuffer(buffer: Int, size: Int): Int {
+        audio.shortBuffer.clear().limit(size)
+        val decoded = streamer.decode(audio.shortBuffer)
+        audio.shortBuffer.limit(decoded)
+
+        if (decoded > 0) {
+            alBufferData(buffer, alFormat, audio.shortBuffer, sampling)
+        }
+        return decoded
     }
 }

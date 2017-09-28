@@ -3,6 +3,7 @@ package com.github.germangb.engine.backend.lwjgl.audio
 import com.github.germangb.engine.audio.ShortAudioDecoder
 import com.github.germangb.engine.core.Destroyable
 import org.lwjgl.stb.STBVorbis.*
+import java.nio.ShortBuffer
 
 /**
  * Decode Vorbis stream
@@ -30,7 +31,8 @@ class VorbisSTBAudioDecoder(val handle: Long, val channels: Int) : Destroyable, 
     /**
      * Decode some samples
      */
-    override fun decode(buffer: ShortArray, size: Int) {
+    override fun decode(buffer: ShortBuffer): Int {
         stb_vorbis_get_samples_short_interleaved(handle, channels, buffer)
+        return buffer.limit()
     }
 }

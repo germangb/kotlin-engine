@@ -11,10 +11,12 @@ import org.lwjgl.openal.ALC10.*
 import org.lwjgl.openal.ALCapabilities
 import org.lwjgl.openal.EXTFloat32.AL_FORMAT_MONO_FLOAT32
 import org.lwjgl.openal.EXTFloat32.AL_FORMAT_STEREO_FLOAT32
+import org.lwjgl.system.jemalloc.JEmalloc
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
+import java.util.*
 
 /**
  * OpenAL audio
@@ -62,25 +64,32 @@ class ALAudioDevice : AudioDevice, Destroyable {
     }
 
     override fun destroy() {
+        floatBuffer.clear()
+        shortBuffer.clear()
+        byteBuffer.clear()
+        JEmalloc.je_free(floatBuffer)
+        JEmalloc.je_free(shortBuffer)
+        JEmalloc.je_free(byteBuffer)
+        alDeleteBuffers(buffers)
         alcDestroyContext(ctx)
         alcCloseDevice(device)
     }
 
-    override fun createSampler(samples: ByteBuffer, sampling: Int, stereo: Boolean): Audio {
+    override fun createAudio(samples: ByteBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
         val format = if (stereo) AL_FORMAT_STEREO8 else AL_FORMAT_MONO8
         alBufferData(buffer, format, samples, sampling)
         return ALSampledAudio(this, buffer)
     }
 
-    override fun createSampler(samples: ShortBuffer, sampling: Int, stereo: Boolean): Audio {
+    override fun createAudio(samples: ShortBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
         val format = if (stereo) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16
         alBufferData(buffer, format, samples, sampling)
         return ALSampledAudio(this, buffer)
     }
 
-    override fun createSampler(samples: FloatBuffer, sampling: Int, stereo: Boolean) =
+    override fun createAudio(samples: FloatBuffer, sampling: Int, stereo: Boolean) =
             if (alCaps.AL_EXT_FLOAT32) {
                 val buffer = alGenBuffers()
                 val format = if (stereo) AL_FORMAT_STEREO_FLOAT32 else AL_FORMAT_MONO_FLOAT32
@@ -97,9 +106,28 @@ class ALAudioDevice : AudioDevice, Destroyable {
     private val streamers = mutableListOf<ALGenericStreamAudio>()
 
     /**
+     * Buffer pool
+     */
+    val bufferQueue = LinkedList<Int>()
+
+    /** Pre allocated al buffers */
+    private val buffers = IntArray(128)
+
+    val floatBuffer = JEmalloc.je_malloc(16_000_00*4).asFloatBuffer()
+    val shortBuffer = JEmalloc.je_malloc(16_000_00*2).asShortBuffer()
+    val byteBuffer = JEmalloc.je_malloc(16_000_00)
+
+    init {
+        alGenBuffers(buffers)
+        buffers.forEach {
+            bufferQueue.add(it)
+        }
+    }
+
+    /**
      * Create float 32bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: FloatAudioDecoder): Audio =
+    override fun createAudio(sampler: FloatAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean): Audio =
             if (alCaps.AL_EXT_FLOAT32) {
                 val stream = ALFloatStreamAudio(this, bufferSize, sampling, stereo, sampler)
                 addStream(stream)
@@ -110,7 +138,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Create float 16bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ShortAudioDecoder): Audio {
+    override fun createAudio(sampler: ShortAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean): Audio {
         val stream = ALShortStreamAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream
@@ -119,7 +147,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /**
      * Create float 8bit streamer
      */
-    override fun createStream(bufferSize: Int, sampling: Int, stereo: Boolean, sampler: ByteAudioDecoder): Audio {
+    override fun createAudio(sampler: ByteAudioDecoder, bufferSize: Int, sampling: Int, stereo: Boolean): Audio {
         val stream = ALByteStreamAudio(this, bufferSize, sampling, stereo, sampler)
         addStream(stream)
         return stream

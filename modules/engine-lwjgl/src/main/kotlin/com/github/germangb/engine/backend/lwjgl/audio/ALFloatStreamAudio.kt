@@ -6,13 +6,9 @@ import org.lwjgl.openal.EXTFloat32.AL_FORMAT_MONO_FLOAT32
 import org.lwjgl.openal.EXTFloat32.AL_FORMAT_STEREO_FLOAT32
 
 /**
- * rovide Float32 audio streaming
+ * provide Float32 audio streaming
  */
-class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: FloatAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, streamer) {
-    companion object {
-        val AL_BUFFER = FloatArray(AL_BUFFER_SIZE)
-    }
-
+class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: FloatAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, stereo, streamer) {
     /**
      * AL format
      */
@@ -21,8 +17,14 @@ class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, s
     /**
      * Fill with float32 audio
      */
-    override fun fillBufferAL(buffer: Int) {
-        streamer.decode(AL_BUFFER, AL_BUFFER.size)
-        alBufferData(buffer, alFormat, AL_BUFFER, sampling)
+    override fun processBuffer(buffer: Int, size: Int): Int {
+        audio.floatBuffer.clear().limit(size)
+        val decoded = streamer.decode(audio.floatBuffer)
+        audio.floatBuffer.limit(decoded)
+
+        if (decoded > 0) {
+            alBufferData(buffer, alFormat, audio.floatBuffer, sampling)
+        }
+        return decoded
     }
 }

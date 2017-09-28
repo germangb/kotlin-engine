@@ -9,70 +9,65 @@ import org.lwjgl.openal.AL10.*
 /**
  * Generic audio streaming
  */
-abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : Audio {
+abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, stereo: Boolean, val decoder: GenericAudioDecoder<*>) : Audio {
     companion object {
-        val AL_BUFFER_SIZE = 512
         val STREAM_CLOSED = "The audio stream is closed"
-    }
-
-    /**
-     * AL audio buffers
-     */
-    private val buffers = IntArray(bufferSize / AL_BUFFER_SIZE + 1)
-
-    init {
-        alGenBuffers(buffers)
     }
 
     /**
      * Audio state
      */
-    private var istate = AudioState.STOPPED
-
-    /**
-     * Get stream state
-     */
     override val state get() = istate
 
-    /**
-     * AL Source
-     */
+    private var istate = AudioState.STOPPED
     private val source = alGenSources()
-
-    /**
-     * Is this sound destroyed?
-     */
     private var destroyed = false
-
-    /**
-     * Total decoded samples count
-     */
     private var decodedSamples = 0
 
-    /** Set AL buffer data */
-    abstract fun fillBufferAL(buffer: Int)
-
     /**
-     * Initialize buffer
+     * Set AL buffer data
      */
-    private fun initBuffer() {
-        for (alBuffer in buffers) {
-            fillBufferAL(alBuffer)
-            alSourceQueueBuffers(source, alBuffer)
+    abstract fun processBuffer(buffer: Int, size: Int): Int
+
+    private fun releaseProcessed() {
+        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+
+        // dispose of processed buffers
+        for (i in 0 until processed) {
+            val alBuffer = alSourceUnqueueBuffers(source)
+            audio.bufferQueue.add(alBuffer)
         }
+
     }
 
     /**
      * Fil playback buffer with processed buffers
      */
     private fun updateBuffer() {
-        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+        releaseProcessed()
 
-        // Reuse processed buffers
-        for (i in 0 until processed) {
-            val alBuffer = alSourceUnqueueBuffers(source)
-            fillBufferAL(alBuffer)
-            alSourceQueueBuffers(source, alBuffer)
+        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+        var queued = alGetSourcei(source, AL_BUFFERS_QUEUED)
+        //println("P: $processed, Q: $queued")
+
+        while (queued < 2 ) {
+            val alBuffer = audio.bufferQueue.poll()
+            val decoded = processBuffer(alBuffer, bufferSize)
+
+            if (decoded == 0) {
+                // reaching end of stream...
+                audio.bufferQueue.push(alBuffer)
+                break
+            } else {
+                if (decodedSamples < decoder.length) {
+                    decodedSamples += decoded
+                    alSourceQueueBuffers(source, alBuffer)
+                } else {
+                    audio.bufferQueue.push(alBuffer)
+                }
+            }
+
+            queued++
         }
     }
 
@@ -80,9 +75,11 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
      * Empty playback buffer
      */
     private fun emptyBuffer() {
-        val processed = alGetSourcei(source, AL_BUFFERS_PROCESSED)
+        val processed = alGetSourcei(source, AL_BUFFERS_QUEUED)
+        val buffers = IntArray(processed)
         for (i in 0 until processed) {
-            alSourceUnqueueBuffers(source)
+            buffers[i] = alSourceUnqueueBuffers(source)
+            audio.bufferQueue.push(buffers[i])
         }
     }
 
@@ -95,9 +92,12 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
         if (state == AudioState.PLAYING) {
             updateBuffer()
 
-            if (state == AudioState.PLAYING) {
-                //TODO check end of stream
-                //decoder.length < decodedSamples
+            // check EOS
+            if (decodedSamples >= decoder.length) {
+                val queued = alGetSourcei(source, AL_BUFFERS_QUEUED)
+                if (queued == 0) {
+                    istate = AudioState.STOPPED
+                }
             }
         }
     }
@@ -107,8 +107,6 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
 
         if (state == AudioState.STOPPED) {
             decoder.reset()
-            initBuffer()
-        } else {
             updateBuffer()
         }
 
@@ -137,7 +135,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, bufferSize: Int, v
     override fun destroy() {
         if (!destroyed) {
             destroyed = true
-            alDeleteBuffers(buffers)
+            emptyBuffer()
             alDeleteSources(source)
             istate = AudioState.STOPPED
             audio.removeStream(this)
