@@ -5,7 +5,10 @@ import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.graphics.TestFunction
-import com.github.germangb.engine.input.KeyboardKey.KEY_P
+import com.github.germangb.engine.input.KeyboardKey
+import com.github.germangb.engine.input.KeyboardKey.*
+import com.github.germangb.engine.input.MouseButton
+import com.github.germangb.engine.input.MouseButton.*
 import com.github.germangb.engine.input.isJustPressed
 import java.nio.FloatBuffer
 
@@ -78,10 +81,10 @@ class GermanGame(val backend: Backend) : Application {
     }
 
     override fun update() {
-        if (KEY_P.isJustPressed(backend.input)) {
-            println("just pressed P!")
-            procedural.play()
-        }
+        if (MOUSE_BUTTON_1.isJustPressed(backend.input)) println("just clicked!")
+        if (KEY_P.isJustPressed(backend.input)) procedural.play()
+        if (KEY_S.isJustPressed(backend.input)) procedural.stop()
+        if (KEY_H.isJustPressed(backend.input)) procedural.pause()
 
         with(backend.graphics) {
             state {

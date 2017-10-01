@@ -50,7 +50,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
         var queued = alGetSourcei(source, AL_BUFFERS_QUEUED)
         //println("P: $processed, Q: $queued")
 
-        while (queued < 2 ) {
+        while (queued < 2) {
             val alBuffer = audio.bufferQueue.poll()
             val decoded = processBuffer(alBuffer, bufferSize)
 
@@ -110,8 +110,8 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
             updateBuffer()
         }
 
-        alSourcePlay(source)
         istate = AudioState.PLAYING
+        alSourcePlay(source)
     }
 
     override fun pause() {

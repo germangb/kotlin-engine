@@ -3,8 +3,7 @@ package com.github.germangb.engine.backend.lwjgl.input
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.input.InputState
-import com.github.germangb.engine.input.InputState.PRESSED
-import com.github.germangb.engine.input.InputState.RELEASED
+import com.github.germangb.engine.input.InputState.*
 import com.github.germangb.engine.input.MouseButton
 import com.github.germangb.engine.input.MouseDevice
 import org.lwjgl.glfw.GLFW.*
@@ -22,6 +21,28 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
     val MouseButton.GLFWInt get() = GLFW_MOUSE_BUTTON_1 + ordinal
 
     /**
+     * Convert int to enum
+     */
+    val Int.asEnum get() = MouseButton.values()[this - GLFW_MOUSE_BUTTON_1]
+
+    /**
+     * Just pressed keys
+     */
+    val justPressed = LinkedHashSet<MouseButton>()
+
+    /**
+     * Just pressed keys
+     */
+    val justReleased = LinkedHashSet<MouseButton>()
+
+    init {
+        glfwSetMouseButtonCallback(window) { _, button, action, _ ->
+            if (action == GLFW_PRESS) justPressed.add(button.asEnum)
+            else if (action == GLFW_RELEASE) justReleased.add(button.asEnum)
+        }?.free()
+    }
+
+    /**
      * Cursor position X
      */
     override val x get() = ix
@@ -35,6 +56,8 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
      * Get button state
      */
     override fun getState(button: MouseButton): InputState {
+        if (button in justPressed) return JUST_PRESSED
+        if (button in justReleased) return JUST_RELEASED
         val state = glfwGetMouseButton(window, button.GLFWInt)
         return if (state == GLFW_PRESS) PRESSED else RELEASED
     }
@@ -43,6 +66,9 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
      * Update mouse state
      */
     fun updateMouse() {
+        justPressed.clear()
+        justReleased.clear()
+
         stackMemory {
             val sx = mallocDouble(1)
             val sy = mallocDouble(1)
@@ -54,5 +80,7 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
         }
     }
 
-    override fun destroy() = Unit
+    override fun destroy() {
+        glfwSetMouseButtonCallback(window, null)?.free()
+    }
 }
