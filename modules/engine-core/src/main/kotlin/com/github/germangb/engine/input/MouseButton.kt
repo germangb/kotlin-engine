@@ -1,5 +1,8 @@
 package com.github.germangb.engine.input
 
+/**
+ * Mouse buttons
+ */
 enum class MouseButton {
     MOUSE_BUTTON_1,
     MOUSE_BUTTON_2,

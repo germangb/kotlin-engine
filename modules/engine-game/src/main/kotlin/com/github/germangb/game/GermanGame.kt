@@ -5,10 +5,8 @@ import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.graphics.TestFunction
-import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.KeyboardKey.*
-import com.github.germangb.engine.input.MouseButton
-import com.github.germangb.engine.input.MouseButton.*
+import com.github.germangb.engine.input.MouseButton.MOUSE_BUTTON_1
 import com.github.germangb.engine.input.isJustPressed
 import java.nio.FloatBuffer
 
