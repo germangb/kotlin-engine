@@ -2,8 +2,8 @@ package com.github.germangb.engine.framework.components
 
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Component
-import com.github.germangb.engine.resources.MeshAsset
-import com.github.germangb.engine.resources.TextureAsset
+import com.github.germangb.engine.assets.MeshAsset
+import com.github.germangb.engine.assets.TextureAsset
 
 /**
  * Contains mesh instancing information

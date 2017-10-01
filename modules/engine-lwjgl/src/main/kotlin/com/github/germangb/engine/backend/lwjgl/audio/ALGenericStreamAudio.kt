@@ -106,7 +106,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
         ASSERT_CONDITION(destroyed, STREAM_CLOSED)
 
         if (state == AudioState.STOPPED) {
-            decoder.reset()
+            decoder.rewind()
             updateBuffer()
         }
 

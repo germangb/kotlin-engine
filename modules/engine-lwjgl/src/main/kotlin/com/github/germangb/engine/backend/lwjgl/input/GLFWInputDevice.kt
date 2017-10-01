@@ -6,18 +6,25 @@ import com.github.germangb.engine.input.InputDevice
 /**
  * GLFW input
  */
-class GLFWInputDevice(val window: Long) : InputDevice, Destroyable {
+class GLFWInputDevice(window: Long) : InputDevice, Destroyable {
     /**
-     * GLFW-based mouse
+     * GLFW mouse
      */
-    override val mouse = GLFWMouse(window)
+    override val mouse = GLFWMouseDevice(window)
+
+    /**
+     * GLFW keyboard
+     */
+    override val keyboard = GLFWKeyboardDevice(window)
 
     /** Update input */
     fun updateInput() {
         mouse.updateMouse()
+        keyboard.updateKeyboard()
     }
 
     override fun destroy() {
-        //(mouse as GLFWMouse).destroy()
+        mouse.destroy()
+        keyboard.destroy()
     }
 }

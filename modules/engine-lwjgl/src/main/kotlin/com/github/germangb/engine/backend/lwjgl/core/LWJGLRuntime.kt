@@ -34,10 +34,10 @@ class LWJGLRuntime {
 
         GL.createCapabilities()
 
-        System.err.println("GL_RENDERER=${glGetString(GL_RENDERER)}")
-        System.err.println("GL_VERSION=${glGetString(GL_VERSION)}")
-        System.err.println("GL_VENDOR=${glGetString(GL_VENDOR)}")
-        System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
+//        System.err.println("GL_RENDERER=${glGetString(GL_RENDERER)}")
+//        System.err.println("GL_VERSION=${glGetString(GL_VERSION)}")
+//        System.err.println("GL_VENDOR=${glGetString(GL_VENDOR)}")
+//        System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
         glGetError()
 
         gfx = GLGraphicsDevice(640, 480)
@@ -58,11 +58,11 @@ class LWJGLRuntime {
         while (!glfwWindowShouldClose(window)) {
             try {
                 audio.updateStreaming()
-                input.updateInput()
                 app.update()
             } catch (e: Exception) {
                 glfwSetWindowShouldClose(window, true)
             } finally {
+                input.updateInput()
                 glfwPollEvents()
                 glfwSwapBuffers(window)
             }

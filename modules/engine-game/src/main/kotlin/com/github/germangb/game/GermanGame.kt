@@ -1,10 +1,12 @@
 package com.github.germangb.game
 
+import com.github.germangb.engine.assets.DumbAssetManager
 import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.graphics.TestFunction
-import com.github.germangb.engine.resources.DumbAssetManager
+import com.github.germangb.engine.input.KeyboardKey.KEY_P
+import com.github.germangb.engine.input.isJustPressed
 import java.nio.FloatBuffer
 
 /**
@@ -33,7 +35,7 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
         phase += buffer.limit()
     }
 
-    override fun reset() = Unit
+    override fun rewind() = Unit
     override val length = -1
 }
 
@@ -55,6 +57,9 @@ class GermanGame(val backend: Backend) : Application {
         audio
     }
 
+    // procedural streamed music
+    val procedural = backend.audio.createAudio(ProceduralAudio(backend), 16_000, 16_000, false)
+
     val music = let {
         backend.assets.loadAudio("music.ogg")
     }
@@ -69,14 +74,15 @@ class GermanGame(val backend: Backend) : Application {
         //val tex = TextureAsset(manager, "hellknight.png")
 
         // vorbis
-        music?.play()
-
-        // procedural streamed music
-        val procedural = backend.audio.createAudio(ProceduralAudio(backend), 16_00, 16_000, false)
-        //procedural.play()
+        //music?.play()
     }
 
     override fun update() {
+        if (KEY_P.isJustPressed(backend.input)) {
+            println("just pressed P!")
+            procedural.play()
+        }
+
         with(backend.graphics) {
             state {
                 clearColor(0.2f, 0.2f, 0.2f, 1f)

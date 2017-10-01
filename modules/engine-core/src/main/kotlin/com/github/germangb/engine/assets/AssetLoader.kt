@@ -1,6 +1,7 @@
-package com.github.germangb.engine.resources
+package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.fonts.Font
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.Texture
 import java.io.InputStream
@@ -20,6 +21,11 @@ interface AssetLoader {
      * Load audio
      */
     fun loadAudio(path: String, forceMono: Boolean = false): Audio?
+
+    /**
+     * Load a font
+     */
+    fun loadFont(path: String): Font?
 
     /**
      * Load a generic resource (stream is managed by YOU!)

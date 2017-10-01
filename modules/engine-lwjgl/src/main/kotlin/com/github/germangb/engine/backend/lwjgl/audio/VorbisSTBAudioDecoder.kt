@@ -24,7 +24,7 @@ class VorbisSTBAudioDecoder(val handle: Long, val channels: Int) : Destroyable, 
     /**
      * Seek start of stream
      */
-    override fun reset() {
+    override fun rewind() {
         stb_vorbis_seek_start(handle)
     }
 

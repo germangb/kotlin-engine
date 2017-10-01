@@ -3,7 +3,7 @@ package com.github.germangb.engine.core
 import com.github.germangb.engine.audio.AudioDevice
 import com.github.germangb.engine.graphics.GraphicsDevice
 import com.github.germangb.engine.input.InputDevice
-import com.github.germangb.engine.resources.AssetLoader
+import com.github.germangb.engine.assets.AssetLoader
 
 /**
  * Engine backend

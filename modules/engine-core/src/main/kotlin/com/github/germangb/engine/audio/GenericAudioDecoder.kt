@@ -22,7 +22,7 @@ interface GenericAudioDecoder<in T: Buffer> {
     /**
      * Called at the beginning of playback.
      */
-    fun reset()
+    fun rewind()
 }
 
 /**

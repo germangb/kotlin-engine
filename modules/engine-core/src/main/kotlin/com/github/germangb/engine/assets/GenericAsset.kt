@@ -1,4 +1,4 @@
-package com.github.germangb.engine.resources
+package com.github.germangb.engine.assets
 
 abstract class GenericAsset<out T: Any>(val manager: AssetManager) {
     /**

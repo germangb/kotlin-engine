@@ -9,13 +9,15 @@ import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.resources.AssetLoader
+import com.github.germangb.engine.assets.AssetLoader
+import com.github.germangb.engine.fonts.Font
 import org.lwjgl.stb.STBImage.stbi_failure_reason
 import org.lwjgl.stb.STBImage.stbi_load
 import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
 import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
 import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil.NULL
+import org.lwjgl.stb.STBTruetype.*
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 
@@ -49,6 +51,13 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
         }
 
         return texture
+    }
+
+    /**
+     * Load a font
+     */
+    override fun loadFont(path: String): Font? {
+        return null
     }
 
     /**

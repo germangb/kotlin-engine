@@ -1,4 +1,4 @@
-package com.github.germangb.engine.resources
+package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.graphics.Texture
 

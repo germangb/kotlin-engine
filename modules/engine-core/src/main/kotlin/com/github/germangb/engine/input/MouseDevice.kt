@@ -9,4 +9,9 @@ interface MouseDevice {
 
     /** Cursor Y position */
     val y: Int
+
+    /**
+     * Get mouse button state
+     */
+    fun getState(button: MouseButton): InputState
 }
