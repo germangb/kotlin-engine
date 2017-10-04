@@ -17,7 +17,7 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
-    private val instancer by lazy { GLInstancer() }
+    private val instancer = GLInstancer()
     private val windowFramebuffer = GLFramebuffer(0, width, height, emptyList())
 
     override fun destroy() {
