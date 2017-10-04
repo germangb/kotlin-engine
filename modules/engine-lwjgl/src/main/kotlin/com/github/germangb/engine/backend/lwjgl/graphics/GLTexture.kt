@@ -9,12 +9,11 @@ class GLTexture(val id: Int, override val width: Int, override val height: Int) 
         glDeleteTextures(id)
     }
 
-    override fun setPixels(data: ByteBuffer) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun setPixels(data: ByteBuffer, x: Int, y: Int, width: Int, height: Int) {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data)
     }
 
     override fun getPixels(data: ByteBuffer) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
     }
-
 }

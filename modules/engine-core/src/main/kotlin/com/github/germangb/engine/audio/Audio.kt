@@ -9,6 +9,11 @@ interface Audio : Destroyable {
     val state: AudioState
 
     /**
+     * audio gain property
+     */
+    var gain: Float
+
+    /**
      * Start sound playback
      */
     fun play(loop: Boolean = false)

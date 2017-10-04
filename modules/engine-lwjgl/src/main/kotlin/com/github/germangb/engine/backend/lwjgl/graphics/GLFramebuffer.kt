@@ -15,5 +15,4 @@ class GLFramebuffer(val id: Int,
      * Draw buffers
      */
     val drawBuffers = IntArray(targets.size, { GL_COLOR_ATTACHMENT0+it })
-
 }

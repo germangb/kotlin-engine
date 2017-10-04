@@ -1,6 +1,5 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.audio.AudioState
 import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
 import org.lwjgl.openal.AL10.*
@@ -8,7 +7,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * AudioDevice inside of a buffer
  */
-class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : Audio {
+class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) : ALAudio(audio) {
     companion object {
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }
@@ -27,10 +26,14 @@ class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) 
      */
     private var destroyed = false
 
-    /**
-     * AL source
-     */
-    private val source = alGenSources()
+    private var igain = 1f
+
+    override var gain: Float
+        get() = igain
+        set(value) {
+            igain = value*audio.gain
+            alSourcef(source, AL_GAIN, igain)
+        }
 
     /**
      * Play sampled audio
@@ -53,6 +56,7 @@ class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) 
 
     override fun destroy() {
         if (!destroyed) {
+            super.destroy()
             alDeleteSources(source)
             alDeleteBuffers(buffer)
             destroyed = true

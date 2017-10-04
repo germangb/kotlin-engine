@@ -10,12 +10,22 @@ fun KeyboardKey.isJustPressed(input: InputDevice) = input.keyboard.getState(this
 /**
  * Check if keyboard key is pressed
  */
+fun KeyboardKey.isJustReleased(input: InputDevice) = input.keyboard.getState(this) == JUST_RELEASED
+
+/**
+ * Check if keyboard key is pressed
+ */
 fun KeyboardKey.isPressed(input: InputDevice) = input.keyboard.getState(this) == PRESSED || input.keyboard.getState(this) == JUST_PRESSED
 
 /**
  * Check if mouse button is pressed
  */
 fun MouseButton.isJustPressed(input: InputDevice) = input.mouse.getState(this) == JUST_PRESSED
+
+/**
+ * Check if mouse button is released
+ */
+fun MouseButton.isJustReleased(input: InputDevice) = input.mouse.getState(this) == JUST_RELEASED
 
 /**
  * Check if mouse button is pressed

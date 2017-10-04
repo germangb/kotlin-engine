@@ -5,21 +5,25 @@ import kotlin.reflect.KClass
 /**
  * Actors contain position information and a list of components
  */
-class Actor internal constructor(val scene: Scene, private val pparent: Actor?) {
-    init {
-        // register actor in the framework
-        //scene.iactors.add(this)
-    }
-
+class GameActor {
     /**
      * String name given to this actor
      */
     var name: String = toString()
 
+    /** GameActor parent */
+    private var iparent: GameActor? = null
+
+    /** Root scene */
+    private var iroot: GameActor = this
+
     /**
      * Parent actor
      */
-    val parent get() = pparent
+    val parent get() = iparent
+
+    /** Root actor */
+    val root get() = iroot
 
     /**
      * World & local transform
@@ -29,7 +33,7 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
     /**
      * Update components of the actors
      */
-    private fun updateComponents() {
+    private fun updateInternalComponents() {
         icomponents.forEach {
             if(!it.init) {
                 it.init = true
@@ -86,6 +90,29 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
     inline fun <reified T: Component> getComponent() = getComponent(T::class)
 
     /**
+     * Message mode
+     */
+    var messageMode = MessageMode.READ_SEND
+
+    /**
+     * Send a message to the actor
+     */
+    fun send(message: Any, callback: (Any) -> Unit = {}) {
+        if (messageMode.read) {
+            components.forEach {
+                it.receive(message, callback)
+            }
+        }
+
+        // pass message up the hierarchy
+        if(messageMode.send) {
+            children.forEach {
+                it.send(message, callback)
+            }
+        }
+    }
+
+    /**
      * In what order is this actor updated
      */
     var updateMode = UpdateMode.ROOT_FIRST
@@ -93,51 +120,61 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
     /**
      * Update components of the actor and its descendants
      */
-    internal fun update() {
+    private fun updateComponents() {
         if(updateMode == UpdateMode.ROOT_FIRST) {
-            updateComponents()
+            updateInternalComponents()
             ichildren.forEach {
-                it.update()
+                it.updateComponents()
             }
         } else {
             ichildren.forEach {
-                it.update()
+                it.updateComponents()
             }
-            updateComponents()
+            updateInternalComponents()
         }
+    }
+
+    /**
+     * Update actors
+     */
+    fun update() {
+        computeTransforms()
+        updateComponents()
     }
 
     /**
      * Update transformations
      */
-    internal fun updateTransforms() {
-        if(pparent == null) {
-            transform.iworld.set(transform.local)
-        } else {
-            transform.iworld.set(pparent.transform.iworld)
+    private fun computeTransforms() {
+        iparent?.let {
+            transform.iworld.set(it.transform.iworld)
             transform.iworld.mul(transform.local)
+        }?:let {
+            transform.iworld.set(transform.local)
         }
 
         children.forEach {
-            it.updateTransforms()
+            it.computeTransforms()
         }
     }
 
     /**
      * Attached actors
      */
-    private val ichildren = mutableListOf<Actor>()
+    private val ichildren = mutableListOf<GameActor>()
 
     /**
      * Attached actors
      */
-    val children: List<Actor> get() = ichildren
+    val children: List<GameActor> get() = ichildren
 
     /**
      * Adds a child
      */
-    fun addChild(def: Actor.() -> Unit) {
-        val actor = Actor(scene, this)
+    fun addChild(def: GameActor.() -> Unit) {
+        val actor = GameActor()
+        actor.iparent = this
+        actor.iroot = root
         def.invoke(actor)
         ichildren.add(actor)
     }
@@ -145,10 +182,12 @@ class Actor internal constructor(val scene: Scene, private val pparent: Actor?) 
     /**
      * Find an actor by name
      */
-    fun findActor(name: String): Actor? {
-        if (this.name == name) return this
+    fun find(name: String): GameActor? {
+        if (this.name == name) {
+            return this
+        }
         children.forEach {
-            val act = it.findActor(name)
+            val act = it.find(name)
             if (act != null) return act
         }
         return null

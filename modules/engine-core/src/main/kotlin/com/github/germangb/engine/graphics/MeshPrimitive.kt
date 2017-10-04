@@ -12,8 +12,28 @@ enum class MeshPrimitive {
     TRIANGLE_STRIP,
 
     /**
+     * Triangle fan
+     */
+    TRIANGLE_FAN,
+
+    /**
      * Individual lines
      */
-    LINES
+    LINES,
+
+    /**
+     * Line loop
+     */
+    LINE_LOOP,
+
+    /**
+     * Line strip
+     */
+    LINE_STRIP,
+
+    /**
+     * Individual lines
+     */
+    POINTS
 }
 

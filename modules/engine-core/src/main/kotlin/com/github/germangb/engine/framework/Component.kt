@@ -1,7 +1,7 @@
 package com.github.germangb.engine.framework
 
 abstract class Component {
-    internal lateinit var iactor: Actor
+    internal lateinit var iactor: GameActor
 
     /**
      * Flag to tell if component has been init
@@ -9,7 +9,7 @@ abstract class Component {
     internal var init = false
 
     /**
-     * Actor with the component
+     * GameActor with the component
      */
     val actor get() = iactor
 
@@ -22,4 +22,9 @@ abstract class Component {
      * Called
      */
     abstract fun update()
+
+    /**
+     * Message received
+     */
+    abstract fun receive(message: Any, callback: (Any) -> Unit)
 }

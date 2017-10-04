@@ -40,7 +40,7 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
     override val length = -1
 }
 
-class GermanGame(val backend: Backend) : Application {
+class AudioDemo(val backend: Backend) : Application {
     val manager = DumbAssetManager(backend.assets)
 
     val audio = let {
@@ -71,6 +71,7 @@ class GermanGame(val backend: Backend) : Application {
     }
 
     override fun init() {
+
         // load texture
         //val tex = TextureAsset(manager, "hellknight.png")
 

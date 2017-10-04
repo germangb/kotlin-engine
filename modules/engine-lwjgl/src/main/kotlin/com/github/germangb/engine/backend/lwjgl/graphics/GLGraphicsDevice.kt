@@ -27,15 +27,15 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Create OpenGL texture
      */
-    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat): Texture {
+    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
         var id: Int = -1
 
         glCheckError("Error in createTexture()") {
             id = glGenTextures()
 
             glBindTexture(GL_TEXTURE_2D, id)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum)
             glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
             glBindTexture(GL_TEXTURE_2D, 0)
         }
@@ -50,10 +50,10 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Create OpenGL framebuffer
      */
-    override fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>): Framebuffer {
+    override fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer {
         // create textures
         var fbo = -1
-        val textures = targets.map { createTexture(null, width, height, it) }
+        val textures = targets.map { createTexture(null, width, height, it, min, mag) }
 
         glCheckError("Error in createFramebuffer()") {
             fbo = glGenFramebuffers()
@@ -126,18 +126,11 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
             }
 
             glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
-            glEnableVertexAttribArray(attributes.size+0)
-            glEnableVertexAttribArray(attributes.size+1)
-            glEnableVertexAttribArray(attributes.size+2)
-            glEnableVertexAttribArray(attributes.size+3)
-            glVertexAttribPointer(attributes.size+0, 4, GL_FLOAT, false, 16 * 4, 0 * 4L)
-            glVertexAttribPointer(attributes.size+1, 4, GL_FLOAT, false, 16 * 4, 4 * 4L)
-            glVertexAttribPointer(attributes.size+2, 4, GL_FLOAT, false, 16 * 4, 8 * 4L)
-            glVertexAttribPointer(attributes.size+3, 4, GL_FLOAT, false, 16 * 4, 12 * 4L)
-            glVertexAttribDivisor(attributes.size+0, 1)
-            glVertexAttribDivisor(attributes.size+1, 1)
-            glVertexAttribDivisor(attributes.size+2, 1)
-            glVertexAttribDivisor(attributes.size+3, 1)
+            (0 until 4).forEach {
+                glEnableVertexAttribArray(attributes.size+it)
+                glVertexAttribPointer(attributes.size+it, 4, GL_FLOAT, false, 16 * 4, (4 * it) * 4L)
+                glVertexAttribDivisor(attributes.size+it, 1)
+            }
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
             glBindVertexArray(0)

@@ -54,13 +54,10 @@ class ALAudioDevice : AudioDevice, Destroyable {
         ctx = alcCreateContext(device, null as IntBuffer?)
         alcMakeContextCurrent(ctx)
         alCaps = AL.createCapabilities(alcCaps)
-
-//        System.err.println("AL_VENDOR=${alGetString(AL_VENDOR)}")
-//        System.err.println("AL_VERSION=${alGetString(AL_VERSION)}")
-//        System.err.println("AL_RENDERER=${alGetString(AL_RENDERER)}")
-//        System.err.println("AL_EXTENSIONS=${alGetString(AL_EXTENSIONS)}")
-
-        // rewind error
+        System.err.println("AL_VENDOR=${alGetString(AL_VENDOR)}")
+        System.err.println("AL_VERSION=${alGetString(AL_VERSION)}")
+        System.err.println("AL_RENDERER=${alGetString(AL_RENDERER)}")
+        System.err.println("AL_EXTENSIONS=${alGetString(AL_EXTENSIONS)}")
         alGetError()
     }
 
@@ -75,6 +72,20 @@ class ALAudioDevice : AudioDevice, Destroyable {
         alcDestroyContext(ctx)
         alcCloseDevice(device)
     }
+
+    val alSources = mutableListOf<ALAudio>()
+
+    private var igain = 1f
+
+    /** Global gain */
+    override var gain: Float
+        get() = igain
+        set(value) {
+            igain = value
+            alSources.forEach {
+                alSourcef(it.source, AL_GAIN, it.gain * value)
+            }
+        }
 
     override fun createAudio(samples: ByteBuffer, sampling: Int, stereo: Boolean): Audio {
         val buffer = alGenBuffers()
@@ -114,8 +125,8 @@ class ALAudioDevice : AudioDevice, Destroyable {
     /** Pre allocated al buffers */
     private val buffers = IntArray(128)
 
-    val floatBuffer = JEmalloc.je_malloc(16_000_00*4).asFloatBuffer()
-    val shortBuffer = JEmalloc.je_malloc(16_000_00*2).asShortBuffer()
+    val floatBuffer = JEmalloc.je_malloc(16_000_00 * 4).asFloatBuffer()
+    val shortBuffer = JEmalloc.je_malloc(16_000_00 * 2).asShortBuffer()
     val byteBuffer = JEmalloc.je_malloc(16_000_00)
 
     init {

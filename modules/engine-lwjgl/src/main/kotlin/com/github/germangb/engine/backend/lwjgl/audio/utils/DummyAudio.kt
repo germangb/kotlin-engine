@@ -12,4 +12,5 @@ object DummyAudio : Audio {
     override fun pause() = Unit
     override fun stop() = Unit
     override fun destroy() = Unit
+    override var gain: Float = 0.0f
 }

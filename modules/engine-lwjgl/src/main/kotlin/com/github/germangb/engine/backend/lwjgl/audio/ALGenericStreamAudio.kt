@@ -1,6 +1,5 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.audio.AudioState
 import com.github.germangb.engine.audio.GenericAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
@@ -9,7 +8,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * Generic audio streaming
  */
-abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, stereo: Boolean, val decoder: GenericAudioDecoder<*>) : Audio {
+abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, stereo: Boolean, val decoder: GenericAudioDecoder<*>) : ALAudio(audio) {
     companion object {
         val STREAM_CLOSED = "The audio stream is closed"
     }
@@ -20,9 +19,17 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
     override val state get() = istate
 
     private var istate = AudioState.STOPPED
-    private val source = alGenSources()
     private var destroyed = false
     private var decodedSamples = 0
+
+    private var igain = 1f
+
+    override var gain: Float
+        get() = igain
+        set(value) {
+            igain = value
+            alSourcef(source, AL_GAIN, value * dev.gain)
+        }
 
     /**
      * Set AL buffer data
@@ -134,6 +141,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
 
     override fun destroy() {
         if (!destroyed) {
+            super.destroy()
             destroyed = true
             emptyBuffer()
             alDeleteSources(source)

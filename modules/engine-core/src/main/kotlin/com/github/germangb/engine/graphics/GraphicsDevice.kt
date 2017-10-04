@@ -9,12 +9,12 @@ interface GraphicsDevice {
     /**
      * Create a texture
      */
-    fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat): Texture
+    fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
 
     /**
      * Create a framebuffer
      */
-    fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>): Framebuffer
+    fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer
 
     /**
      * Create a mesh

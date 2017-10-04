@@ -3,7 +3,7 @@ package com.github.germangb.engine.backend.lwjgl.core
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.backend.lwjgl.input.GLFWInputDevice
-import com.github.germangb.engine.backend.lwjgl.resources.LWJGLAssetLoader
+import com.github.germangb.engine.backend.lwjgl.assets.LWJGLAssetLoader
 import com.github.germangb.engine.core.Application
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL

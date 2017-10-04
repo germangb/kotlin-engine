@@ -4,11 +4,11 @@ import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.graphics.Texture
 
 /**
- * Fonts contain gliph information and a texture
+ * Font asset
  */
 interface Font : Destroyable {
     /**
-     * Texture with packed gliphs
+     * Texture with packed font
      */
     val texture: Texture
 }

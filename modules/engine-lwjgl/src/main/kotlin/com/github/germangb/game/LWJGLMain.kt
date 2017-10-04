@@ -13,5 +13,5 @@ fun main(args: Array<String>) {
 
     val runtime = LWJGLRuntime()
     val backend = LWJGLBackend(runtime)
-    runtime.start(GermanGame(backend))
+    runtime.start(FontDemo(backend))
 }

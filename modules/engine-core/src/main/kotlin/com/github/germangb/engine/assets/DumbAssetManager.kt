@@ -1,7 +1,9 @@
 package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.graphics.Mesh
+import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.Texture
+import com.github.germangb.engine.graphics.TextureFilter
 
 /**
  * Dumb resource manager
@@ -17,7 +19,7 @@ class DumbAssetManager(private val loader: AssetLoader): AssetManager {
      * Load a texture
      */
     override fun loadTexture(path: String) {
-        textures[path] = loader.loadTexture(path)
+        textures[path] = loader.loadTexture(path, TexelFormat.RGB8, TextureFilter.LINEAR, TextureFilter.LINEAR)
     }
 
     /**
