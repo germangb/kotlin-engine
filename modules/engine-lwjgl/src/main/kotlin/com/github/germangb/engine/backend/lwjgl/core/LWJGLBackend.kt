@@ -11,5 +11,6 @@ class LWJGLBackend(val runtime: LWJGLRuntime) : Backend {
     override val input get() = runtime.input
     override val assets get() = runtime.res
     override val buffers get() = runtime.mem
+    override val physics get() = TODO("not implemented")
 }
 

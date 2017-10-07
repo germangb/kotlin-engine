@@ -38,7 +38,7 @@ class DumbAssetManager(private val loader: AssetLoader): AssetManager {
      * Tell RM to load mesh
      */
     override fun loadMesh(path: String) {
-        meshes[path] = loader.loadMesh(path)
+        meshes[path] = loader.loadMesh(path, emptySet())
     }
 
     /**

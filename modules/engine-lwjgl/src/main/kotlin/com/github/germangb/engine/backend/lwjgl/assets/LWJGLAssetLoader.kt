@@ -9,10 +9,9 @@ import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.fonts.STBTTFont
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.fonts.Font
-import com.github.germangb.engine.graphics.Mesh
-import com.github.germangb.engine.graphics.TexelFormat
-import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.graphics.TextureFilter
+import com.github.germangb.engine.graphics.*
+import org.lwjgl.assimp.AIMesh
+import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.stb.STBImage.stbi_failure_reason
 import org.lwjgl.stb.STBImage.stbi_load
 import org.lwjgl.stb.STBTTPackContext
@@ -22,7 +21,8 @@ import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
 import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
 import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil.NULL
-import org.lwjgl.system.jemalloc.JEmalloc
+import org.lwjgl.system.jemalloc.JEmalloc.je_free
+import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 
@@ -65,8 +65,8 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
         var font: Font? = null
 
         // malloc memory
-        val ttfData = JEmalloc.je_malloc(1024 * 1024)
-        val pixels = JEmalloc.je_malloc(512 * 512)
+        val ttfData = je_malloc(1024 * 1024)
+        val pixels = je_malloc(512 * 512)
         val chars: STBTTPackedchar.Buffer
 
         try {
@@ -92,8 +92,8 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
             }
         } finally {
             pixels.clear()
-            JEmalloc.je_free(pixels)
-            JEmalloc.je_free(ttfData)
+            je_free(pixels)
+            je_free(ttfData)
         }
 
         return font
@@ -102,8 +102,71 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
     /**
      * Load mesh
      */
-    override fun loadMesh(path: String): Mesh? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh? {
+        val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights
+        val scene = aiImportFile(path, flags) ?: return null
+
+        val mesh = AIMesh.create(scene.mMeshes()[0])
+
+        // mesh attributes
+        val positions = mesh.mVertices()
+        val normals = mesh.mNormals()
+        val uvs = mesh.mTextureCoords(0)
+
+        // faces
+        val faces = mesh.mFaces()
+
+        // allocate data
+        val vertexDataSize = 8 * positions.capacity() * 4L
+        val indexDataSize = 3 * faces.capacity() * 4L
+        val vertexData = je_malloc(vertexDataSize)
+        val indexData = je_malloc(indexDataSize)
+
+        // index data
+        (0 until faces.capacity()).map { faces[it] }.forEach {
+            val ind = it.mIndices()
+            indexData.putInt(ind[0])
+            indexData.putInt(ind[1])
+            indexData.putInt(ind[2])
+        }
+        indexData.flip()
+
+        fun VertexAttribute.addData(i: Int) {
+            when(this) {
+                VertexAttribute.POSITION -> {
+                    vertexData.putFloat(positions[i].x())
+                    vertexData.putFloat(positions[i].y())
+                    vertexData.putFloat(positions[i].z())
+                }
+                VertexAttribute.NORMAL -> {
+                    vertexData.putFloat(normals[i].x())
+                    vertexData.putFloat(normals[i].y())
+                    vertexData.putFloat(normals[i].z())
+                }
+                VertexAttribute.UV -> {
+                    vertexData.putFloat(uvs[i].x())
+                    vertexData.putFloat(uvs[i].y())
+                }
+                else -> {}
+            }
+        }
+
+        // vertex data
+        (0 until mesh.mNumVertices()).forEach {
+            attributes.sorted().forEach { attr -> attr.addData(it) }
+        }
+        vertexData.flip()
+
+        // create mesh
+        val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, attributes, MeshUsage.STATIC)
+
+        // free resources
+        vertexData.clear()
+        indexData.clear()
+        je_free(vertexData)
+        je_free(indexData)
+        aiFreeScene(scene)
+        return glMesh
     }
 
     /**

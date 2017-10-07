@@ -4,5 +4,8 @@ package com.github.germangb.engine.physics
  * Dynamics world interface
  */
 interface PhysicsWorld {
-    //TODO
+    /**
+     * Step physics simulation
+     */
+    fun step(dt: Float)
 }

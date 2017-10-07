@@ -1,15 +1,42 @@
 package com.github.germangb.engine.graphics
 
-enum class VertexAttribute(val size: Int) {
-    /** vec2 */
-    FLOAT(2),
+import com.github.germangb.engine.graphics.VertexAttributeType.*
 
-    /** vec2 */
-    VEC2(2),
+enum class VertexAttributeType { FLOAT, INT, SHORT, BYTE }
 
-    /** vec3 */
-    VEC3(3),
+enum class VertexAttribute(val size: Int, val type: VertexAttributeType) {
+    /**
+     * 3D position
+     */
+    POSITION(3, FLOAT),
 
-    /** vec4 */
-    VEC4(4)
+    /**
+     * 2D position
+     */
+    POSITION2(2, FLOAT),
+
+    /**
+     * 3D normal
+     */
+    NORMAL(3, FLOAT),
+
+    /**
+     * Tex coordinate
+     */
+    UV(2, FLOAT),
+
+    /**
+     * polygon id
+     */
+    ID(1, INT),
+
+    /**
+     * Joint ID
+     */
+    JOINT_ID(4, INT),
+
+    /**
+     * Joint weights
+     */
+    JOINT_WEIGHTS(4, FLOAT)
 }

@@ -1,96 +1,119 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.graphics.MeshPrimitive.*
+import com.github.germangb.engine.graphics.MeshUsage.*
+import com.github.germangb.engine.graphics.TestFunction.*
+import com.github.germangb.engine.graphics.TexelFormat.*
+import com.github.germangb.engine.graphics.TextureFilter.LINEAR
+import com.github.germangb.engine.graphics.TextureFilter.NEAREST
+import com.github.germangb.engine.graphics.VertexAttributeType.*
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL14.*
+import org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT16
+import org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT24
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
 
+/** Attribute type */
+val VertexAttributeType.glEnum
+    get() = when (this) {
+        FLOAT -> GL_FLOAT
+        INT -> GL_INT
+        SHORT -> GL_SHORT
+        BYTE -> GL_BYTE
+    }
+
 /** Buffer usage */
-val MeshUsage.glEnum get() = when(this) {
-    MeshUsage.STATIC -> GL_STATIC_DRAW
-    MeshUsage.DYNAMIC -> GL_DYNAMIC_DRAW
-    MeshUsage.STREAM -> GL_STREAM_DRAW
-}
+val MeshUsage.glEnum
+    get() = when (this) {
+        STATIC -> GL_STATIC_DRAW
+        DYNAMIC -> GL_DYNAMIC_DRAW
+        STREAM -> GL_STREAM_DRAW
+    }
 
 /** Filters */
-val TextureFilter.glEnum get() = when(this) {
-    TextureFilter.NEAREST -> GL_NEAREST
-    TextureFilter.LINEAR -> GL_LINEAR
-}
+val TextureFilter.glEnum
+    get() = when (this) {
+        NEAREST -> GL_NEAREST
+        LINEAR -> GL_LINEAR
+    }
 
 /**
  * Primitive enums
  */
-val MeshPrimitive.glEnum get() = when(this) {
-    MeshPrimitive.TRIANGLES -> GL_TRIANGLES
-    MeshPrimitive.TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
-    MeshPrimitive.TRIANGLE_FAN -> GL_TRIANGLE_FAN
-    MeshPrimitive.LINES -> GL_LINES
-    MeshPrimitive.LINE_LOOP -> GL_LINE_LOOP
-    MeshPrimitive.LINE_STRIP -> GL_LINE_STRIP
-    MeshPrimitive.POINTS -> GL_POINTS
-}
+val MeshPrimitive.glEnum
+    get() = when (this) {
+        TRIANGLES -> GL_TRIANGLES
+        TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
+        TRIANGLE_FAN -> GL_TRIANGLE_FAN
+        LINES -> GL_LINES
+        LINE_LOOP -> GL_LINE_LOOP
+        LINE_STRIP -> GL_LINE_STRIP
+        POINTS -> GL_POINTS
+    }
 
 /**
  * Test function to GLEnum
  */
-val TestFunction.glEnum get() = when(this) {
-    TestFunction.EQUAL -> GL_EQUAL
-    TestFunction.NOT_EQUAL -> GL_NOTEQUAL
-    TestFunction.LESS -> GL_LESS
-    TestFunction.GREATER -> GL_GREATER
-    TestFunction.LESS_OR_EQUAL -> GL_LEQUAL
-    TestFunction.GREATER_OR_EQUAL -> GL_GEQUAL
-    else -> -1
-}
+val TestFunction.glEnum
+    get() = when (this) {
+        EQUAL -> GL_EQUAL
+        NOT_EQUAL -> GL_NOTEQUAL
+        LESS -> GL_LESS
+        GREATER -> GL_GREATER
+        LESS_OR_EQUAL -> GL_LEQUAL
+        GREATER_OR_EQUAL -> GL_GEQUAL
+        else -> -1
+    }
 
 /**
  * Convert texel format to GLEnum
  */
-val TexelFormat.glEnum get() = when(this) {
-    TexelFormat.RGBA16F -> GL_RGBA16F
-    TexelFormat.RGBA32F -> GL_RGBA32F
-    TexelFormat.RGB16F -> GL_RGB16F
-    TexelFormat.RGB32F -> GL_RGB32F
-    TexelFormat.RGBA8 -> GL_RGBA8
-    TexelFormat.RGB8 -> GL_RGB8
-    TexelFormat.RG16F -> GL_RG16F
-    TexelFormat.RG32F -> GL_RG32F
-    TexelFormat.RG8 -> GL_RG8
-    TexelFormat.R16F -> GL_R16F
-    TexelFormat.R32F -> GL_R32F
-    TexelFormat.R8 -> GL_R8
-    TexelFormat.RGBA16 -> GL_RGBA16
-    TexelFormat.RGB16 -> GL_RGB16
-    TexelFormat.RG16 -> GL_RG16
-    TexelFormat.R16 -> GL_R16
-    TexelFormat.DEPTH16 -> GL_DEPTH_COMPONENT16
-    TexelFormat.DEPTH24 -> GL_DEPTH_COMPONENT24
-    TexelFormat.DEPTH24_STENCIL8 -> GL_DEPTH24_STENCIL8
-}
+val TexelFormat.glEnum
+    get() = when (this) {
+        RGBA16F -> GL_RGBA16F
+        RGBA32F -> GL_RGBA32F
+        RGB16F -> GL_RGB16F
+        RGB32F -> GL_RGB32F
+        RGBA8 -> GL_RGBA8
+        RGB8 -> GL_RGB8
+        RG16F -> GL_RG16F
+        RG32F -> GL_RG32F
+        RG8 -> GL_RG8
+        R16F -> GL_R16F
+        R32F -> GL_R32F
+        R8 -> GL_R8
+        RGBA16 -> GL_RGBA16
+        RGB16 -> GL_RGB16
+        RG16 -> GL_RG16
+        R16 -> GL_R16
+        DEPTH16 -> GL_DEPTH_COMPONENT16
+        DEPTH24 -> GL_DEPTH_COMPONENT24
+        DEPTH24_STENCIL8 -> GL_DEPTH24_STENCIL8
+    }
 
 /**
  * Convert texel format to GLEnum
  */
-val TexelFormat.dataFormat get() = when(this) {
-    TexelFormat.RGBA16F -> GL_RGBA
-    TexelFormat.RGBA32F -> GL_RGBA
-    TexelFormat.RGBA8 -> GL_RGBA
-    TexelFormat.RGB16F -> GL_RGB
-    TexelFormat.RGB32F -> GL_RGB
-    TexelFormat.RGB8 -> GL_RGB
-    TexelFormat.RG16F -> GL_RG
-    TexelFormat.RG32F -> GL_RG
-    TexelFormat.RG8 -> GL_RG
-    TexelFormat.R16F -> GL_RED
-    TexelFormat.R32F -> GL_RED
-    TexelFormat.R8 -> GL_RED
-    TexelFormat.RGBA16 -> GL_RGBA
-    TexelFormat.RGB16 -> GL_RGB
-    TexelFormat.RG16 -> GL_RG
-    TexelFormat.R16 -> GL_RED
-    TexelFormat.DEPTH16 -> GL_DEPTH_COMPONENT
-    TexelFormat.DEPTH24 -> GL_DEPTH_COMPONENT
-    TexelFormat.DEPTH24_STENCIL8 -> GL_DEPTH_STENCIL
-}
+val TexelFormat.dataFormat
+    get() = when (this) {
+        RGBA16F -> GL_RGBA
+        RGBA32F -> GL_RGBA
+        RGBA8 -> GL_RGBA
+        RGB16F -> GL_RGB
+        RGB32F -> GL_RGB
+        RGB8 -> GL_RGB
+        RG16F -> GL_RG
+        RG32F -> GL_RG
+        RG8 -> GL_RG
+        R16F -> GL_RED
+        R32F -> GL_RED
+        R8 -> GL_RED
+        RGBA16 -> GL_RGBA
+        RGB16 -> GL_RGB
+        RG16 -> GL_RG
+        R16 -> GL_RED
+        DEPTH16 -> GL_DEPTH_COMPONENT
+        DEPTH24 -> GL_DEPTH_COMPONENT
+        DEPTH24_STENCIL8 -> GL_DEPTH_STENCIL
+    }

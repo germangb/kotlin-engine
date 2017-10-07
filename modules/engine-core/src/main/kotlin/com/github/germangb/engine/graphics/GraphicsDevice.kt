@@ -19,7 +19,7 @@ interface GraphicsDevice {
     /**
      * Create a mesh
      */
-    fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: List<VertexAttribute>, usage: MeshUsage = MeshUsage.STATIC): Mesh
+    fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: Set<VertexAttribute>, usage: MeshUsage = MeshUsage.STATIC): Mesh
 
     /**
      * Create a shader program

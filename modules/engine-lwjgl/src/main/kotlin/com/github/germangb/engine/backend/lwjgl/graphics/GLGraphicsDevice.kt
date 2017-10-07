@@ -88,7 +88,7 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Create a mesh
      */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: List<VertexAttribute>, usage: MeshUsage): Mesh {
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: Set<VertexAttribute>, usage: MeshUsage): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -119,12 +119,14 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
             var stride = 0
             attributes.forEach { stride += it.size }
 
-            attributes.forEachIndexed { index, attribute ->
+            // per-vertex attributes
+            attributes.sorted().forEachIndexed { index, attribute ->
                 glEnableVertexAttribArray(index)
-                glVertexAttribPointer(index, attribute.size, GL_FLOAT, false, stride * 4, offset)
+                glVertexAttribPointer(index, attribute.size, attribute.type.glEnum, false, stride * 4, offset)
                 offset += attribute.size * 4
             }
 
+            // per-instance attributes
             glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
             (0 until 4).forEach {
                 glEnableVertexAttribArray(attributes.size+it)

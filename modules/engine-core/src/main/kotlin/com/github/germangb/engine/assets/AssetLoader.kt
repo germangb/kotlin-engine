@@ -2,10 +2,7 @@ package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.fonts.Font
-import com.github.germangb.engine.graphics.Mesh
-import com.github.germangb.engine.graphics.TexelFormat
-import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.graphics.TextureFilter
+import com.github.germangb.engine.graphics.*
 import java.io.InputStream
 
 interface AssetLoader {
@@ -17,7 +14,7 @@ interface AssetLoader {
     /**
      * Load a mesh
      */
-    fun loadMesh(path: String): Mesh?
+    fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh?
 
     /**
      * Load audio

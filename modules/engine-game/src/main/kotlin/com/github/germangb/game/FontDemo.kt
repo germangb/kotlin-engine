@@ -7,7 +7,7 @@ import com.github.germangb.engine.framework.components.addJoint
 import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLE_STRIP
 import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.TextureFilter
-import com.github.germangb.engine.graphics.VertexAttribute.VEC2
+import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.isJustReleased
 import com.github.germangb.engine.math.Matrix4
@@ -16,6 +16,7 @@ import org.intellij.lang.annotations.Language
 class FontDemo(val backend: Backend) : Application {
     val font = backend.assets.loadFont("KOMIKAX_.ttf", 32, 0..256)
     val lena = backend.assets.loadTexture("lena.bmp", TexelFormat.RGB8, TextureFilter.LINEAR, TextureFilter.LINEAR)
+    val hell = backend.assets.loadMesh("hellknight.md5mesh", setOf(POSITION, NORMAL, UV))
     val mesh = let {
         val vert = backend.buffers.malloc(2 * 4 * 4)
         val index = backend.buffers.malloc(4 * 4)
@@ -24,7 +25,7 @@ class FontDemo(val backend: Backend) : Application {
         vert.putFloat(0f).putFloat(1f)
         vert.putFloat(1f).putFloat(1f).flip()
         index.putInt(0).putInt(1).putInt(2).putInt(3).flip()
-        val mesh = backend.graphics.createMesh(vert, index, TRIANGLE_STRIP, listOf(VEC2))
+        val mesh = backend.graphics.createMesh(vert, index, TRIANGLE_STRIP, setOf(POSITION2))
         vert.clear()
         index.clear()
         backend.buffers.free(vert)
@@ -57,6 +58,9 @@ class FontDemo(val backend: Backend) : Application {
     val root = GameActor()
 
     override fun init() {
+        println(setOf(POSITION, NORMAL, UV))
+        println(setOf(UV, NORMAL, POSITION).sorted())
+
         root.send("ping") {
             println("(hopefully pong...) -> $it")
         }
@@ -74,7 +78,6 @@ class FontDemo(val backend: Backend) : Application {
 
     override fun update() {
         root.update()
-
         if (KeyboardKey.KEY_T.isJustReleased(backend.input)) {
             toggle = !toggle
         }
@@ -101,10 +104,9 @@ class FontDemo(val backend: Backend) : Application {
     }
 
     override fun destroy() {
-        font?.destroy()
-        lena?.destroy()
-        mesh.destroy()
-        shader.destroy()
+        listOf(font, lena, mesh, hell, shader)
+                .filterNotNull()
+                .forEach { it.destroy() }
     }
 
 }
