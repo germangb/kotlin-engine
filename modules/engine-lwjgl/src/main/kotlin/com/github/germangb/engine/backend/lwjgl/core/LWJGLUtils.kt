@@ -13,7 +13,7 @@ fun stackMemory(action: MemoryStack.() -> Unit) {
     try {
         action.invoke(stack)
     } finally {
-        stack.close()
+        stack.pop()
     }
 }
 

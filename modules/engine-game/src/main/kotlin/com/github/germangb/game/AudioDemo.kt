@@ -1,6 +1,5 @@
 package com.github.germangb.game
 
-import com.github.germangb.engine.assets.DumbAssetManager
 import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
@@ -41,8 +40,6 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
 }
 
 class AudioDemo(val backend: Backend) : Application {
-    val manager = DumbAssetManager(backend.assets)
-
     val audio = let {
         val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
 

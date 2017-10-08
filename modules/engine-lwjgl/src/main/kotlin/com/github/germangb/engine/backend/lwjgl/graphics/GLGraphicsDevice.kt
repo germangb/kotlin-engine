@@ -117,13 +117,13 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
 
             var offset = 0L
             var stride = 0
-            attributes.forEach { stride += it.size }
+            attributes.forEach { stride += it.size * it.type.bytes }
 
             // per-vertex attributes
             attributes.sorted().forEachIndexed { index, attribute ->
                 glEnableVertexAttribArray(index)
-                glVertexAttribPointer(index, attribute.size, attribute.type.glEnum, false, stride * 4, offset)
-                offset += attribute.size * 4
+                glVertexAttribPointer(index, attribute.size, attribute.type.glEnum, false, stride, offset)
+                offset += attribute.size * attribute.type.bytes
             }
 
             // per-instance attributes

@@ -4,6 +4,7 @@ import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.input.InputState
 import com.github.germangb.engine.input.InputState.*
 import com.github.germangb.engine.input.KeyboardDevice
+import com.github.germangb.engine.input.KeyboardInputEvent
 import com.github.germangb.engine.input.KeyboardKey
 import org.lwjgl.glfw.GLFW.*
 
@@ -18,21 +19,21 @@ class GLFWKeyboardDevice(val window: Long) : KeyboardDevice, Destroyable {
      */
     val justReleased = LinkedHashSet<KeyboardKey>()
 
-    var keyListener: ((InputState, KeyboardKey) -> Unit)? = null
+    var keyListener: ((KeyboardInputEvent) -> Unit)? = null
 
     init {
         glfwSetKeyCallback(window) { _, key, _, action, _ ->
             if (action == GLFW_PRESS) {
                 justPressed.add(key.asEnum)
-                keyListener?.invoke(PRESSED, key.asEnum)
+                keyListener?.invoke(KeyboardInputEvent(key.asEnum, PRESSED))
             } else if (action == GLFW_RELEASE) {
                 justReleased.add(key.asEnum)
-                keyListener?.invoke(RELEASED, key.asEnum)
+                keyListener?.invoke(KeyboardInputEvent(key.asEnum, RELEASED))
             }
         }?.free()
     }
 
-    override fun setListener(listener: ((InputState, KeyboardKey) -> Unit)?) {
+    override fun setListener(listener: ((KeyboardInputEvent) -> Unit)?) {
         keyListener = listener
     }
 

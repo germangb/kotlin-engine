@@ -2,7 +2,7 @@ package com.github.germangb.engine.graphics
 
 import com.github.germangb.engine.graphics.VertexAttributeType.*
 
-enum class VertexAttributeType { FLOAT, INT, SHORT, BYTE }
+enum class VertexAttributeType(val bytes: Int) { FLOAT(4), INT(4), SHORT(2), BYTE(1) }
 
 enum class VertexAttribute(val size: Int, val type: VertexAttributeType) {
     /**
@@ -28,12 +28,12 @@ enum class VertexAttribute(val size: Int, val type: VertexAttributeType) {
     /**
      * polygon id
      */
-    ID(1, INT),
+    ID(1, FLOAT),
 
     /**
      * Joint ID
      */
-    JOINT_ID(4, INT),
+    JOINT_ID(4, FLOAT),
 
     /**
      * Joint weights

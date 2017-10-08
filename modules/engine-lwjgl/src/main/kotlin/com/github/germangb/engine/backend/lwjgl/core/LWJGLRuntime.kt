@@ -34,15 +34,15 @@ class LWJGLRuntime {
 
         GL.createCapabilities()
 
-//        System.err.println("GL_RENDERER=${glGetString(GL_RENDERER)}")
-//        System.err.println("GL_VERSION=${glGetString(GL_VERSION)}")
-//        System.err.println("GL_VENDOR=${glGetString(GL_VENDOR)}")
-//        System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
+        System.err.println("GL_RENDERER=${glGetString(GL_RENDERER)}")
+        System.err.println("GL_VERSION=${glGetString(GL_VERSION)}")
+        System.err.println("GL_VENDOR=${glGetString(GL_VENDOR)}")
+        System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
         glGetError()
 
         gfx = GLGraphicsDevice(640, 480)
         audio = ALAudioDevice()
-        res = LWJGLAssetLoader(audio, gfx)
+        res = LWJGLAssetLoader(audio, LWJGLBackend(this))
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window)
 

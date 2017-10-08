@@ -1,13 +1,14 @@
 package com.github.germangb.engine.backend.lwjgl.assets
 
 import com.github.germangb.engine.assets.AssetLoader
+import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamAudio
+import com.github.germangb.engine.backend.lwjgl.core.LWJGLBackend
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.fonts.STBTTFont
-import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.fonts.Font
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.assimp.AIMesh
@@ -26,7 +27,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 
-class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : AssetLoader {
+class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : AssetLoader {
     /**
      * Load a generic resource
      */
@@ -35,6 +36,11 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
     } catch (e: FileNotFoundException) {
         null
     }
+
+    /**
+     * Load assimp scene (skinned meshes and stuff)
+     */
+    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend)
 
     /**
      * Load texture file
@@ -51,7 +57,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
             if (data == null) {
                 System.err.println("${stbi_failure_reason()} ($path)")
             } else {
-                texture = gfx.createTexture(data, width[0], height[0], format, min, mag)
+                texture = backend.graphics.createTexture(data, width[0], height[0], format, min, mag)
             }
         }
 
@@ -87,7 +93,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
                 stbtt_PackFontRange(ctx, ttfData, 0, size.toFloat(), 0, chars)
                 stbtt_PackEnd(ctx)
 
-                val pack = gfx.createTexture(pixels, 512, 512, TexelFormat.R8, TextureFilter.LINEAR, TextureFilter.LINEAR)
+                val pack = backend.graphics.createTexture(pixels, 512, 512, TexelFormat.R8, TextureFilter.LINEAR, TextureFilter.LINEAR)
                 font = STBTTFont(pack, chars)
             }
         } finally {
@@ -103,70 +109,12 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
      * Load mesh
      */
     override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh? {
-        val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights
+        val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights or aiProcess_FlipUVs
         val scene = aiImportFile(path, flags) ?: return null
-
-        val mesh = AIMesh.create(scene.mMeshes()[0])
-
-        // mesh attributes
-        val positions = mesh.mVertices()
-        val normals = mesh.mNormals()
-        val uvs = mesh.mTextureCoords(0)
-
-        // faces
-        val faces = mesh.mFaces()
-
-        // allocate data
-        val vertexDataSize = 8 * positions.capacity() * 4L
-        val indexDataSize = 3 * faces.capacity() * 4L
-        val vertexData = je_malloc(vertexDataSize)
-        val indexData = je_malloc(indexDataSize)
-
-        // index data
-        (0 until faces.capacity()).map { faces[it] }.forEach {
-            val ind = it.mIndices()
-            indexData.putInt(ind[0])
-            indexData.putInt(ind[1])
-            indexData.putInt(ind[2])
-        }
-        indexData.flip()
-
-        fun VertexAttribute.addData(i: Int) {
-            when(this) {
-                VertexAttribute.POSITION -> {
-                    vertexData.putFloat(positions[i].x())
-                    vertexData.putFloat(positions[i].y())
-                    vertexData.putFloat(positions[i].z())
-                }
-                VertexAttribute.NORMAL -> {
-                    vertexData.putFloat(normals[i].x())
-                    vertexData.putFloat(normals[i].y())
-                    vertexData.putFloat(normals[i].z())
-                }
-                VertexAttribute.UV -> {
-                    vertexData.putFloat(uvs[i].x())
-                    vertexData.putFloat(uvs[i].y())
-                }
-                else -> {}
-            }
-        }
-
-        // vertex data
-        (0 until mesh.mNumVertices()).forEach {
-            attributes.sorted().forEach { attr -> attr.addData(it) }
-        }
-        vertexData.flip()
-
-        // create mesh
-        val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, attributes, MeshUsage.STATIC)
-
-        // free resources
-        vertexData.clear()
-        indexData.clear()
-        je_free(vertexData)
-        je_free(indexData)
+        val aimesh = AIMesh.create(scene.mMeshes()[0])
+        val mesh = aiMeshToGL(aimesh, attributes, backend.graphics)
         aiFreeScene(scene)
-        return glMesh
+        return mesh
     }
 
     /**
@@ -184,11 +132,6 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val gfx: GLGraphicsDevice) : As
                 // decode info
                 val info = STBVorbisInfo.callocStack(this)
                 stb_vorbis_get_info(handle, info)
-
-//            System.err.println("file = $path")
-//            System.err.println("#channels = ${info.channels()}")
-//            System.err.println("#sampling = ${info.sample_rate()}")
-//            System.err.println("#frame_size = ${info.max_frame_size()}")
 
                 // create decoder & return sound
                 val decoder = VorbisSTBAudioDecoder(handle, info.channels())

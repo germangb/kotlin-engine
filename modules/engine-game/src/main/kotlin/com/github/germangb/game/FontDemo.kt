@@ -1,45 +1,44 @@
 package com.github.germangb.game
 
+import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.framework.GameActor
-import com.github.germangb.engine.framework.components.addJoint
-import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLE_STRIP
-import com.github.germangb.engine.graphics.TexelFormat
-import com.github.germangb.engine.graphics.TextureFilter
-import com.github.germangb.engine.graphics.VertexAttribute.*
+import com.github.germangb.engine.framework.components.JointComponent
+import com.github.germangb.engine.framework.components.SkinnedMeshInstanceComponent
+import com.github.germangb.engine.framework.components.SkinnedMeshInstancerComponent
+import com.github.germangb.engine.graphics.TestFunction
+import com.github.germangb.engine.input.InputState
 import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.isJustReleased
 import com.github.germangb.engine.math.Matrix4
+import com.github.germangb.engine.math.Matrix4c
+import com.github.germangb.engine.math.Vector3
 import org.intellij.lang.annotations.Language
+import java.util.*
 
 class FontDemo(val backend: Backend) : Application {
-    val font = backend.assets.loadFont("KOMIKAX_.ttf", 32, 0..256)
-    val lena = backend.assets.loadTexture("lena.bmp", TexelFormat.RGB8, TextureFilter.LINEAR, TextureFilter.LINEAR)
-    val hell = backend.assets.loadMesh("hellknight.md5mesh", setOf(POSITION, NORMAL, UV))
-    val mesh = let {
-        val vert = backend.buffers.malloc(2 * 4 * 4)
-        val index = backend.buffers.malloc(4 * 4)
-        vert.putFloat(0f).putFloat(0f)
-        vert.putFloat(1f).putFloat(0f)
-        vert.putFloat(0f).putFloat(1f)
-        vert.putFloat(1f).putFloat(1f).flip()
-        index.putInt(0).putInt(1).putInt(2).putInt(3).flip()
-        val mesh = backend.graphics.createMesh(vert, index, TRIANGLE_STRIP, setOf(POSITION2))
-        vert.clear()
-        index.clear()
-        backend.buffers.free(vert)
-        backend.buffers.free(index)
-        mesh
-    }
+    val manager = NaiveAssetManager(backend.assets)
+    val skin = Array<Matrix4c>(120) { Matrix4() }
     val shader = let {
         @Language("GLSL")
         val vert = """#version 450 core
-            layout(location = 0) in vec2 a_position;
+            layout(location = 0) in vec3 a_position;
+            layout(location = 1) in vec3 a_normal;
+            layout(location = 2) in vec2 a_uv;
+            layout(location = 3) in vec4 a_bones;
+            layout(location = 4) in vec4 a_weights;
+            layout(location = 5) in mat4 a_instance;
             out vec2 v_uv;
+            uniform mat4 u_projection;
+            uniform mat4 u_skin[120];
             void main () {
-                gl_Position = vec4((a_position*2-1) / vec2(4./3, 1), 0.0, 1.0);
-                v_uv = vec2(a_position.x, 1-a_position.y);
+                mat4 u_skin_transform = u_skin[int(a_bones.x+0.001)] * a_weights.x +
+                                        u_skin[int(a_bones.y+0.001)] * a_weights.y +
+                                        u_skin[int(a_bones.z+0.001)] * a_weights.z +
+                                        u_skin[int(a_bones.w+0.001)] * a_weights.w;
+                gl_Position = u_projection * a_instance * u_skin_transform * vec4(a_position, 1.0);
+                v_uv = a_uv;
             }
         """.trimMargin()
         @Language("GLSL")
@@ -53,31 +52,31 @@ class FontDemo(val backend: Backend) : Application {
         """.trimMargin()
         backend.graphics.createShaderProgram(vert, frag)
     }
-
     var toggle = false
     val root = GameActor()
 
     override fun init() {
-        println(setOf(POSITION, NORMAL, UV))
-        println(setOf(UV, NORMAL, POSITION).sorted())
-
         root.send("ping") {
             println("(hopefully pong...) -> $it")
         }
 
-        root.addChild {
-            addChild {
-                //...
-                addJoint(1, Matrix4())
-            }
-            addChild {
-                //...
-            }
+        backend.input.keyboard.setListener { (key, state) ->
+            if (state == InputState.PRESSED && key.isPrintable)
+                println("$key")
         }
+
+        backend.input.mouse.setListener { (button, state) ->
+            println("$button $state")
+        }
+
+        backend.assets.loadActor("hellknight.md5mesh", manager)?.let {
+            root.addChild(it)
+        }
+
+        manager.dump()
     }
 
     override fun update() {
-        root.update()
         if (KeyboardKey.KEY_T.isJustReleased(backend.input)) {
             toggle = !toggle
         }
@@ -85,28 +84,57 @@ class FontDemo(val backend: Backend) : Application {
         backend.graphics.state {
             clearColor(0.2f, 0.2f, 0.2f, 1f)
             clearColorBuffer()
+            clearDepthBuffer()
+            depthTest(TestFunction.LESS)
         }
 
-        backend.graphics.render(mesh, shader) {
-            uniforms {
-                if (toggle) {
-                    font?.texture?.let {
-                        it bindsTo "u_texture"
-                    }
-                } else {
-                    lena?.let {
-                        it bindsTo "u_texture"
+        val proj = Matrix4()
+                .setPerspective(java.lang.Math.toRadians(55.0).toFloat(), 4 / 3f, 0.01f, 1000f)
+                .lookAt(Vector3(24f, 64f, 190f), Vector3(0f, 64f, 0f), Vector3(0f, 1f, 0f))
+
+        // update actors
+        root.update()
+
+        val stack = Stack<GameActor>()
+
+        stack.add(root)
+        while (stack.isNotEmpty()) {
+            val actor = stack.pop()
+            actor.getComponent<JointComponent>()?.let {
+                (skin[it.id] as Matrix4).set(it.actor.transform.world).mul(it.offset).rotateY(0.1f)
+            }
+            actor.children.forEach { stack.push(it) }
+        }
+
+        stack.add(root)
+        while (stack.isNotEmpty()) {
+            val actor = stack.pop()
+            actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
+                inst.mesh.resource?.let { mesh ->
+                    backend.graphics.render(mesh, shader) {
+                        uniforms {
+                            skin bindsTo "u_skin"
+                            proj bindsTo "u_projection"
+                            inst.texture.resource?.let { it bindsTo "u_texture" }
+                        }
+
+                        actor.children
+                                .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
+                                .forEach {
+                                    transform.set(it.actor.transform.world)
+                                    instance()
+                                }
                     }
                 }
             }
-            instance()
+
+            actor.children.forEach { stack.push(it) }
         }
     }
 
     override fun destroy() {
-        listOf(font, lena, mesh, hell, shader)
-                .filterNotNull()
-                .forEach { it.destroy() }
+        shader.destroy()
+        manager.destroy()
     }
 
 }

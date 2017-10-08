@@ -3,7 +3,7 @@ package com.github.germangb.engine.input
 /**
  * Keyboard keys
  */
-enum class KeyboardKey(val printable: Boolean = true) {
+enum class KeyboardKey(val isPrintable: Boolean = true) {
     /** Printable keys. */
     KEY_UNKNOWN            ,
     KEY_SPACE              ,

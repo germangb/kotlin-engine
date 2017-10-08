@@ -1,6 +1,7 @@
 package com.github.germangb.engine.audio
 
 import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.math.Vector3c
 
 interface Audio : Destroyable {
     /**
@@ -12,6 +13,16 @@ interface Audio : Destroyable {
      * audio gain property
      */
     var gain: Float
+
+    /**
+     * Audio position
+     */
+    var position: Vector3c
+
+    /**
+     * Audio velocity
+     */
+    var velocity: Vector3c
 
     /**
      * Start sound playback

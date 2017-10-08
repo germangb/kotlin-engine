@@ -1,6 +1,8 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.math.Vector3
+import com.github.germangb.engine.math.Vector3c
 import org.lwjgl.openal.AL10.*
 
 /**
@@ -11,6 +13,8 @@ abstract class ALAudio(val dev: ALAudioDevice) : Audio {
     val source = alGenSources()
 
     private var igain = 1f
+    private var iposition = Vector3(0f)
+    private var ivelocity = Vector3(0f)
 
     override var gain: Float
         get() = igain
@@ -24,6 +28,20 @@ abstract class ALAudio(val dev: ALAudioDevice) : Audio {
         // register al source
         dev.alSources.add(this)
     }
+
+    override var position: Vector3c
+        get() = iposition
+        set(value) {
+            alSource3f(source, AL_POSITION, value.x(), value.y(), value.z())
+            iposition.set(value)
+        }
+
+    override var velocity: Vector3c
+        get() = ivelocity
+        set(value) {
+            alSource3f(source, AL_VELOCITY, value.x(), value.y(), value.z())
+            ivelocity.set(value)
+        }
 
     override fun destroy() {
         alDeleteSources(source)
