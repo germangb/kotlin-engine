@@ -5,17 +5,17 @@ import kotlin.reflect.KClass
 /**
  * Actors contain position information and a list of components
  */
-class GameActor {
+class Actor {
     /**
      * String name given to this actor
      */
     var name: String = toString()
 
-    /** GameActor parent */
-    private var iparent: GameActor? = null
+    /** Actor parent */
+    private var iparent: Actor? = null
 
     /** Root scene */
-    private var iroot: GameActor = this
+    private var iroot: Actor = this
 
     /**
      * Parent actor
@@ -35,7 +35,7 @@ class GameActor {
      */
     private fun updateInternalComponents() {
         icomponents.forEach {
-            if(!it.init) {
+            if (!it.init) {
                 it.init = true
                 it.init()
             }
@@ -70,7 +70,7 @@ class GameActor {
     /**
      * Remove a component of a given type
      */
-    fun <T: Component> removeComponent(comp: KClass<T>) {
+    fun <T : Component> removeComponent(comp: KClass<T>) {
         icomponents.firstOrNull { it::class == comp }?.let {
             icomponents.remove(it)
         }
@@ -79,7 +79,7 @@ class GameActor {
     /**
      * Get a component by type
      */
-    fun <T: Component> getComponent(comp: KClass<T>): T? {
+    fun <T : Component> getComponent(comp: KClass<T>): T? {
         @Suppress("UNCHECKED_CAST")
         return icomponents.firstOrNull { it::class == comp } as T?
     }
@@ -87,7 +87,7 @@ class GameActor {
     /**
      * Get a component by type
      */
-    inline fun <reified T: Component> getComponent() = getComponent(T::class)
+    inline fun <reified T : Component> getComponent() = getComponent(T::class)
 
     /**
      * Message mode
@@ -105,7 +105,7 @@ class GameActor {
         }
 
         // pass message up the hierarchy
-        if(messageMode.send) {
+        if (messageMode.send) {
             children.forEach {
                 it.send(message, callback)
             }
@@ -121,7 +121,7 @@ class GameActor {
      * Update components of the actor and its descendants
      */
     private fun updateComponents() {
-        if(updateMode == UpdateMode.ROOT_FIRST) {
+        if (updateMode == UpdateMode.ROOT_FIRST) {
             updateInternalComponents()
             ichildren.forEach {
                 it.updateComponents()
@@ -146,14 +146,14 @@ class GameActor {
      * Update transformations
      */
     private fun computeTransforms() {
-        iparent?.let {
-            transform.iworld.set(it.transform.iworld)
-            transform.iworld.mul(transform.local)
-        }?:let {
+        if (this == root) {
             transform.iworld.set(transform.local)
+        } else {
+            transform.iworld.set(iparent!!.transform.iworld)
+            transform.iworld.mul(transform.local)
         }
 
-        children.forEach {
+        ichildren.forEach {
             it.computeTransforms()
         }
     }
@@ -161,18 +161,18 @@ class GameActor {
     /**
      * Attached actors
      */
-    private val ichildren = mutableListOf<GameActor>()
+    private val ichildren = mutableListOf<Actor>()
 
     /**
      * Attached actors
      */
-    val children: List<GameActor> get() = ichildren
+    val children: List<Actor> get() = ichildren
 
     /**
      * Adds a child
      */
-    fun addChild(def: GameActor.() -> Unit) {
-        val actor = GameActor()
+    fun addChild(def: Actor.() -> Unit) {
+        val actor = Actor()
         actor.iparent = this
         actor.iroot = root
         def.invoke(actor)
@@ -182,7 +182,7 @@ class GameActor {
     /**
      * Find an actor by name
      */
-    fun find(name: String): GameActor? {
+    fun find(name: String): Actor? {
         if (this.name == name) {
             return this
         }

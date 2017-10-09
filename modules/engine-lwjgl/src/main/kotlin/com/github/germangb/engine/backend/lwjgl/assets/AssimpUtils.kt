@@ -4,7 +4,7 @@ import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.assets.MeshAsset
 import com.github.germangb.engine.assets.TextureAsset
 import com.github.germangb.engine.core.Backend
-import com.github.germangb.engine.framework.GameActor
+import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
@@ -23,7 +23,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 /**
  * Load actor
  */
-fun loadActor(path: String, manager: AssetManager, backend: Backend): (GameActor.() -> Unit)? {
+fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() -> Unit)? {
     val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights or aiProcess_FlipUVs
     val scene = aiImportFile(path, flags) ?: return null
 
@@ -35,15 +35,18 @@ fun loadActor(path: String, manager: AssetManager, backend: Backend): (GameActor
                 (0 until mesh.mNumBones())
                         .map { AIBone.create(mesh.mBones()[it]) }
                         .forEach {
-                            bones[it.mName().dataString()] = bones.size to Matrix4().set(it.mOffsetMatrix())
+                            val id = bones.size
+                            bones[it.mName().dataString()] = id to Matrix4().set(it.mOffsetMatrix())
                         }
             }
+
+    println(bones.size)
 
     // get meshes
     val meshes = List(scene.mNumMeshes()) {
         val aimesh = AIMesh.create(scene.mMeshes()[it])
         val attrs = setOf(POSITION, NORMAL, UV, JOINT_ID, JOINT_WEIGHTS)
-        val mesh = aiMeshToGL(aimesh, attrs, backend.graphics)
+        val mesh = aiMeshToGL(aimesh, attrs, backend.graphics, bones)
         val meshPath = "$path/mesh_$it"
         manager.delegateMesh(mesh, meshPath)
         MeshAsset(manager, meshPath, attrs) to aimesh.mNumBones()
@@ -64,7 +67,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Backend): (GameActor
 /**
  * Convert aiMesh to engine mesh
  */
-fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevice, boneIds: Map<String, Int> = emptyMap()): Mesh {
+fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
     // mesh attributes
     val positions = mesh.mVertices()
     val normals = mesh.mNormals()
@@ -126,7 +129,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
             .map { AIBone.create(mesh.mBones()[it]) }
             .forEach { bone ->
                 val name = bone.mName().dataString()
-                val boneId = boneIds[name] ?: -1
+                val boneId = boneIds[name]?.first ?: -1
                 val weights = bone.mWeights()
 
                 (0 until bone.mNumWeights())
@@ -195,7 +198,7 @@ class SafeNode(val aiNode: AINode) {
     /**
      * Convert hierarchy to blueprint
      */
-    fun convert(meshes: List<Pair<MeshAsset, Int>>, textures: List<TextureAsset>, bones: Map<String, Pair<Int, Matrix4c>>): GameActor.() -> Unit = {
+    fun convert(meshes: List<Pair<MeshAsset, Int>>, textures: List<TextureAsset>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
         transform.local.set(this@SafeNode.transform)
         name = this@SafeNode.name

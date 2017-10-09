@@ -1,6 +1,6 @@
 package com.github.germangb.engine.framework.components
 
-import com.github.germangb.engine.framework.GameActor
+import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Component
 
 /**
@@ -15,4 +15,4 @@ class SkinnedMeshInstanceComponent : Component() {
 /**
  * Adds a skinned mesh component
  */
-fun GameActor.addSkinnedMeshInstance() = addComponent(SkinnedMeshInstanceComponent())
+fun Actor.addSkinnedMeshInstance() = addComponent(SkinnedMeshInstanceComponent())

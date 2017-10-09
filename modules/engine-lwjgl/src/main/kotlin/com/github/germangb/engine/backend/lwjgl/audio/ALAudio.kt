@@ -10,6 +10,7 @@ import org.lwjgl.openal.AL10.*
  */
 abstract class ALAudio(val dev: ALAudioDevice) : Audio {
 
+    /** OpenAL audio source */
     val source = alGenSources()
 
     private var igain = 1f

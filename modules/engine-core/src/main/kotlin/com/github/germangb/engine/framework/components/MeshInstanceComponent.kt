@@ -1,6 +1,6 @@
 package com.github.germangb.engine.framework.components
 
-import com.github.germangb.engine.framework.GameActor
+import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Component
 
 /**
@@ -15,4 +15,4 @@ class MeshInstance : Component() {
 /**
  * Adds a mesh instance to the actor
  */
-fun GameActor.addMeshInstance() = addComponent(MeshInstance())
+fun Actor.addMeshInstance() = addComponent(MeshInstance())

@@ -7,7 +7,7 @@ interface Application : Destroyable {
     fun init()
 
     /**
-     * Called once per frame
+     * Called once per time
      */
     fun update()
 }

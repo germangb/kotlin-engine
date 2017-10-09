@@ -1,6 +1,6 @@
 package com.github.germangb.engine.framework.components
 
-import com.github.germangb.engine.framework.GameActor
+import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Component
 import com.github.germangb.engine.assets.MeshAsset
 import com.github.germangb.engine.assets.TextureAsset
@@ -17,6 +17,6 @@ class MeshInstancerComponent(val mesh: MeshAsset, val texture: TextureAsset) : C
 /**
  * Adds a mesh instancer to the actor
  */
-fun GameActor.addMeshInstancer(mesh: MeshAsset, texture: TextureAsset) {
+fun Actor.addMeshInstancer(mesh: MeshAsset, texture: TextureAsset) {
     addComponent(MeshInstancerComponent(mesh, texture))
 }

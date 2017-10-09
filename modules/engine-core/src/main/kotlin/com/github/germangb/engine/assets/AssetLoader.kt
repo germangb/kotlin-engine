@@ -2,7 +2,7 @@ package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.fonts.Font
-import com.github.germangb.engine.framework.GameActor
+import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.graphics.*
 import java.io.InputStream
 
@@ -35,5 +35,5 @@ interface AssetLoader {
     /**
      * Load an actor blueprint. Load intermediate resources in some asset manager
      */
-    fun loadActor(path: String, manager: AssetManager): (GameActor.() -> Unit)?
+    fun loadActor(path: String, manager: AssetManager): (Actor.() -> Unit)?
 }
