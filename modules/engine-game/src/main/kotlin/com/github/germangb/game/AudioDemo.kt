@@ -70,7 +70,7 @@ class AudioDemo(val backend: Backend) : Application {
     override fun init() {
 
         // load texture
-        //val tex = TextureAsset(manager, "hellknight.png")
+        //val tex = TextureAsset(assetManager, "hellknight.png")
 
         // vorbis
         //music?.play()

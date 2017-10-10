@@ -40,7 +40,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() 
                         }
             }
 
-    println(bones.size)
+    //println(bones.size)
 
     // get meshes
     val meshes = List(scene.mNumMeshes()) {
