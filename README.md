@@ -1,1 +1,1 @@
-![Screenshot](res/screenshot.png)
+![Screenshot](.screenshot.png)
