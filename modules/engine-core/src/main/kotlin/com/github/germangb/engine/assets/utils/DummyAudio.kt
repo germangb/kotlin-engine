@@ -1,4 +1,4 @@
-package com.github.germangb.engine.backend.lwjgl.audio.utils
+package com.github.germangb.engine.assets.utils
 
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.audio.AudioState

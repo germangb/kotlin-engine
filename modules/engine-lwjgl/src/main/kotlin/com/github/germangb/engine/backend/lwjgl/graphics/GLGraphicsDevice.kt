@@ -7,13 +7,13 @@ import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.*
-import org.lwjgl.opengl.GL33.*
+import org.lwjgl.opengl.GL33.glVertexAttribDivisor
 import java.nio.ByteBuffer
 
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
+class GLGraphicsDevice(override val width: Int, override val height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
@@ -129,9 +129,9 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
             // per-instance attributes
             glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
             (0 until 4).forEach {
-                glEnableVertexAttribArray(attributes.size+it)
-                glVertexAttribPointer(attributes.size+it, 4, GL_FLOAT, false, 16 * 4, (4 * it) * 4L)
-                glVertexAttribDivisor(attributes.size+it, 1)
+                glEnableVertexAttribArray(attributes.size + it)
+                glVertexAttribPointer(attributes.size + it, 4, GL_FLOAT, false, 16 * 4, (4 * it) * 4L)
+                glVertexAttribDivisor(attributes.size + it, 1)
             }
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
@@ -141,7 +141,7 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
         }
 
 
-        return GLMesh(vbo, ibo, vao, indexData.capacity()/4, primitive, attributes)
+        return GLMesh(vbo, ibo, vao, indexData.capacity() / 4, primitive, attributes)
     }
 
     /**
@@ -193,9 +193,11 @@ class GLGraphicsDevice(width: Int, height: Int) : GraphicsDevice, Destroyable {
      * Render a mesh using instance rendering
      */
     override fun render(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
-        instancer.begin(mesh as GLMesh, program as GLShaderProgram, framebuffer as GLFramebuffer)
-        instancer.action()
-        instancer.end()
+        if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
+            instancer.begin(mesh, program, framebuffer)
+            instancer.action()
+            instancer.end()
+        }
     }
 
     /**

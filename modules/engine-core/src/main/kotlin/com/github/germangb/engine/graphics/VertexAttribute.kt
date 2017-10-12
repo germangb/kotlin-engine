@@ -33,7 +33,7 @@ enum class VertexAttribute(val size: Int, val type: VertexAttributeType) {
     /**
      * Joint ID
      */
-    JOINT_ID(4, FLOAT),
+    JOINT_IDS(4, FLOAT),
 
     /**
      * Joint weights

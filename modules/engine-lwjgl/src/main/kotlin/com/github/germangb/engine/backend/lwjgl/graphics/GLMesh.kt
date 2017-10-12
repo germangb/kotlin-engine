@@ -3,9 +3,9 @@ package com.github.germangb.engine.backend.lwjgl.graphics
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.VertexAttribute
-import java.nio.ByteBuffer
 import org.lwjgl.opengl.GL15.*
-import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.GL30.glDeleteVertexArrays
+import java.nio.ByteBuffer
 
 /**
  * OpenGL mesh
@@ -50,7 +50,7 @@ class GLMesh(val vbo: Int,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
-        indices = data.capacity()/4
+        indices = data.capacity() / 4
     }
 
 }

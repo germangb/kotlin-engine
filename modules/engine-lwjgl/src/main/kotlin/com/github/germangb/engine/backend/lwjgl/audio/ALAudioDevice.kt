@@ -1,7 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.*
-import com.github.germangb.engine.backend.lwjgl.audio.utils.DummyAudio
+import com.github.germangb.engine.assets.utils.DummyAudio
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.math.Vector3c

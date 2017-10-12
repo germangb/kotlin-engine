@@ -10,6 +10,11 @@ interface Animation: Destroyable {
     val state: AnimationState
 
     /**
+     * Animation controller of this animation
+     */
+    val controller: AnimationController
+
+    /**
      * Play animation
      */
     fun play()

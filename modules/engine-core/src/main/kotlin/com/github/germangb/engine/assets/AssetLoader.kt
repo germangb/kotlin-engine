@@ -10,22 +10,22 @@ interface AssetLoader {
     /**
      * Load a texture
      */
-    fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture?
+    fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
 
     /**
      * Load a mesh
      */
-    fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh?
+    fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh
 
     /**
      * Load audio
      */
-    fun loadAudio(path: String): Audio?
+    fun loadAudio(path: String): Audio
 
     /**
      * Load a font
      */
-    fun loadFont(path: String, size: Int, charset: IntRange): Font?
+    fun loadFont(path: String, size: Int, charset: IntRange): Font
 
     /**
      * Load a generic resource (InputStream is not managed...)
@@ -35,5 +35,5 @@ interface AssetLoader {
     /**
      * Load an actor blueprint. Load intermediate resources in some asset manager
      */
-    fun loadActor(path: String, manager: AssetManager): (Actor.() -> Unit)?
+    fun loadActor(path: String, manager: AssetManager): Actor.() -> Unit
 }

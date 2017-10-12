@@ -7,6 +7,16 @@ import java.nio.ByteBuffer
  */
 interface GraphicsDevice {
     /**
+     * Framebuffer width
+     */
+    val width: Int
+
+    /**
+     * Framebuffer height
+     */
+    val height: Int
+
+    /**
      * Create a texture
      */
     fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture

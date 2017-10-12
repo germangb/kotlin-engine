@@ -1,6 +1,6 @@
 package com.github.germangb.engine.animation
 
-class ManagedAnimation(val manager: SimpleAnimationManager, val controller: AnimationController): Animation {
+class ManagedAnimation(val manager: SimpleAnimationManager, override val controller: AnimationController): Animation {
     /** animation state */
     var istate = AnimationState.STOPPED
 

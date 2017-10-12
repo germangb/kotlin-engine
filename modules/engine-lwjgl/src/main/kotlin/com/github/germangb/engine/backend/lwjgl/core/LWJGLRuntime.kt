@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.system.exitProcess
 
-class LWJGLRuntime {
+class LWJGLRuntime(val width: Int, val height: Int) {
     val gfx: GLGraphicsDevice
     val audio: ALAudioDevice
     val res: LWJGLAssetLoader
@@ -29,7 +29,7 @@ class LWJGLRuntime {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
-        window = glfwCreateWindow(640, 480, "OpenGL", 0L, 0L)
+        window = glfwCreateWindow(width, height, "OpenGL", 0L, 0L)
         glfwMakeContextCurrent(window)
 
         GL.createCapabilities()
@@ -40,7 +40,7 @@ class LWJGLRuntime {
         System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
         glGetError()
 
-        gfx = GLGraphicsDevice(640, 480)
+        gfx = GLGraphicsDevice(width, height)
         audio = ALAudioDevice()
         res = LWJGLAssetLoader(audio, LWJGLBackend(this))
         mem = LWJGLBufferManager()
@@ -60,6 +60,7 @@ class LWJGLRuntime {
                 audio.updateStreaming()
                 app.update()
             } catch (e: Exception) {
+                e.printStackTrace()
                 glfwSetWindowShouldClose(window, true)
             } finally {
                 input.updateInput()

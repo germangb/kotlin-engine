@@ -1,10 +1,9 @@
 package com.github.germangb.engine.backend.lwjgl.assets
 
 import com.github.germangb.engine.assets.AssetManager
-import com.github.germangb.engine.assets.MeshAsset
-import com.github.germangb.engine.assets.TextureAsset
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.framework.Actor
+import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
@@ -24,7 +23,12 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
  * Load actor
  */
 fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() -> Unit)? {
-    val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights or aiProcess_FlipUVs
+    val flags = aiProcess_Triangulate or
+            aiProcess_GenUVCoords or
+            aiProcess_GenSmoothNormals or
+            aiProcess_LimitBoneWeights or
+            aiProcess_FlipUVs
+
     val scene = aiImportFile(path, flags) ?: return null
 
     // get bones
@@ -45,21 +49,25 @@ fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() 
     // get meshes
     val meshes = List(scene.mNumMeshes()) {
         val aimesh = AIMesh.create(scene.mMeshes()[it])
-        val attrs = setOf(POSITION, NORMAL, UV, JOINT_ID, JOINT_WEIGHTS)
+        val attrs = setOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
         val mesh = aiMeshToGL(aimesh, attrs, backend.graphics, bones)
         val meshPath = "$path/mesh_$it"
         manager.delegateMesh(mesh, meshPath)
-        MeshAsset(manager, meshPath, attrs) to aimesh.mNumBones()
+        mesh to aimesh.mNumBones()
+        //MeshAsset(manager, meshPath, attrs) to aimesh.mNumBones()
     }
 
-    // texture assets
-    val textures = List(scene.mNumMeshes()) {
-        TextureAsset(manager, "hellknight.png", RGBA8, LINEAR, LINEAR)
+    // gen materials
+    val materials = List(scene.mNumMeshes()) {
+        val mat = Material()
+        manager.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)
+        mat.setTexture("diffuse", manager.getTexture("hellknight.png"))
+        mat
     }
 
     // build hierarchy
-    val node = SafeNode(scene.mRootNode())
-    val blueprint = node.convert(meshes, textures, bones)
+    val node = GCNode(scene.mRootNode())
+    val blueprint = node.convert(manager, meshes, materials, bones)
     aiFreeScene(scene)
     return blueprint
 }
@@ -97,6 +105,8 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
         indexData.putInt(ind[2])
     }
 
+    val hasSkin = attributes.containsAll(listOf(JOINT_IDS, JOINT_WEIGHTS))
+
     fun VertexAttribute.addData(i: Int) {
         when (this) {
             POSITION -> {
@@ -124,42 +134,45 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
         attributes.sorted().forEach { attr -> attr.addData(it) }
     }
 
-    // add bone weights
-    (0 until mesh.mNumBones())
-            .map { AIBone.create(mesh.mBones()[it]) }
-            .forEach { bone ->
-                val name = bone.mName().dataString()
-                val boneId = boneIds[name]?.first ?: -1
-                val weights = bone.mWeights()
+    if (hasSkin) {
 
-                (0 until bone.mNumWeights())
-                        .map { weights[it] }
-                        .forEach {
-                            val vertId = it.mVertexId()
-                            val weight = it.mWeight()
-                            val offset = vertexSize * 4 * vertId
+        // add bone weights
+        (0 until mesh.mNumBones())
+                .map { AIBone.create(mesh.mBones()[it]) }
+                .forEach { bone ->
+                    val name = bone.mName().dataString()
+                    val boneId = boneIds[name]?.first ?: -1
+                    val weights = bone.mWeights()
 
-                            when {
-                                vertexData.getFloat(offset + 12 * 4) == 0.0f -> {
-                                    vertexData.putFloat(offset + 12 * 4, weight)
-                                    vertexData.putFloat(offset + 8 * 4, boneId.toFloat())
+                    (0 until bone.mNumWeights())
+                            .map { weights[it] }
+                            .forEach {
+                                val vertId = it.mVertexId()
+                                val weight = it.mWeight()
+                                val offset = vertexSize * 4 * vertId
+
+                                when {
+                                    vertexData.getFloat(offset + 12 * 4) == 0.0f -> {
+                                        vertexData.putFloat(offset + 12 * 4, weight)
+                                        vertexData.putFloat(offset + 8 * 4, boneId.toFloat())
+                                    }
+                                    vertexData.getFloat(offset + 13 * 4) == 0.0f -> {
+                                        vertexData.putFloat(offset + 13 * 4, weight)
+                                        vertexData.putFloat(offset + 9 * 4, boneId.toFloat())
+                                    }
+                                    vertexData.getFloat(offset + 14 * 4) == 0.0f -> {
+                                        vertexData.putFloat(offset + 14 * 4, weight)
+                                        vertexData.putFloat(offset + 10 * 4, boneId.toFloat())
+                                    }
+                                    vertexData.getFloat(offset + 15 * 4) == 0.0f -> {
+                                        vertexData.putFloat(offset + 15 * 4, weight)
+                                        vertexData.putFloat(offset + 11 * 4, boneId.toFloat())
+                                    }
+                                    else -> throw Exception("Ran out of joint slots!")
                                 }
-                                vertexData.getFloat(offset + 13 * 4) == 0.0f -> {
-                                    vertexData.putFloat(offset + 13 * 4, weight)
-                                    vertexData.putFloat(offset + 9 * 4, boneId.toFloat())
-                                }
-                                vertexData.getFloat(offset + 14 * 4) == 0.0f -> {
-                                    vertexData.putFloat(offset + 14 * 4, weight)
-                                    vertexData.putFloat(offset + 10 * 4, boneId.toFloat())
-                                }
-                                vertexData.getFloat(offset + 15 * 4) == 0.0f -> {
-                                    vertexData.putFloat(offset + 15 * 4, weight)
-                                    vertexData.putFloat(offset + 11 * 4, boneId.toFloat())
-                                }
-                                else -> throw Exception("Ran out of joint slots!")
                             }
-                        }
-            }
+                }
+    }
 
     // create mesh
     indexData.flip()
@@ -177,11 +190,11 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
 /**
  * Convert aiNode to a kotlin node
  */
-class SafeNode(val aiNode: AINode) {
+class GCNode(val aiNode: AINode) {
     /** Child nodes */
-    val children: List<SafeNode> = List(aiNode.mNumChildren()) {
+    val children: List<GCNode> = List(aiNode.mNumChildren()) {
         val aichild = AINode.create(aiNode.mChildren()[it])
-        SafeNode(aichild)
+        GCNode(aichild)
     }
 
     /** Local transform */
@@ -198,10 +211,10 @@ class SafeNode(val aiNode: AINode) {
     /**
      * Convert hierarchy to blueprint
      */
-    fun convert(meshes: List<Pair<MeshAsset, Int>>, textures: List<TextureAsset>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
+    fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Material>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
-        transform.local.set(this@SafeNode.transform)
-        name = this@SafeNode.name
+        transform.local.set(this@GCNode.transform)
+        name = this@GCNode.name
 
         // add joint component
         bones[name]?.let { (id, offset) ->
@@ -209,16 +222,20 @@ class SafeNode(val aiNode: AINode) {
         }
 
         // add meshes
-        this@SafeNode.meshes.forEach {
+        this@GCNode.meshes.forEach {
             addChild {
                 // static mesh
                 if (meshes[it].second == 0) {
-                    addMeshInstancer(meshes[it].first, textures[it])
+                    //val mat = Material()
+                    //mat.setTexture("diffuse", materials[it])
+                    addMeshInstancer(meshes[it].first, materials[it])
                     addChild {
                         addMeshInstance()
                     }
                 } else {
-                    addSkinnedMeshInstancer(root, meshes[it].first, textures[it])
+                    //val mat = Material()
+                    //mat.setTexture("diffuse", materials[it])
+                    addSkinnedMeshInstancer(root, meshes[it].first, materials[it])
                     addChild {
                         addSkinnedMeshInstance()
                     }
@@ -227,8 +244,8 @@ class SafeNode(val aiNode: AINode) {
         }
 
         // add children
-        this@SafeNode.children.forEach {
-            addChild(it.convert(meshes, textures, bones))
+        this@GCNode.children.forEach {
+            addChild(it.convert(manager, meshes, materials, bones))
         }
     }
 }

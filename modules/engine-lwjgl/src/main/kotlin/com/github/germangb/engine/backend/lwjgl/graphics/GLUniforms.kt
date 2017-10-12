@@ -33,8 +33,10 @@ class GLUniforms(val program: GLShaderProgram, val uniformData: FloatBuffer) : U
     }
 
     override fun Texture.bindsTo(name: String) {
-        val unif = getUniform(name)
-        if (unif >= 0) glUniform1i(unif, (this as GLTexture).bind())
+        if (this is GLTexture) {
+            val unif = getUniform(name)
+            if (unif >= 0) glUniform1i(unif, this.bind())
+        }
     }
 
     override fun Vector2c.bindsTo(name: String) {

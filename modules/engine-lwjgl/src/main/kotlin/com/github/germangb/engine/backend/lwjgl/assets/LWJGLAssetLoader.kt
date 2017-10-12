@@ -6,9 +6,13 @@ import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamAudio
+import com.github.germangb.engine.assets.utils.DummyAudio
 import com.github.germangb.engine.backend.lwjgl.core.LWJGLBackend
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.fonts.STBTTFont
+import com.github.germangb.engine.assets.utils.DummyFont
+import com.github.germangb.engine.assets.utils.DummyMesh
+import com.github.germangb.engine.assets.utils.DummyTexture
 import com.github.germangb.engine.fonts.Font
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.assimp.AIMesh
@@ -40,12 +44,12 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
     /**
      * Load assimp scene (skinned meshes and stuff)
      */
-    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend)
+    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend) ?: {}
 
     /**
      * Load texture file
      */
-    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture? {
+    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
         var texture: Texture? = null
 
         stackMemory {
@@ -61,13 +65,13 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             }
         }
 
-        return texture
+        return texture ?: DummyTexture
     }
 
     /**
      * Load a font
      */
-    override fun loadFont(path: String, size: Int, charset: IntRange): Font? {
+    override fun loadFont(path: String, size: Int, charset: IntRange): Font {
         var font: Font? = null
 
         // malloc memory
@@ -102,15 +106,20 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             je_free(ttfData)
         }
 
-        return font
+        return font ?: DummyFont
     }
 
     /**
      * Load mesh
      */
-    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh? {
-        val flags = aiProcess_Triangulate or aiProcess_GenUVCoords or aiProcess_GenNormals or aiProcess_LimitBoneWeights or aiProcess_FlipUVs
-        val scene = aiImportFile(path, flags) ?: return null
+    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh {
+        val flags = aiProcess_Triangulate or
+                    aiProcess_GenUVCoords or
+                    aiProcess_GenNormals or
+                    aiProcess_LimitBoneWeights or
+                    aiProcess_FlipUVs
+
+        val scene = aiImportFile(path, flags) ?: return DummyMesh
         val aimesh = AIMesh.create(scene.mMeshes()[0])
         val mesh = aiMeshToGL(aimesh, attributes, backend.graphics)
         aiFreeScene(scene)
@@ -120,7 +129,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
     /**
      * Load stream of audio
      */
-    override fun loadAudio(path: String): Audio? {
+    override fun loadAudio(path: String): Audio {
         var sound: Audio? = null
 
         stackMemory {
@@ -140,6 +149,6 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             }
         }
 
-        return sound
+        return sound ?: DummyAudio
     }
 }

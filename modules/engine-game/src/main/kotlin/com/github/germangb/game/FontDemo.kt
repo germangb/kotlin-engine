@@ -5,17 +5,25 @@ import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Backend
 import com.github.germangb.engine.framework.Actor
+import com.github.germangb.engine.framework.Material
+import com.github.germangb.engine.framework.Materialc
 import com.github.germangb.engine.framework.components.JointComponent
 import com.github.germangb.engine.framework.components.SkinnedMeshInstanceComponent
 import com.github.germangb.engine.framework.components.SkinnedMeshInstancerComponent
 import com.github.germangb.engine.graphics.TestFunction
-import com.github.germangb.engine.input.*
+import com.github.germangb.engine.graphics.Texture
+import com.github.germangb.engine.input.InputState
+import com.github.germangb.engine.input.KeyboardKey
+import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
 import org.intellij.lang.annotations.Language
 import java.util.*
+
+val Materialc.diffuse get() = getTexture("diffuse")
+val Materialc.normals get() = getTexture("normals")
 
 class FontDemo(val backend: Backend) : Application {
     val animationManager = SimpleAnimationManager()
@@ -63,8 +71,6 @@ class FontDemo(val backend: Backend) : Application {
         animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
     }
 
-    var t = 0f
-
     override fun init() {
         root.transform.local.scale(0.025f)
 
@@ -77,12 +83,12 @@ class FontDemo(val backend: Backend) : Application {
             println("$button $state")
         }
 
-        backend.assets.loadActor("hellknight.md5mesh", assetManager)?.let {
+        backend.assets.loadActor("hellknight.md5mesh", assetManager).let {
             root.addChild(it)
         }
 
         animation.stop()
-        //animation.play()
+        //animation.controller.seek(24*8f)
     }
 
     override fun update() {
@@ -95,12 +101,6 @@ class FontDemo(val backend: Backend) : Application {
             else animation.pause()
         }
 
-        if (animation.state != AnimationState.PLAYING) {
-            if (KeyboardKey.KEY_LEFT.isPressed(backend.input)) t -= 1 / 60f
-            if (KeyboardKey.KEY_RIGHT.isPressed(backend.input)) t += 1 / 60f
-            (animation as? ManagedAnimation)?.controller?.seek(t)
-        }
-
         backend.graphics.state {
             clearColor(0.2f, 0.2f, 0.2f, 1f)
             clearColorBuffer()
@@ -108,8 +108,9 @@ class FontDemo(val backend: Backend) : Application {
             depthTest(TestFunction.LESS)
         }
 
+        val aspect = backend.graphics.width.toFloat() / backend.graphics.height
         val proj = Matrix4()
-                .setPerspective(java.lang.Math.toRadians(55.0).toFloat(), 4 / 3f, 0.01f, 1000f)
+                .setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
                 .lookAt(Vector3(3f, 1.0f, 1f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
 
 
@@ -132,20 +133,20 @@ class FontDemo(val backend: Backend) : Application {
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
             actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
-                inst.mesh.resource?.let { mesh ->
-                    backend.graphics.render(mesh, shader) {
-                        uniforms {
-                            skin bindsTo "u_skin"
-                            proj bindsTo "u_projection"
-                            inst.texture.resource?.let { it bindsTo "u_texture" }
-                        }
-
-                        actor.children
-                                .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-                                .forEach {
-                                    instance()
-                                }
+                val mat = inst.material
+                backend.graphics.render(inst.mesh, shader) {
+                    uniforms {
+                        skin bindsTo "u_skin"
+                        proj bindsTo "u_projection"
+                        mat.diffuse bindsTo "u_texture"
+                        mat.normals bindsTo "u_texture_normals"
                     }
+
+                    actor.children
+                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
+                            .forEach {
+                                instance()
+                            }
                 }
             }
 
@@ -166,7 +167,7 @@ class FontDemo(val backend: Backend) : Application {
             it.reader().forEachLine {
                 if (it.startsWith("node:")) {
                     val node = it.split(":").last()
-                    timelines[node] = AnimationTimeline(rotKeys, posKeys)
+                    timelines[node] = AnimationTimeline(rotKeys, posKeys, emptyList())
                     rotKeys = mutableListOf()
                     posKeys = mutableListOf()
                 } else {
