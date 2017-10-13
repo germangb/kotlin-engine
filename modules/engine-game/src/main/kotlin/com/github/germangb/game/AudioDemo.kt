@@ -2,7 +2,7 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.audio.FloatAudioDecoder
 import com.github.germangb.engine.core.Application
-import com.github.germangb.engine.core.Backend
+import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.MouseButton.MOUSE_BUTTON_1
@@ -12,7 +12,7 @@ import java.nio.FloatBuffer
 /**
  * Procedural audio demo
  */
-class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
+class ProceduralAudio(val backend: Context) : FloatAudioDecoder {
     var phase = 0
     var modul = 0
     var pitchShiftTarget = 0f
@@ -39,7 +39,7 @@ class ProceduralAudio(val backend: Backend) : FloatAudioDecoder {
     override val length = -1
 }
 
-class AudioDemo(val backend: Backend) : Application {
+class AudioDemo(val backend: Context) : Application {
     val audio = let {
         val samples = backend.buffers.malloc(16_000 * 2 * 4).asFloatBuffer()
 

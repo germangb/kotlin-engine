@@ -171,12 +171,13 @@ class Actor {
     /**
      * Adds a child
      */
-    fun addChild(def: Actor.() -> Unit) {
+    fun addChild(def: Actor.() -> Unit)/*: Actor*/ {
         val actor = Actor()
         actor.iparent = this
         actor.iroot = root
         def.invoke(actor)
         ichildren.add(actor)
+        //return actor
     }
 
     /**

@@ -35,17 +35,17 @@ interface AssetManager: Destroyable {
     /**
      * Get loaded texture, or null if it is not loaded
      */
-    fun getTexture(path: String): Texture
+    fun getTexture(path: String): Texture?
 
     /**
      * Get loaded mesh, or null if it is not loaded
      */
-    fun getMesh(path: String): Mesh
+    fun getMesh(path: String): Mesh?
 
     /**
      * Get audio file
      */
-    fun getAudio(path: String): Audio
+    fun getAudio(path: String): Audio?
 
     //
     // Delegate assets

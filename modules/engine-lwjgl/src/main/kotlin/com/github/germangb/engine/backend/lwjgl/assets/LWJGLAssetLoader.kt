@@ -44,12 +44,12 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
     /**
      * Load assimp scene (skinned meshes and stuff)
      */
-    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend) ?: {}
+    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend)
 
     /**
      * Load texture file
      */
-    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
+    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture? {
         var texture: Texture? = null
 
         stackMemory {
@@ -65,13 +65,13 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             }
         }
 
-        return texture ?: DummyTexture
+        return texture
     }
 
     /**
      * Load a font
      */
-    override fun loadFont(path: String, size: Int, charset: IntRange): Font {
+    override fun loadFont(path: String, size: Int, charset: IntRange): Font? {
         var font: Font? = null
 
         // malloc memory
@@ -106,20 +106,20 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             je_free(ttfData)
         }
 
-        return font ?: DummyFont
+        return font
     }
 
     /**
      * Load mesh
      */
-    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh {
+    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh? {
         val flags = aiProcess_Triangulate or
                     aiProcess_GenUVCoords or
                     aiProcess_GenNormals or
                     aiProcess_LimitBoneWeights or
                     aiProcess_FlipUVs
 
-        val scene = aiImportFile(path, flags) ?: return DummyMesh
+        val scene = aiImportFile(path, flags) ?: return null
         val aimesh = AIMesh.create(scene.mMeshes()[0])
         val mesh = aiMeshToGL(aimesh, attributes, backend.graphics)
         aiFreeScene(scene)
@@ -129,7 +129,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
     /**
      * Load stream of audio
      */
-    override fun loadAudio(path: String): Audio {
+    override fun loadAudio(path: String): Audio? {
         var sound: Audio? = null
 
         stackMemory {
@@ -149,6 +149,6 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
             }
         }
 
-        return sound ?: DummyAudio
+        return sound
     }
 }

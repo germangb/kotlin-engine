@@ -9,10 +9,32 @@ import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttributeType.*
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT16
-import org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT24
+import org.lwjgl.opengl.GL14.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
+
+/**
+ * Stencil op GLEnum
+ */
+val StencilOperation.glEnum get() = when(this) {
+    StencilOperation.KEEP -> GL_KEEP
+    StencilOperation.NEGATE -> GL_INVERT
+    StencilOperation.REPLACE -> GL_REPLACE
+    StencilOperation.INCREMENT -> GL_INCR
+    StencilOperation.INCREMENT_WRAP -> GL_INCR_WRAP
+    StencilOperation.DECREMENT -> GL_DECR
+    StencilOperation.DECREMENT_WRAP -> GL_DECR_WRAP
+    StencilOperation.ZERO -> GL_ZERO
+}
+
+/**
+ * Culling mode
+ */
+val CullMode.glEnum get() = when(this) {
+    CullMode.DISABLED -> -1
+    CullMode.BACK_FACES -> GL_BACK
+    CullMode.FRONT_FACES -> GL_FRONT
+}
 
 /** Attribute type */
 val VertexAttributeType.glEnum

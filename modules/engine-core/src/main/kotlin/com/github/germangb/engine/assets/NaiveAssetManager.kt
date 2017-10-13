@@ -6,14 +6,14 @@ import com.github.germangb.engine.assets.utils.DummyMesh
 import com.github.germangb.engine.assets.utils.DummyTexture
 
 class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
-    private val textures = mutableMapOf<String, Texture>()
-    private val meshes = mutableMapOf<String, Mesh>()
-    private val audios = mutableMapOf<String, Audio>()
+    private val textures = mutableMapOf<String, Texture?>()
+    private val meshes = mutableMapOf<String, Mesh?>()
+    private val audios = mutableMapOf<String, Audio?>()
 
     override fun destroy() {
-        textures.values.forEach { it.destroy() }
-        meshes.values.forEach { it.destroy() }
-        audios.values.forEach { it.destroy() }
+        textures.values.filterNotNull().forEach { it.destroy() }
+        meshes.values.filterNotNull().forEach { it.destroy() }
+        audios.values.filterNotNull().forEach { it.destroy() }
     }
 
     override fun isLoaded(path: String) = path in textures || path in meshes || path in audios
@@ -45,11 +45,11 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
         }
     }
 
-    override fun getTexture(path: String) = textures[path] ?: DummyTexture
+    override fun getTexture(path: String) = textures[path]
 
-    override fun getMesh(path: String) = meshes[path] ?: DummyMesh
+    override fun getMesh(path: String) = meshes[path]
 
-    override fun getAudio(path: String) = audios[path]!!
+    override fun getAudio(path: String) = audios[path]
 
     override fun delegateTexture(texture: Texture, path: String) {
         textures[path] = texture

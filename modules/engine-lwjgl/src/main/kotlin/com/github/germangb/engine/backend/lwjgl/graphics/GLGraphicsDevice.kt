@@ -145,41 +145,45 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     }
 
     /**
-     * Create a shader program
+     * Create a skinShader program
      */
     override fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram {
         var vertexShader = -1
         var fragmentShader = -1
         var program = -1
 
-        glCheckError("Error in createShaderProgram() while creating vertex shader") {
+        glCheckError("Error in createShaderProgram() while creating vertex skinShader") {
             vertexShader = glCreateShader(GL_VERTEX_SHADER)
             glShaderSource(vertexShader, vertexSource)
             glCompileShader(vertexShader)
             val log = glGetShaderInfoLog(vertexShader)
             if (log.isNotEmpty()) {
-                System.err.println("Vertex shader compilation error\n$log")
+                System.err.println("Vertex skinShader compilation error\n$log")
             }
         }
 
-        glCheckError("Error in createShaderProgram() while creating fragment shader") {
+        glCheckError("Error in createShaderProgram() while creating fragment skinShader") {
             fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
             glShaderSource(fragmentShader, fragmentSource)
             glCompileShader(fragmentShader)
             val log = glGetShaderInfoLog(fragmentShader)
             if (log.isNotEmpty()) {
-                System.err.println("Fragment shader compilation error\n$log")
+                System.err.println("Fragment skinShader compilation error\n$log")
             }
         }
 
-        glCheckError("Error in createShaderProgram() while linking shader program") {
+        glCheckError("Error in createShaderProgram() while linking skinShader program") {
             program = glCreateProgram()
             glAttachShader(program, vertexShader)
             glAttachShader(program, fragmentShader)
             glLinkProgram(program)
+            glDetachShader(program, vertexShader)
+            glDetachShader(program, fragmentShader)
+            glDeleteShader(vertexShader)
+            glDeleteShader(fragmentShader)
         }
 
-        return GLShaderProgram(program, vertexShader, fragmentShader)
+        return GLShaderProgram(program)
     }
 
     /**

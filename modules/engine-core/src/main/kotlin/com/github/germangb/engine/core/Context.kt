@@ -9,7 +9,7 @@ import com.github.germangb.engine.physics.PhysicsDevice
 /**
  * Engine backend
  */
-interface Backend {
+interface Context {
     /**
      * GraphicsDevice backend
      */
@@ -34,9 +34,4 @@ interface Backend {
      * Buffer management
      */
     val buffers: BufferManager
-
-    /**
-     * Physics backend
-     */
-    val physics: PhysicsDevice
 }

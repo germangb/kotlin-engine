@@ -1,9 +1,6 @@
 package com.github.germangb.engine.framework.components
 
-import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.Component
-import com.github.germangb.engine.framework.Material
-import com.github.germangb.engine.framework.Materialc
+import com.github.germangb.engine.framework.*
 import com.github.germangb.engine.graphics.Mesh
 
 /**

@@ -1,7 +1,8 @@
 package com.github.germangb.engine.backend.lwjgl.assets
 
 import com.github.germangb.engine.assets.AssetManager
-import com.github.germangb.engine.core.Backend
+import com.github.germangb.engine.core.Context
+import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.components.*
@@ -22,7 +23,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 /**
  * Load actor
  */
-fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() -> Unit)? {
+fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() -> Unit)? {
     val flags = aiProcess_Triangulate or
             aiProcess_GenUVCoords or
             aiProcess_GenSmoothNormals or
@@ -60,8 +61,10 @@ fun loadActor(path: String, manager: AssetManager, backend: Backend): (Actor.() 
     // gen materials
     val materials = List(scene.mNumMeshes()) {
         val mat = Material()
-        manager.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)
-        mat.setTexture("diffuse", manager.getTexture("hellknight.png"))
+        backend.assets.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)?.let {
+            manager.delegateTexture(it, "hellknight.png")
+            mat.setTexture("diffuse", it)
+        }
         mat
     }
 
@@ -237,7 +240,7 @@ class GCNode(val aiNode: AINode) {
                     //mat.setTexture("diffuse", materials[it])
                     addSkinnedMeshInstancer(root, meshes[it].first, materials[it])
                     addChild {
-                        addSkinnedMeshInstance()
+                        addSkinnedMeshInstance(AAB())
                     }
                 }
             }
