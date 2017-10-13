@@ -1,3 +1,5 @@
 include ":modules:engine-core"
 include ":modules:engine-game"
 include ":modules:engine-lwjgl"
+include ":modules:engine-plugins:physics"
+include ":modules:engine-plugins:physics:bullet"

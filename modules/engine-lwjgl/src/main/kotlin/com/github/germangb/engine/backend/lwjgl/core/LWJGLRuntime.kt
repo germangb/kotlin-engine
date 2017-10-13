@@ -5,18 +5,21 @@ import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.backend.lwjgl.input.GLFWInputDevice
 import com.github.germangb.engine.backend.lwjgl.assets.LWJGLAssetLoader
 import com.github.germangb.engine.core.Application
+import com.github.germangb.engine.core.Plugin
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.system.exitProcess
 
-class LWJGLRuntime(val width: Int, val height: Int) {
+class LWJGLRuntime(width: Int, height: Int) {
     val gfx: GLGraphicsDevice
     val audio: ALAudioDevice
     val res: LWJGLAssetLoader
     val mem: LWJGLBufferManager
     val input: GLFWInputDevice
     val window: Long
+
+    val plugins = mutableListOf<Plugin>()
 
     init {
         if (!glfwInit()) {
@@ -45,20 +48,23 @@ class LWJGLRuntime(val width: Int, val height: Int) {
         res = LWJGLAssetLoader(audio, LWJGLBackend(this))
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window)
-
     }
 
     /**
      * Kickstart LWJGL
      */
     fun start(app: Application) {
+        plugins.forEach { it.onPreInit() }
         app.init()
+        plugins.forEach { it.onPostInit() }
 
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {
             try {
+                plugins.forEach { it.onPreUpdate() }
                 audio.updateStreaming()
                 app.update()
+                plugins.forEach { it.onPostUpdate() }
             } catch (e: Exception) {
                 e.printStackTrace()
                 glfwSetWindowShouldClose(window, true)
@@ -69,11 +75,13 @@ class LWJGLRuntime(val width: Int, val height: Int) {
             }
         }
 
+        plugins.forEach { it.onPreDestroy() }
         app.destroy()
         gfx.destroy()
         audio.destroy()
         input.destroy()
         glfwDestroyWindow(window)
         glfwTerminate()
+        plugins.forEach { it.onPostDestroy() }
     }
 }

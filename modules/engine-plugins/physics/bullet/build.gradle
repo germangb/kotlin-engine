@@ -1,0 +1,14 @@
+ext {
+    gdxVersion = "1.9.6"
+}
+
+dependencies {
+    compile project(":modules:engine-plugins:physics")
+}
+
+dependencies {
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+    compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+}

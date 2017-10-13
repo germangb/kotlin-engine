@@ -6,9 +6,10 @@ ext {
 dependencies {
     compile project(":modules:engine-core")
     compile project(":modules:engine-game")
+    compile project(":modules:engine-plugins:physics:bullet")
+}
 
-    compile "com.github.spullara.cli-parser:cli-parser:1.1"
-
+dependencies {
     compile "org.lwjgl:lwjgl:$lwjglVersion"
     compile "org.lwjgl:lwjgl-assimp:$lwjglVersion"
     compile "org.lwjgl:lwjgl-glfw:$lwjglVersion"
@@ -16,7 +17,9 @@ dependencies {
     compile "org.lwjgl:lwjgl-openal:$lwjglVersion"
     compile "org.lwjgl:lwjgl-opengl:$lwjglVersion"
     compile "org.lwjgl:lwjgl-stb:$lwjglVersion"
+}
 
+dependencies {
     runtime "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
     runtime "org.lwjgl:lwjgl-assimp:$lwjglVersion:$lwjglNatives"
     runtime "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"

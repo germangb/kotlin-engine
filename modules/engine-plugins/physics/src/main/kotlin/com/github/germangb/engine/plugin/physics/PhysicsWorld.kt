@@ -1,4 +1,4 @@
-package com.github.germangb.engine.physics
+package com.github.germangb.engine.plugin.physics
 
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.math.Matrix4c

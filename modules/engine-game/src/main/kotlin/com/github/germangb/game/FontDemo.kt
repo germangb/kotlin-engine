@@ -20,6 +20,7 @@ import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
+import com.github.germangb.engine.plugin.physics.physics
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -132,7 +133,7 @@ class FontDemo(val backend: Context) : Application {
         """.trimMargin()
         backend.graphics.createShaderProgram(vert, frag)
     }
-    var toggle = false
+    var toggle = true
     val root = Actor()
     val animation by lazy {
         animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
@@ -140,6 +141,8 @@ class FontDemo(val backend: Context) : Application {
     val cube = backend.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
 
     override fun init() {
+        //println("physics: ${backend.physics}")
+
         backend.input.keyboard.setListener { (key, state) ->
             if (state == InputState.PRESSED && key.isPrintable)
                 println("$key")
