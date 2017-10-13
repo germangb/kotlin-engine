@@ -81,9 +81,9 @@ class FontDemo(val backend: Context) : Application {
                                         u_skin[int(a_bones.y+0.001)] * a_weights.y +
                                         u_skin[int(a_bones.z+0.001)] * a_weights.z +
                                         u_skin[int(a_bones.w+0.001)] * a_weights.w;
-
-                gl_Position = u_projection * u_view * a_instance * u_skin_transform * vec4(a_position, 1.0);
-                v_normal = normalize((a_instance * u_skin_transform * vec4(a_normal, 0.0)).xyz);
+                mat4 model = a_instance * u_skin_transform;
+                gl_Position = u_projection * u_view * model * vec4(a_position, 1.0);
+                v_normal = normalize((model * vec4(a_normal, 0.0)).xyz);
                 v_uv = a_uv;
             }
         """.trimMargin()
@@ -191,7 +191,7 @@ class FontDemo(val backend: Context) : Application {
     }
 
     override fun update() {
-        world?.step(1/60f)
+        if (toggle) world?.step(1/60f)
         animationManager.update(1 / 60f)
         root.update()
 
