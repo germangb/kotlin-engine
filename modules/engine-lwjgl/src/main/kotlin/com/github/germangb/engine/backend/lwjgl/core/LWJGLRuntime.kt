@@ -54,9 +54,11 @@ class LWJGLRuntime(width: Int, height: Int) {
      * Kickstart LWJGL
      */
     fun start(app: Application) {
-        plugins.forEach { it.onPreInit() }
+        plugins.forEach {
+            it.onPreInit()
+        }
+
         app.init()
-        plugins.forEach { it.onPostInit() }
 
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {

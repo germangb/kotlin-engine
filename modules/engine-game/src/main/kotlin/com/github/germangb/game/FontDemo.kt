@@ -5,6 +5,7 @@ import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
+import com.github.germangb.engine.framework.Component
 import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.Materialc
 import com.github.germangb.engine.framework.components.*
@@ -139,9 +140,10 @@ class FontDemo(val backend: Context) : Application {
         animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
     }
     val cube = backend.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
+    val world by lazy { backend.physics?.createWorld(Vector3(0f, -9.8f, 0f)) }
 
     override fun init() {
-        //println("physics: ${backend.physics}")
+        world?.createBox(0f, 0f, 0.5f, Vector3(16f, 0.1f, 16f), Matrix4())
 
         backend.input.keyboard.setListener { (key, state) ->
             if (state == InputState.PRESSED && key.isPrintable)
@@ -168,8 +170,16 @@ class FontDemo(val backend: Context) : Application {
                     mat.setTexture("diffuse", tex)
                     addMeshInstancer(mesh, mat)
                     addChild {
-                        transform.local.scale(0.5f)
+                        transform.local.translate(0f, 4f, -4f)
+                        transform.local.rotateX(0.8f)
+                        transform.local.rotateZ(0.3f)
                         addMeshInstance()
+
+                        val body = world?.createBox(1f, 1f, 0.5f, Vector3(0.5f),transform.local)
+
+                        addUpdate {
+                            body?.transform?.get(transform.local)
+                        }
                     }
                 }
             }
@@ -181,6 +191,7 @@ class FontDemo(val backend: Context) : Application {
     }
 
     override fun update() {
+        world?.step(1/60f)
         animationManager.update(1 / 60f)
         root.update()
 
@@ -284,6 +295,7 @@ class FontDemo(val backend: Context) : Application {
         assetManager.destroy()
         staticShader.destroy()
         cube?.destroy()
+        world?.destroy()
     }
 
     fun timeline(file: String): MutableMap<String, AnimationTimeline> {

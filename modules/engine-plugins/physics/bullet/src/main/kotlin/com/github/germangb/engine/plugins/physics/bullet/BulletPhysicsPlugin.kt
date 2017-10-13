@@ -10,19 +10,27 @@ import com.github.germangb.engine.plugin.physics.PhysicsWorld
  * Bullet physics plugin implementation
  */
 object BulletPhysicsPlugin : PhysicsPlugin {
+    val worlds = mutableListOf<BulletPhysicsWorld>()
+
     override fun onPreInit() {
         GdxNativesLoader.load()
         Bullet.init()
     }
+
+    /**
+     * Register a new physics world
+     */
+    override fun createWorld(gravity: Vector3c): PhysicsWorld {
+        val world = BulletPhysicsWorld(this)
+        worlds.add(world)
+        return world
+    }
+
+    // TODO Logging
 
     override fun onPostInit() = Unit
     override fun onPreUpdate() = Unit
     override fun onPostUpdate() = Unit
     override fun onPreDestroy() = Unit
     override fun onPostDestroy() = Unit
-
-    override fun createWorld(gravity: Vector3c): PhysicsWorld {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
 }

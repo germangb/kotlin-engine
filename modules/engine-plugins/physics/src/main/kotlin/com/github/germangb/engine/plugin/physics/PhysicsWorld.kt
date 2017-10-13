@@ -11,7 +11,7 @@ interface PhysicsWorld : Destroyable {
     /**
      * Create a box rigid body
      */
-    fun createBox(half: Vector3c, transform: Matrix4c): RigidBody
+    fun createBox(mass: Float, restitution: Float, friction: Float, half: Vector3c, transform: Matrix4c): RigidBody
 
     /**
      * Step physics simulation

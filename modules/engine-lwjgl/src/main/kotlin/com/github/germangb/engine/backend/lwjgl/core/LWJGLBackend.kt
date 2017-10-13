@@ -8,6 +8,7 @@ import kotlin.reflect.KClass
  * LWJGL based backend
  */
 class LWJGLBackend(val runtime: LWJGLRuntime) : Context {
+    /** Installed plugins */
     val plugins = mutableMapOf<KClass<*>, Plugin>()
 
     override val graphics get() = runtime.gfx
