@@ -1,5 +1,7 @@
 package com.github.germangb.engine.core
 
+fun INFO(msg: String = "No info provided") = Unit
+
 /**
  * Plugin interface
  */
@@ -7,30 +9,30 @@ interface Plugin {
     /**
      * Called before init
      */
-    fun onPreInit()
+    fun onPreInit() = INFO("This method is called before application is init")
 
     /**
      * Called after init
      */
-    fun onPostInit()
+    fun onPostInit() = INFO("This method is called after application is init")
 
     /**
      * Called before update
      */
-    fun onPreUpdate()
+    fun onPreUpdate() = INFO("This method is called before application is updated")
 
     /**
      * Called after update
      */
-    fun onPostUpdate()
+    fun onPostUpdate() = INFO("This method is called before application is updated")
 
     /**
      * Called before destruction
      */
-    fun onPreDestroy()
+    fun onPreDestroy() = INFO("This method is called before application is destroyed")
 
     /**
      * Called after destruction
      */
-    fun onPostDestroy()
+    fun onPostDestroy() = INFO("This method is called after application is destroyed")
 }

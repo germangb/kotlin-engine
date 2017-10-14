@@ -7,7 +7,7 @@ import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.system.MemoryUtil.memAddress
 import java.nio.ByteBuffer
 
-object LWJGLSTBPlugin : STBPlugin {
+object DesktopSTBPlugin : STBPlugin {
     /**
      * Do JNI call directly
      */
@@ -19,11 +19,4 @@ object LWJGLSTBPlugin : STBPlugin {
         stack.pointer = stackPointer
         return call
     }
-
-    override fun onPreInit() = Unit
-    override fun onPostInit() = Unit
-    override fun onPreUpdate() = Unit
-    override fun onPostUpdate() = Unit
-    override fun onPreDestroy() = Unit
-    override fun onPostDestroy() = Unit
 }

@@ -4,13 +4,13 @@ import com.github.germangb.engine.math.Quaternionc
 import com.github.germangb.engine.math.Vector3c
 
 /** Animation key */
-sealed class GenericKey<out T>(val time: Float, val key: T)
+sealed class GenericKey<out T>(open val time: Float, open val key: T)
 
 /** Rotation keys */
-class RotationKey(time: Float, key: Quaternionc) : GenericKey<Quaternionc>(time, key)
+data class RotationKey(override val time: Float, override val key: Quaternionc) : GenericKey<Quaternionc>(time, key)
 
 /** Position keys */
-class PositionKey(time: Float, key: Vector3c) : GenericKey<Vector3c>(time, key)
+data class PositionKey(override val time: Float, override val key: Vector3c) : GenericKey<Vector3c>(time, key)
 
 /** Scale keys */
-class ScaleKey(time: Float, key: Vector3c) : GenericKey<Vector3c>(time, key)
+data class ScaleKey(override val time: Float, override val key: Vector3c) : GenericKey<Vector3c>(time, key)

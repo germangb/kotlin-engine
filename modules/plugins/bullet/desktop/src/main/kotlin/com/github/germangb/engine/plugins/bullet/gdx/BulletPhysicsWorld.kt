@@ -15,7 +15,7 @@ import com.github.germangb.engine.plugin.bullet.RigidBody
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
-class BulletPhysicsWorld(val bullet: BulletPhysicsPlugin) : PhysicsWorld {
+class BulletPhysicsWorld(val bullet: DesktopBulletPlugin) : PhysicsWorld {
     val world: btDynamicsWorld
     val ibodies = mutableListOf<RigidBody>()
 

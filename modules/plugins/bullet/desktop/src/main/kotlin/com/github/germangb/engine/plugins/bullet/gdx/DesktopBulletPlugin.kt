@@ -10,7 +10,7 @@ import com.github.germangb.engine.plugin.bullet.PhysicsWorld
 /**
  * Bullet bullet plugin implementation
  */
-object BulletPhysicsPlugin : BulletPlugin {
+object DesktopBulletPlugin : BulletPlugin {
     val worlds = mutableListOf<BulletPhysicsWorld>()
 
     override fun onPreInit() {
@@ -26,12 +26,4 @@ object BulletPhysicsPlugin : BulletPlugin {
         worlds.add(world)
         return world
     }
-
-    // TODO Logging
-
-    override fun onPostInit() = Unit
-    override fun onPreUpdate() = Unit
-    override fun onPostUpdate() = Unit
-    override fun onPreDestroy() = Unit
-    override fun onPostDestroy() = Unit
 }
