@@ -3,13 +3,17 @@ package com.github.germangb.engine.animation
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Transform
 
-class ActorAnimationController(val root: Actor, val frames: Int, val fps: Int, val timeline: Map<String, AnimationTimeline>, val interpolate: Boolean = true) : AnimationController {
-    val bones = mutableMapOf<String, Transform>()
-    var itime = 0f
+class SampledAnimationController(private val root: Actor,
+                                 private val frames: Int,
+                                 var fps: Int,
+                                 private val timeline: Map<String, AnimationTimeline>,
+                                 private val interpolate: Boolean = true) : AnimationController {
+
+    private val bones = mutableMapOf<String, Transform>()
+    private var frameTime = 0f
 
     override val duration = frames.toFloat() / fps
-
-    override val time get() = itime
+    override val time get() = frameTime / fps
 
     init {
         timeline.forEach { node, _ ->
@@ -25,26 +29,25 @@ class ActorAnimationController(val root: Actor, val frames: Int, val fps: Int, v
     }
 
     fun advance(step: Float) {
-        itime += step
+        frameTime += step * fps
     }
 
     fun updateTransforms() {
         timeline.forEach { node, timeline ->
             bones[node]?.let {
-                val timeCompute = maxOf(minOf(itime * fps, frames.toFloat()), 0f)
+                val timeCompute = maxOf(minOf(frameTime, frames.toFloat()), 0f)
                 timeline.applyTransform(timeCompute, it.local.identity(), interpolate)
             }
         }
     }
 
     override fun seek(time: Float) {
-        this.itime = time
+        this.frameTime = time * fps
         updateTransforms()
     }
 
     override fun reset() {
-        itime = 0f
+        frameTime = 0f
         updateTransforms()
     }
-
 }

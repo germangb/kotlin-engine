@@ -139,7 +139,7 @@ class FontDemo(val ctx: Context) : Application {
     val root = Actor()
     val animation by lazy {
         val (frames, timeline) = timeline("idle2.txt")
-        animationManager.createAnimation(ActorAnimationController(root, frames-1, 24, timeline, interpolate = true))
+        animationManager.createAnimation(SampledAnimationController(root, frames-1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
@@ -289,10 +289,10 @@ class FontDemo(val ctx: Context) : Application {
         animationManager.update(1 / 60f)
         root.update()
 
+        //println("animation(s) = ${animation.controller.time}")
+
         if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
-
         if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation.stop()
-
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
             if (animation.state != AnimationState.PLAYING) animation.play(false)
             else animation.pause()
