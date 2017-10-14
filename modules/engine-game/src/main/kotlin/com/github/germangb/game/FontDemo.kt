@@ -174,6 +174,20 @@ class FontDemo(val ctx: Context) : Application {
 
                 addChild {
                     transformMode = ABSOLUTE
+                    transform.local.translate(-4f, 12f, 2f)
+                    transform.local.rotateX(2f)
+                    transform.local.rotateZ(0.3f)
+                    val compShape = world?.createCompound()
+                    compShape?.addChild(world?.createBox(Vector3(1f))!!, Matrix4())
+                    val body = world?.createBody(compShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
+                    }
+                }
+
+                addChild {
+                    transformMode = ABSOLUTE
                     transform.local.translate(-4f, 8f, 2f)
                     transform.local.rotateX(2f)
                     transform.local.rotateZ(0.3f)
