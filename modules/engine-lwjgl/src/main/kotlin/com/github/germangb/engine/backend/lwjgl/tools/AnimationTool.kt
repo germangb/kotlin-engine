@@ -9,13 +9,14 @@ import java.io.PrintStream
 fun BAIL(): Nothing = throw Exception("BAILING OOOOUT! some error, whatever I don't give a shit")
 
 fun main(args: Array<String>) {
-    val scene = aiImportFile(args[0], aiProcessPreset_TargetRealtime_Fast) ?: BAIL()
+    val scene = aiImportFile("attack3.md5anim", aiProcessPreset_TargetRealtime_Fast) ?: BAIL()
     val anim = AIAnimation.create(scene.mAnimations()[0])
     //println("# Animations = ${scene.mNumAnimations()}")
     //println("# Channels = ${anim.mNumChannels()}")
     //println("Duration = ${anim.mDuration()}f")
 
-    System.setOut(PrintStream(FileOutputStream("animation.txt")))
+    System.setOut(PrintStream(FileOutputStream("attack3.txt")))
+    System.err.println(anim.mDuration())
 
     // dump keyframes
     (0 until anim.mNumChannels())

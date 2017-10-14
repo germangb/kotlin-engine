@@ -135,10 +135,10 @@ class FontDemo(val ctx: Context) : Application {
         """.trimMargin()
         ctx.graphics.createShaderProgram(vert, frag)
     }
-    var toggle = true
     val root = Actor()
     val animation by lazy {
-        animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
+        val (frames, timeline) = timeline("attack3.txt")
+        animationManager.createAnimation(ActorAnimationController(root, frames-1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
@@ -254,20 +254,20 @@ class FontDemo(val ctx: Context) : Application {
             }
         }
 
-        animation.play()
-        //animation.controller.seek(24*8f)
+        animation.controller.reset()
     }
 
     override fun update() {
-        if (toggle) world?.stepSimulation(1 / 60f)
+        world?.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
         root.update()
 
         if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
 
+        if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation.stop()
+
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
-            toggle = !toggle
-            if (toggle) animation.play()
+            if (animation.state != AnimationState.PLAYING) animation.play(false)
             else animation.pause()
         }
 
@@ -368,15 +368,17 @@ class FontDemo(val ctx: Context) : Application {
         world?.destroy()
     }
 
-    fun timeline(file: String): MutableMap<String, AnimationTimeline> {
+    fun timeline(file: String): Pair<Int, MutableMap<String, AnimationTimeline>> {
         var rotKeys = mutableListOf<RotationKey>()
         var posKeys = mutableListOf<PositionKey>()
         val timelines = mutableMapOf<String, AnimationTimeline>()
+        var frames = 0
         ctx.assets.loadGeneric(file)?.use {
             it.reader().forEachLine {
                 if (it.startsWith("node:")) {
                     val node = it.split(":").last()
                     timelines[node] = AnimationTimeline(rotKeys, posKeys, emptyList())
+                    frames = posKeys.size
                     rotKeys = mutableListOf()
                     posKeys = mutableListOf()
                 } else {
@@ -386,6 +388,7 @@ class FontDemo(val ctx: Context) : Application {
                 }
             }
         }
-        return timelines
+        //println(frames)
+        return Pair(frames, timelines)
     }
 }

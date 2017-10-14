@@ -15,9 +15,14 @@ interface Animation: Destroyable {
     val controller: AnimationController
 
     /**
+     * Set animation listener
+     */
+    var listener: AnimationListener?
+
+    /**
      * Play animation
      */
-    fun play()
+    fun play(loop: Boolean = false)
 
     /**
      * Pause animation
@@ -28,4 +33,29 @@ interface Animation: Destroyable {
      * Stop animation
      */
     fun stop()
+}
+
+/**
+ * Animation callbacks
+ */
+interface AnimationListener {
+    /**
+     * Called when animation is played
+     */
+    fun onPlay(animation: Animation)
+
+    /**
+     * Called when animation is paused
+     */
+    fun onPause(animation: Animation)
+
+    /**
+     * Called when animation is stopped
+     */
+    fun onStop(animation: Animation)
+
+    /**
+     * Called when animation is looped (normally after the onStop)
+     */
+    fun onLoop(animation: Animation)
 }

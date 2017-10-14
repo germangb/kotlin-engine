@@ -3,9 +3,13 @@ package com.github.germangb.engine.animation
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Transform
 
-class ActorAnimationController(val root: Actor, val duration: Float, val fps: Int, val timeline: Map<String, AnimationTimeline>, val interpolate: Boolean = true) : AnimationController {
+class ActorAnimationController(val root: Actor, val frames: Int, val fps: Int, val timeline: Map<String, AnimationTimeline>, val interpolate: Boolean = true) : AnimationController {
     val bones = mutableMapOf<String, Transform>()
-    var time = 0f
+    var itime = 0f
+
+    override val duration = frames.toFloat() / fps
+
+    override val time get() = itime
 
     init {
         timeline.forEach { node, _ ->
@@ -21,25 +25,25 @@ class ActorAnimationController(val root: Actor, val duration: Float, val fps: In
     }
 
     fun advance(step: Float) {
-        time += step * fps
-        if (time > duration) time = 0f
+        itime += step
     }
 
     fun updateTransforms() {
         timeline.forEach { node, timeline ->
             bones[node]?.let {
-                timeline.applyTransform(maxOf(minOf(time, duration), 0f), it.local.identity(), interpolate)
+                val timeCompute = maxOf(minOf(itime * fps, frames.toFloat()), 0f)
+                timeline.applyTransform(timeCompute, it.local.identity(), interpolate)
             }
         }
     }
 
     override fun seek(time: Float) {
-        this.time = time * fps
+        this.itime = time
         updateTransforms()
     }
 
     override fun reset() {
-        time = 0f
+        itime = 0f
         updateTransforms()
     }
 

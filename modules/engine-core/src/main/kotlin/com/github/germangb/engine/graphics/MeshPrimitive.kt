@@ -17,6 +17,11 @@ enum class MeshPrimitive {
     TRIANGLE_FAN,
 
     /**
+     * I don't know if this works in opengl core
+     */
+    QUADS,
+
+    /**
      * Individual lines
      */
     LINES,

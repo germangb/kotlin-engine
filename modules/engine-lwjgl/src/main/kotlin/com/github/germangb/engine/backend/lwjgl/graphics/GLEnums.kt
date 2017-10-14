@@ -65,6 +65,7 @@ val TextureFilter.glEnum
  */
 val MeshPrimitive.glEnum
     get() = when (this) {
+        QUADS -> GL_QUADS
         TRIANGLES -> GL_TRIANGLES
         TRIANGLE_STRIP -> GL_TRIANGLE_STRIP
         TRIANGLE_FAN -> GL_TRIANGLE_FAN

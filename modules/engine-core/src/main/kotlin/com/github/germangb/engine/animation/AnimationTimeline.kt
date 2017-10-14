@@ -18,7 +18,7 @@ class AnimationTimeline(private val rotation: List<RotationKey>,
      * Applies transform to a matrix given a normalized duration
      */
     fun applyTransform(time: Float, out: Matrix4, interpolate: Boolean) {
-        val from = time.toInt()
+        val from = time.toInt() % rotation.size
         val to = (time.toInt() + 1) % rotation.size
         val alpha = time - from.toFloat()
         if (interpolate) {
