@@ -1,10 +1,10 @@
-package com.github.germangb.engine.plugin.physics
+package com.github.germangb.engine.plugin.bullet
 
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.math.Matrix4c
 
 /**
- * Body in physics simulation
+ * Body in bullet simulation
  */
 interface RigidBody: Destroyable {
     /**
@@ -13,7 +13,7 @@ interface RigidBody: Destroyable {
     val transform: Matrix4c
 
     /**
-     * User data attached to physics world
+     * User data attached to bullet world
      */
     var data: Any?
 }

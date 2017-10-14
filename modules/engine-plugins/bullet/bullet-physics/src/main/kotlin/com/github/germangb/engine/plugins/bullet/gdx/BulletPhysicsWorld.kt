@@ -1,4 +1,4 @@
-package com.github.germangb.engine.plugins.physics.bullet
+package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape
 import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher
@@ -8,12 +8,11 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
-import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Vector3c
-import com.github.germangb.engine.plugin.physics.PhysicsWorld
-import com.github.germangb.engine.plugin.physics.RigidBody
+import com.github.germangb.engine.plugin.bullet.PhysicsWorld
+import com.github.germangb.engine.plugin.bullet.RigidBody
 
 class BulletPhysicsWorld(val bullet: BulletPhysicsPlugin) : PhysicsWorld {
     /**

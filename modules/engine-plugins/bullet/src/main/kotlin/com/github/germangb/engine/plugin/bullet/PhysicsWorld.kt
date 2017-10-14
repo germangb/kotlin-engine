@@ -1,4 +1,4 @@
-package com.github.germangb.engine.plugin.physics
+package com.github.germangb.engine.plugin.bullet
 
 import com.github.germangb.engine.core.Destroyable
 import com.github.germangb.engine.math.Matrix4c
@@ -14,7 +14,7 @@ interface PhysicsWorld : Destroyable {
     fun createBox(mass: Float, restitution: Float, friction: Float, half: Vector3c, transform: Matrix4c): RigidBody
 
     /**
-     * Step physics simulation
+     * Step bullet simulation
      */
     fun step(dt: Float)
 }

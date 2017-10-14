@@ -1,4 +1,4 @@
-package com.github.germangb.engine.plugins.physics.bullet
+package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.github.germangb.engine.math.*
 

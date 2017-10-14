@@ -3,7 +3,7 @@ ext {
 }
 
 dependencies {
-    compile project(":modules:engine-plugins:physics")
+    compile project(":modules:engine-plugins:bullet")
 }
 
 dependencies {

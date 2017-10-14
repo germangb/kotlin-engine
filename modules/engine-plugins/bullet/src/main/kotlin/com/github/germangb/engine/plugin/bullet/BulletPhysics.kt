@@ -1,13 +1,13 @@
-package com.github.germangb.engine.plugin.physics
+package com.github.germangb.engine.plugin.bullet
 
 import com.github.germangb.engine.math.Vector3c
 
 /**
  * Physics provider interface
  */
-interface PhysicsDevice {
+interface BulletPhysics {
     /**
-     * Create a physics world
+     * Create a bullet world
      */
     fun createWorld(gravity: Vector3c): PhysicsWorld
 }

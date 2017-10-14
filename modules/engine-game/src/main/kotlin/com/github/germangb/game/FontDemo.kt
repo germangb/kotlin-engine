@@ -20,7 +20,7 @@ import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
-import com.github.germangb.engine.plugin.physics.physics
+import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.assimp
 import org.intellij.lang.annotations.Language
 import java.util.*
@@ -140,7 +140,7 @@ class FontDemo(val ctx: Context) : Application {
         animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
-    val world = ctx.physics?.createWorld(Vector3(0f, -9.8f, 0f))
+    val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
     val music = ctx.assets.loadAudio("music.ogg")
 
     override fun init() {

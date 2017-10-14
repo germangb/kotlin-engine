@@ -1,4 +1,4 @@
-package com.github.germangb.engine.plugins.physics.bullet
+package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.github.germangb.engine.math.Matrix4
