@@ -14,4 +14,8 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    dependencies {
+        compile project(":modules:core")
+    }
 }

@@ -1,0 +1,10 @@
+dependencies {
+    compile project(":modules:plugins:bullet")
+}
+
+dependencies {
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+    compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+}
