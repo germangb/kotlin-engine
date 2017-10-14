@@ -11,7 +11,9 @@ class SampledAnimationController(private val root: Actor,
                                  var fps: Int,
                                  private val timeline: Map<String, AnimationTimeline>,
                                  private val interpolate: Boolean = true) : AnimationController {
-
+    /**
+     * Cached bone names
+     */
     private val bones = mutableMapOf<String, Transform>()
     private var frameTime = 0f
 

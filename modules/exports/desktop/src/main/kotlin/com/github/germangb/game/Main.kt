@@ -9,17 +9,15 @@ import com.github.germangb.engine.plugins.bullet.gdx.BulletPhysicsPlugin
 import com.github.germangb.engine.plugins.stb.STBPlugin
 import com.github.germangb.engine.plugins.stb.lwjgl.LWJGLSTBPlugin
 
+fun LWJGLContext.installPlugins() {
+    install(AssimpPlugin::class, LwjglAssimpPlugin(this))
+    install(BulletPlugin::class, BulletPhysicsPlugin)
+    install(STBPlugin::class, LWJGLSTBPlugin)
+}
+
 fun main(args: Array<String>) {
     val runtime = LWJGLRuntime(640, 480)
     val ctx = LWJGLContext(runtime)
-
-    // installed plugins
-    ctx.install(AssimpPlugin::class, LwjglAssimpPlugin(ctx))
-    ctx.install(BulletPlugin::class, BulletPhysicsPlugin)
-    ctx.install(STBPlugin::class, LWJGLSTBPlugin)
-
-    // start application
-    runtime.start {
-        FontDemo(ctx)
-    }
+    ctx.installPlugins()
+    runtime.start { FontDemo(ctx) }
 }
