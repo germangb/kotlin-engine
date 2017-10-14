@@ -5,7 +5,6 @@ import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.Component
 import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.Materialc
 import com.github.germangb.engine.framework.components.*
@@ -22,15 +21,16 @@ import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.physics.physics
+import com.github.germangb.engine.plugins.assimp.assimp
 import org.intellij.lang.annotations.Language
 import java.util.*
 
 val Materialc.diffuse get() = getTexture("diffuse")
 val Materialc.normals get() = getTexture("normals")
 
-class FontDemo(val backend: Context) : Application {
+class FontDemo(val ctx: Context) : Application {
     val animationManager = SimpleAnimationManager()
-    val assetManager = NaiveAssetManager(backend.assets)
+    val assetManager = NaiveAssetManager(ctx.assets)
     val skin = Array<Matrix4c>(110) { Matrix4() }
     val outlineSkinShader = let {
         @Language("GLSL")
@@ -60,7 +60,7 @@ class FontDemo(val backend: Context) : Application {
                 frag_color = vec4(0, 0, 0, 1);
             }
         """.trimMargin()
-        backend.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     val skinShader = let {
         @Language("GLSL")
@@ -100,7 +100,7 @@ class FontDemo(val backend: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        backend.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     val staticShader = let {
         @Language("GLSL")
@@ -132,29 +132,30 @@ class FontDemo(val backend: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        backend.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     var toggle = true
     val root = Actor()
     val animation by lazy {
         animationManager.createAnimation(ActorAnimationController(root, 119f, 24, timeline("idle2.txt"), interpolate = true))
     }
-    val cube = backend.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
-    val world by lazy { backend.physics?.createWorld(Vector3(0f, -9.8f, 0f)) }
+    val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
+    val world = ctx.physics?.createWorld(Vector3(0f, -9.8f, 0f))
+    val music = ctx.assets.loadAudio("music.ogg")
 
     override fun init() {
         world?.createBox(0f, 0f, 0.5f, Vector3(16f, 0.1f, 16f), Matrix4())
 
-        backend.input.keyboard.setListener { (key, state) ->
+        ctx.input.keyboard.setListener { (key, state) ->
             if (state == InputState.PRESSED && key.isPrintable)
                 println("$key")
         }
 
-        backend.input.mouse.setListener { (button, state) ->
+        ctx.input.mouse.setListener { (button, state) ->
             println("$button $state")
         }
 
-        backend.assets.loadActor("hellknight.md5mesh", assetManager)?.let {
+        ctx.assimp.loadActor("hellknight.md5mesh", assetManager)?.let {
             root.addChild {
                 it.invoke(this)
                 transform.local.scale(0.025f)
@@ -185,7 +186,6 @@ class FontDemo(val backend: Context) : Application {
             }
         }
 
-        animation.stop()
         animation.play()
         //animation.controller.seek(24*8f)
     }
@@ -195,20 +195,22 @@ class FontDemo(val backend: Context) : Application {
         animationManager.update(1 / 60f)
         root.update()
 
-        if (KeyboardKey.KEY_P.isJustPressed(backend.input)) {
+        if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
+
+        if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
             toggle = !toggle
             if (toggle) animation.play()
             else animation.pause()
         }
 
-        backend.graphics.state {
+        ctx.graphics.state {
             clearColor(0.2f, 0.2f, 0.2f, 1f)
             clearColorBuffer()
             clearDepthBuffer()
             depthTest(TestFunction.LESS)
         }
 
-        val aspect = backend.graphics.width.toFloat() / backend.graphics.height
+        val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
         val view = Matrix4()
                 .setLookAt(Vector3(3f, 1.0f, 1f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
@@ -233,7 +235,7 @@ class FontDemo(val backend: Context) : Application {
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
             actor.getComponent<MeshInstancerComponent>()?.let { inst ->
-                backend.graphics.render(inst.mesh, staticShader) {
+                ctx.graphics.render(inst.mesh, staticShader) {
                     uniforms {
                         proj bindsTo "u_projection"
                         view bindsTo "u_view"
@@ -250,11 +252,11 @@ class FontDemo(val backend: Context) : Application {
             actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
                 val mat = inst.material
 
-                backend.graphics.state {
+                ctx.graphics.state {
                     cullMode(CullMode.FRONT_FACES)
                 }
 
-                backend.graphics.render(inst.mesh, outlineSkinShader) {
+                ctx.graphics.render(inst.mesh, outlineSkinShader) {
                     uniforms {
                         skin bindsTo "u_skin"
                         proj bindsTo "u_projection"
@@ -266,11 +268,11 @@ class FontDemo(val backend: Context) : Application {
                             .forEach { instance() }
                 }
 
-                backend.graphics.state {
+                ctx.graphics.state {
                     cullMode(CullMode.BACK_FACES)
                 }
 
-                backend.graphics.render(inst.mesh, skinShader) {
+                ctx.graphics.render(inst.mesh, skinShader) {
                     uniforms {
                         skin bindsTo "u_skin"
                         proj bindsTo "u_projection"
@@ -302,7 +304,7 @@ class FontDemo(val backend: Context) : Application {
         var rotKeys = mutableListOf<RotationKey>()
         var posKeys = mutableListOf<PositionKey>()
         val timelines = mutableMapOf<String, AnimationTimeline>()
-        backend.assets.loadGeneric(file)?.use {
+        ctx.assets.loadGeneric(file)?.use {
             it.reader().forEachLine {
                 if (it.startsWith("node:")) {
                     val node = it.split(":").last()

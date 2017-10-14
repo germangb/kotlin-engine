@@ -31,9 +31,4 @@ interface AssetLoader {
      * Load a generic resource (InputStream is not managed...)
      */
     fun loadGeneric(path: String): InputStream?
-
-    /**
-     * Load an actor blueprint. Load intermediate resources in some asset manager
-     */
-    fun loadActor(path: String, manager: AssetManager): (Actor.() -> Unit)?
 }

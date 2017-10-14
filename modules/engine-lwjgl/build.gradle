@@ -7,6 +7,7 @@ dependencies {
     compile project(":modules:engine-core")
     compile project(":modules:engine-game")
     compile project(":modules:engine-plugins:physics:bullet")
+    compile project(":modules:engine-plugins:assimp:assimp-lwjgl")
 }
 
 dependencies {

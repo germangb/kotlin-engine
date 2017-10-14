@@ -1,9 +1,9 @@
 package com.github.germangb.engine.backend.lwjgl.core
 
+import com.github.germangb.engine.backend.lwjgl.assets.LWJGLAssetLoader
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.backend.lwjgl.input.GLFWInputDevice
-import com.github.germangb.engine.backend.lwjgl.assets.LWJGLAssetLoader
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Plugin
 import org.lwjgl.glfw.GLFW.*
@@ -45,7 +45,7 @@ class LWJGLRuntime(width: Int, height: Int) {
 
         gfx = GLGraphicsDevice(width, height)
         audio = ALAudioDevice()
-        res = LWJGLAssetLoader(audio, LWJGLBackend(this))
+        res = LWJGLAssetLoader(audio, LWJGLContext(this))
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window)
     }
@@ -53,11 +53,12 @@ class LWJGLRuntime(width: Int, height: Int) {
     /**
      * Kickstart LWJGL
      */
-    fun start(app: Application) {
+    fun start(appDef: () -> Application) {
         plugins.forEach {
             it.onPreInit()
         }
 
+        val app = appDef.invoke()
         app.init()
 
         glfwShowWindow(window)

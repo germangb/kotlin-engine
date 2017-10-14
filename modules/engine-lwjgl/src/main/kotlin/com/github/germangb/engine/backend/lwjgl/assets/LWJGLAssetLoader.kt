@@ -1,18 +1,13 @@
 package com.github.germangb.engine.backend.lwjgl.assets
 
 import com.github.germangb.engine.assets.AssetLoader
-import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.backend.lwjgl.audio.VorbisSTBStreamAudio
-import com.github.germangb.engine.assets.utils.DummyAudio
-import com.github.germangb.engine.backend.lwjgl.core.LWJGLBackend
+import com.github.germangb.engine.backend.lwjgl.core.LWJGLContext
 import com.github.germangb.engine.backend.lwjgl.core.stackMemory
 import com.github.germangb.engine.backend.lwjgl.fonts.STBTTFont
-import com.github.germangb.engine.assets.utils.DummyFont
-import com.github.germangb.engine.assets.utils.DummyMesh
-import com.github.germangb.engine.assets.utils.DummyTexture
 import com.github.germangb.engine.fonts.Font
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.assimp.AIMesh
@@ -31,7 +26,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 
-class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : AssetLoader {
+class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : AssetLoader {
     /**
      * Load a generic resource
      */
@@ -44,7 +39,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLBackend) : As
     /**
      * Load assimp scene (skinned meshes and stuff)
      */
-    override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, backend)
+    //override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, ctx)
 
     /**
      * Load texture file

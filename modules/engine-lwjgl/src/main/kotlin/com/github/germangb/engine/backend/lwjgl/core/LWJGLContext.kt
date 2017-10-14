@@ -5,9 +5,9 @@ import com.github.germangb.engine.core.Plugin
 import kotlin.reflect.KClass
 
 /**
- * LWJGL based backend
+ * LWJGL based ctx
  */
-class LWJGLBackend(val runtime: LWJGLRuntime) : Context {
+class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     /** Installed plugins */
     val plugins = mutableMapOf<KClass<*>, Plugin>()
 

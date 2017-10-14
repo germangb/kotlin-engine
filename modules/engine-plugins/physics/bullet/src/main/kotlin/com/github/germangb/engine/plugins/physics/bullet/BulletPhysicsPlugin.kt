@@ -2,6 +2,7 @@ package com.github.germangb.engine.plugins.physics.bullet
 
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.badlogic.gdx.utils.GdxNativesLoader
+import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.plugin.physics.PhysicsPlugin
 import com.github.germangb.engine.plugin.physics.PhysicsWorld
@@ -9,7 +10,7 @@ import com.github.germangb.engine.plugin.physics.PhysicsWorld
 /**
  * Bullet physics plugin implementation
  */
-object BulletPhysicsPlugin : PhysicsPlugin {
+class BulletPhysicsPlugin(val ctx: Context) : PhysicsPlugin {
     val worlds = mutableListOf<BulletPhysicsWorld>()
 
     override fun onPreInit() {

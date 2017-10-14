@@ -1,4 +1,5 @@
 dependencies {
     compile project(":modules:engine-core")
     compile project(":modules:engine-plugins:physics")
+    compile project(":modules:engine-plugins:assimp")
 }
