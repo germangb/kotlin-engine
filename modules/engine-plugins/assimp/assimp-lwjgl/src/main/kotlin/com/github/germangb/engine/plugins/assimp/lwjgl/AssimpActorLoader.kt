@@ -224,6 +224,14 @@ class GCNode(val aiNode: AINode) {
             addJoint(id, offset)
         }
 
+        // add children
+        this@GCNode.children.forEach {
+            addChild(it.convert(manager, meshes, materials, bones))
+        }
+
+        // armature root
+        val armRoot = this
+
         // add meshes
         this@GCNode.meshes.forEach {
             addChild {
@@ -238,17 +246,12 @@ class GCNode(val aiNode: AINode) {
                 } else {
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
-                    addSkinnedMeshInstancer(root, meshes[it].first, materials[it])
+                    addSkinnedMeshInstancer(armRoot, meshes[it].first, materials[it])
                     addChild {
                         addSkinnedMeshInstance(AAB())
                     }
                 }
             }
-        }
-
-        // add children
-        this@GCNode.children.forEach {
-            addChild(it.convert(manager, meshes, materials, bones))
         }
     }
 }

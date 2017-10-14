@@ -2,8 +2,6 @@ package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.*
-import com.github.germangb.engine.assets.utils.DummyMesh
-import com.github.germangb.engine.assets.utils.DummyTexture
 
 class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
     private val textures = mutableMapOf<String, Texture?>()

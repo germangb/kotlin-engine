@@ -7,6 +7,7 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.Materialc
+import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.TestFunction
@@ -144,7 +145,8 @@ class FontDemo(val ctx: Context) : Application {
     val music = ctx.assets.loadAudio("music.ogg")
 
     override fun init() {
-        world?.createBox(0f, 0f, 0.5f, Vector3(16f, 0.1f, 16f), Matrix4())
+        val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
+        world?.createBody(floor!!, false, 0f, 0.5f, 0f, Matrix4())
 
         ctx.input.keyboard.setListener { (key, state) ->
             if (state == InputState.PRESSED && key.isPrintable)
@@ -164,23 +166,75 @@ class FontDemo(val ctx: Context) : Application {
 
         assetManager.loadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
-        cube?.let { mesh ->
-            assetManager.getTexture("cube.png")?.let { tex ->
-                root.addChild {
-                    val mat = Material()
-                    mat.setTexture("diffuse", tex)
-                    addMeshInstancer(mesh, mat)
-                    addChild {
-                        transform.local.translate(0f, 4f, -4f)
-                        transform.local.rotateX(0.8f)
-                        transform.local.rotateZ(0.3f)
-                        addMeshInstance()
+        assetManager.getTexture("cube.png")?.let { tex ->
+            root.addChild {
+                val mat = Material()
+                mat.setTexture("diffuse", tex)
+                addMeshInstancer(cube!!, mat)
 
-                        val body = world?.createBox(1f, 1f, 0.5f, Vector3(0.5f),transform.local)
+                addChild {
+                    transformMode = ABSOLUTE
+                    transform.local.translate(-4f, 8f, 2f)
+                    transform.local.rotateX(2f)
+                    transform.local.rotateZ(0.3f)
+                    val compShape = world?.createCompound()
+                    compShape?.addChild(world?.createBox(Vector3(1f))!!, Matrix4())
+                    val body = world?.createBody(compShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
+                    }
+                }
 
-                        addUpdate {
-                            body?.transform?.get(transform.local)
-                        }
+                addChild {
+                    transformMode = ABSOLUTE
+                    transform.local.translate(-4f, 4f, 2f)
+                    transform.local.rotateX(2f)
+                    transform.local.rotateZ(0.3f)
+                    val boxShape = world?.createBox(Vector3(1f))
+                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
+                    }
+                }
+
+                addChild {
+                    transformMode = ABSOLUTE
+                    transform.local.translate(0f, 4f, 4f)
+                    transform.local.rotateX(0.8f)
+                    transform.local.rotateZ(0.3f)
+                    val boxShape = world?.createBox(Vector3(1f))
+                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
+                    }
+                }
+
+                addChild {
+                    transformMode = ABSOLUTE
+                    transform.local.translate(0f, 4f, -4f)
+                    transform.local.rotateX(0.8f)
+                    transform.local.rotateZ(0.3f)
+                    val boxShape = world?.createBox(Vector3(1f))
+                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
+                    }
+                }
+
+                addChild {
+                    transformMode = ABSOLUTE
+                    transform.local.translate(0f, 8f, -4f)
+                    transform.local.rotateX(0.8f)
+                    transform.local.rotateZ(0.3f)
+                    val boxShape = world?.createBox(Vector3(1f))
+                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    addMeshInstance()
+                    addUpdate {
+                        body?.transform?.get(transform.local)
                     }
                 }
             }
@@ -191,7 +245,7 @@ class FontDemo(val ctx: Context) : Application {
     }
 
     override fun update() {
-        if (toggle) world?.step(1/60f)
+        if (toggle) world?.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
         root.update()
 

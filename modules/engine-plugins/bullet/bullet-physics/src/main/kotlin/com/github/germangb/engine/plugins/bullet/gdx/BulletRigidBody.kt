@@ -13,6 +13,7 @@ class BulletRigidBody(val world: BulletPhysicsWorld, val body: btRigidBody, val 
     override val transform get() = motionState.matrix
 
     override fun destroy() {
+        world.ibodies.remove(this)
         world.world.removeRigidBody(body)
     }
 

@@ -31,6 +31,11 @@ class Actor {
     val transform = Transform()
 
     /**
+     * Transformation mode
+     */
+    var transformMode = TransformMode.RELATIVE
+
+    /**
      * Update components of the actors
      */
     private fun updateInternalComponents() {
@@ -149,8 +154,12 @@ class Actor {
         if (this == root) {
             transform.iworld.set(transform.local)
         } else {
-            transform.iworld.set(iparent!!.transform.iworld)
-            transform.iworld.mul(transform.local)
+            if (transformMode == TransformMode.RELATIVE) {
+                transform.iworld.set(iparent!!.transform.iworld)
+                transform.iworld.mul(transform.local)
+            } else {
+                transform.iworld.set(transform.local)
+            }
         }
 
         ichildren.forEach {
