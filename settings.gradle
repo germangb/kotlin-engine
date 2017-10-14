@@ -1,9 +1,16 @@
 include ":modules:core"
 include ":modules:game"
-include ":modules:desktop"
+
+// exports
+include ":modules:exports:desktop"
+
+// plugins
 include ":modules:plugins:bullet"
 include ":modules:plugins:assimp"
 include ":modules:plugins:stb"
+
+// engine backends
+include ":modules:backends:desktop"
 
 // plugin backends
 include ":modules:plugins:stb:desktop"

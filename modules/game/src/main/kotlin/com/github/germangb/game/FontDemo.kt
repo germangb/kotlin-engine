@@ -139,7 +139,7 @@ class FontDemo(val ctx: Context) : Application {
     val root = Actor()
     val animation by lazy {
         val (frames, timeline) = timeline("idle2.txt")
-        animationManager.createAnimation(SampledAnimationController(root, frames-1, 24, timeline, interpolate = true))
+        animationManager.createAnimation(SampledAnimationController(root, frames - 1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
