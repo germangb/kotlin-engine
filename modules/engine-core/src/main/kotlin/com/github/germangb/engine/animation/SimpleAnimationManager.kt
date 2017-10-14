@@ -57,7 +57,7 @@ class ManagedAnimation(val manager: SimpleAnimationManager, override val control
                 } else {
                     istate = AnimationState.STOPPED
                     time = controller.duration
-                    //controller.seek(0f)
+                    controller.seek(time)
                     listener?.onStop(this)
                 }
             }

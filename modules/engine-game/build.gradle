@@ -2,4 +2,5 @@ dependencies {
     compile project(":modules:engine-core")
     compile project(":modules:engine-plugins:bullet")
     compile project(":modules:engine-plugins:assimp")
+    compile project(":modules:engine-plugins:stb")
 }

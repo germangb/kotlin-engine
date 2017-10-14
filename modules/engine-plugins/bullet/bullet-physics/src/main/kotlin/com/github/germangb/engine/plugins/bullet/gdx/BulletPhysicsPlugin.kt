@@ -10,7 +10,7 @@ import com.github.germangb.engine.plugin.bullet.PhysicsWorld
 /**
  * Bullet bullet plugin implementation
  */
-class BulletPhysicsPlugin(val ctx: Context) : BulletPlugin {
+object BulletPhysicsPlugin : BulletPlugin {
     val worlds = mutableListOf<BulletPhysicsWorld>()
 
     override fun onPreInit() {

@@ -30,6 +30,12 @@ enum class VertexAttribute(val size: Int, val type: VertexAttributeType) {
      */
     ID(1, FLOAT),
 
+    /** RGB color */
+    COLOR_RGB(3, FLOAT),
+
+    /** RGBA color */
+    COLOR_RGBA(4, FLOAT),
+
     /**
      * Joint ID
      */

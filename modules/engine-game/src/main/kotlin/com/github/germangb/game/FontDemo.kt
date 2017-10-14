@@ -23,6 +23,7 @@ import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.assimp
+import com.github.germangb.engine.plugins.stb.stb
 import org.intellij.lang.annotations.Language
 import java.util.*
 
@@ -137,12 +138,32 @@ class FontDemo(val ctx: Context) : Application {
     }
     val root = Actor()
     val animation by lazy {
-        val (frames, timeline) = timeline("attack3.txt")
+        val (frames, timeline) = timeline("idle2.txt")
         animationManager.createAnimation(ActorAnimationController(root, frames-1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
     val music = ctx.assets.loadAudio("music.ogg")
+
+    val quadsShader = let {
+        @Language("GLSL")
+        val vert = """#version 450 core
+            layout(location = 0) in vec3 a_position;
+            layout(location = 1) in vec4 a_color;
+            uniform mat4 u_projection;
+            void main () {
+                gl_Position = u_projection * vec4(a_position, 1.0);
+            }
+            """
+        @Language("GLSL")
+        val frag = """#version 450 core
+            out vec4 frag_color;
+            void main () {
+                frag_color = vec4(1.0);
+            }
+            """
+        ctx.graphics.createShaderProgram(vert, frag)
+    }
 
     override fun init() {
         val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
@@ -157,7 +178,7 @@ class FontDemo(val ctx: Context) : Application {
             println("$button $state")
         }
 
-        ctx.assimp.loadActor("hellknight.md5mesh", assetManager)?.let {
+        ctx.assimp?.loadActor("hellknight.md5mesh", assetManager)?.let {
             root.addChild {
                 it.invoke(this)
                 transform.local.scale(0.025f)
@@ -255,6 +276,12 @@ class FontDemo(val ctx: Context) : Application {
         }
 
         animation.controller.reset()
+
+        val data = ctx.buffers.malloc(100000)
+        val quads = ctx.stb?.stb_easy_font_print(0f, 0f, "hello world", data)
+        //println(data)
+        //println(quads)
+        ctx.buffers.free(data)
     }
 
     override fun update() {
@@ -364,6 +391,7 @@ class FontDemo(val ctx: Context) : Application {
         outlineSkinShader.destroy()
         assetManager.destroy()
         staticShader.destroy()
+        quadsShader.destroy()
         cube?.destroy()
         world?.destroy()
     }

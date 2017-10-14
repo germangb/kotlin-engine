@@ -11,4 +11,4 @@ interface AssimpPlugin : Plugin, AssimpLoader
 /**
  * Get assimp loader API
  */
-val Context.assimp get() = getPlugin(AssimpPlugin::class) as AssimpLoader
+val Context.assimp get() = getPlugin(AssimpPlugin::class) as? AssimpLoader
