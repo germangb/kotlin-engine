@@ -1,9 +1,11 @@
 include ":modules:engine-core"
 include ":modules:engine-game"
-include ":modules:engine-lwjgl"
+include ":modules:engine-desktop"
 include ":modules:engine-plugins:bullet"
-include ":modules:engine-plugins:bullet:bullet-physics"
 include ":modules:engine-plugins:assimp"
-include ":modules:engine-plugins:assimp:assimp-lwjgl"
 include ":modules:engine-plugins:stb"
-include ":modules:engine-plugins:stb:stb-lwjgl"
+
+// plugin backends
+include ":modules:engine-plugins:stb:desktop"
+include ":modules:engine-plugins:bullet:desktop"
+include ":modules:engine-plugins:assimp:desktop"
