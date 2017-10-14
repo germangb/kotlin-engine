@@ -1,5 +1,5 @@
 dependencies {
     compile project(":modules:plugins:bullet")
     compile project(":modules:plugins:assimp")
-    compile project(":modules:plugins:stb")
+    compile project(":modules:plugins:debug")
 }

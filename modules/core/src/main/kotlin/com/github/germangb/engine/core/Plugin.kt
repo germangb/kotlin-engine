@@ -1,5 +1,8 @@
 package com.github.germangb.engine.core
 
+/**
+ * Does nothing...
+ */
 fun INFO(msg: String = "No info provided") = Unit
 
 /**

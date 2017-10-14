@@ -7,12 +7,12 @@ include ":modules:exports:desktop"
 // plugins
 include ":modules:plugins:bullet"
 include ":modules:plugins:assimp"
-include ":modules:plugins:stb"
+include ":modules:plugins:debug"
 
 // engine backends
 include ":modules:backends:desktop"
 
 // plugin backends
-include ":modules:plugins:stb:desktop"
 include ":modules:plugins:bullet:desktop"
 include ":modules:plugins:assimp:desktop"
+include ":modules:plugins:debug:desktop"

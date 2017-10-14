@@ -1,0 +1,15 @@
+dependencies {
+    compile project(":modules:plugins:debug")
+}
+
+dependencies {
+    compile "org.lwjgl:lwjgl:$lwjglVersion"
+    compile "org.lwjgl:lwjgl-nanovg:$lwjglVersion"
+    compile "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+}
+
+dependencies {
+    runtime "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
+    runtime "org.lwjgl:lwjgl-nanovg:$lwjglVersion:$lwjglNatives"
+    runtime "org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives"
+}

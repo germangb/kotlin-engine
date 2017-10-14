@@ -32,6 +32,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
+        //glfwWindowHint(GLFW_SAMPLES, 4)
         window = glfwCreateWindow(width, height, "OpenGL", 0L, 0L)
         glfwMakeContextCurrent(window)
 
@@ -54,12 +55,12 @@ class LWJGLRuntime(width: Int, height: Int) {
      * Kickstart LWJGL
      */
     fun start(appDef: () -> Application) {
-        plugins.forEach {
-            it.onPreInit()
-        }
+        plugins.forEach { it.onPreInit() }
 
         val app = appDef.invoke()
         app.init()
+
+        plugins.forEach { it.onPostInit() }
 
         glfwShowWindow(window)
         while (!glfwWindowShouldClose(window)) {
