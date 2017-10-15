@@ -14,7 +14,6 @@ import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
-import com.github.germangb.engine.input.InputState
 import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.input.isPressed
@@ -26,12 +25,13 @@ import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
 import org.intellij.lang.annotations.Language
+import java.text.NumberFormat
 import java.util.*
 
 val Materialc.diffuse get() = getTexture("diffuse")
 val Materialc.normals get() = getTexture("normals")
 
-class FontDemo(val ctx: Context) : Application {
+class Testbed(val ctx: Context) : Application {
     val animationManager = SimpleAnimationManager()
     val assetManager = NaiveAssetManager(ctx.assets)
     val skin = Array<Matrix4c>(110) { Matrix4() }
@@ -139,7 +139,7 @@ class FontDemo(val ctx: Context) : Application {
     }
     val root = Actor()
     val animation by lazy {
-        val (frames, timeline) = timeline("idle2.txt")
+        val (frames, timeline) = timeline("attack3.txt")
         animationManager.createAnimation(SampledAnimationController(root, frames - 1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
@@ -150,10 +150,10 @@ class FontDemo(val ctx: Context) : Application {
         val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
         world?.createBody(floor!!, false, 0f, 0.5f, 0f, Matrix4())
 
-        ctx.input.keyboard.setListener { (key, state) ->
-            if (state == InputState.PRESSED && key.isPrintable)
-                println("$key")
-        }
+//        ctx.input.keyboard.setListener { (key, state) ->
+//            if (state == InputState.PRESSED && key.isPrintable)
+//                println("$key")
+//        }
 
         ctx.input.mouse.setListener { (button, state) ->
             println("$button $state")
@@ -265,7 +265,16 @@ class FontDemo(val ctx: Context) : Application {
     override fun update() {
         if (!KeyboardKey.KEY_D.isPressed(ctx.input)) {
             ctx.debug?.addString("> # Animations = ${animationManager.animations.size}")
-            ctx.debug?.addString("> Animation [state: ${animation.state}, timer: ${animation.controller.time}]")
+            animationManager.animations.forEachIndexed { index, anim ->
+                val time = NumberFormat.getNumberInstance().format(animation.controller.time)
+                ctx.debug?.addString("> # $index [state: ${animation.state}, timer: $time]")
+            }
+            ctx.debug?.addString("-----------------------")
+            ctx.debug?.addString("> # Rigid bodies = ${world?.bodies?.size ?: 0}")
+            world?.bodies?.forEach {
+                val pos = it.transform.getTranslation(Vector3())
+                ctx.debug?.addString("> ${pos.toString(NumberFormat.getNumberInstance())}")
+            }
         }
 
         world?.stepSimulation(1 / 60f)

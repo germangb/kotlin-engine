@@ -5,13 +5,15 @@ package com.github.germangb.engine.animation
  */
 class SimpleAnimationManager : AnimationManager {
     /** Managed animations */
-    override val animations = mutableListOf<ManagedAnimation>()
+    private val ianimations = mutableListOf<ManagedAnimation>()
+
+    override val animations: List<Animation> get() = ianimations
 
     /**
      * Update animations
      */
     override fun update(step: Float) {
-        animations.forEach { it.update(step) }
+        ianimations.forEach { it.update(step) }
     }
 
     /**
@@ -19,7 +21,7 @@ class SimpleAnimationManager : AnimationManager {
      */
     override fun createAnimation(control: AnimationController): Animation {
         val anim = ManagedAnimation(this, control)
-        animations.add(anim)
+        ianimations.add(anim)
         return anim
     }
 
@@ -27,7 +29,7 @@ class SimpleAnimationManager : AnimationManager {
      * Remove animation from manager
      */
     internal fun destroyAnimation(animation: ManagedAnimation) {
-        animations.remove(animation)
+        ianimations.remove(animation)
     }
 }
 

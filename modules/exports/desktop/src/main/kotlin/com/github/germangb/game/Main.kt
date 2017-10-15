@@ -19,5 +19,5 @@ fun main(args: Array<String>) {
     val runtime = LWJGLRuntime(640, 480)
     val ctx = LWJGLContext(runtime)
     ctx.installPlugins()
-    runtime.start { FontDemo(ctx) }
+    runtime.start { Testbed(ctx) }
 }
