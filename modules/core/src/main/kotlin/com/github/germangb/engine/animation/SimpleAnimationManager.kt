@@ -5,9 +5,12 @@ package com.github.germangb.engine.animation
  */
 class SimpleAnimationManager : AnimationManager {
     /** Managed animations */
-    private val ianimations = mutableListOf<ManagedAnimation>()
+    private val ianimations = mutableListOf<ManagedAnimation<*>>()
 
-    override val animations: List<Animation> get() = ianimations
+    /**
+     * List of active animations
+     */
+    override val animations: List<Animation<*>> get() = ianimations
 
     /**
      * Update animations
@@ -19,7 +22,7 @@ class SimpleAnimationManager : AnimationManager {
     /**
      * Create a new
      */
-    override fun createAnimation(control: AnimationController): Animation {
+    override fun <T: AnimationController> createAnimation(control: T): Animation<T> {
         val anim = ManagedAnimation(this, control)
         ianimations.add(anim)
         return anim
@@ -28,62 +31,37 @@ class SimpleAnimationManager : AnimationManager {
     /**
      * Remove animation from manager
      */
-    internal fun destroyAnimation(animation: ManagedAnimation) {
+    internal fun destroyAnimation(animation: ManagedAnimation<*>) {
         ianimations.remove(animation)
     }
 }
 
-class ManagedAnimation(val manager: SimpleAnimationManager, override val controller: AnimationController): Animation {
+class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationManager, override val controller: T): Animation<T> {
     /** animation state */
     var istate = AnimationState.STOPPED
-    var loop = false
     var time = 0f
-
-    var ilistener: AnimationListener? = null
-
-    override var listener: AnimationListener?
-        get() = ilistener
-        set(value) { ilistener = value }
 
     fun update(step: Float) {
         if (istate == AnimationState.PLAYING) {
             controller.update(step)
             time += step
-
-            if (time >= controller.duration) {
-                if (loop) {
-                    while (time > controller.duration) time -= controller.duration
-                    controller.seek(time)
-                    listener?.onStop(this)
-                    listener?.onLoop(this)
-                } else {
-                    istate = AnimationState.STOPPED
-                    time = controller.duration
-                    controller.seek(time)
-                    listener?.onStop(this)
-                }
-            }
         }
     }
 
     override val state get() = istate
 
-    override fun play(loop: Boolean) {
-        this.loop = loop
+    override fun play() {
         istate = AnimationState.PLAYING
-        listener?.onPlay(this)
     }
 
     override fun pause() {
         istate = AnimationState.PAUSED
-        listener?.onPause(this)
     }
 
     override fun stop() {
         time = 0f
         istate = AnimationState.STOPPED
-        controller.reset()
-        listener?.onStop(this)
+        controller.seek(0f)
     }
 
     override fun destroy() = manager.destroyAnimation(this)

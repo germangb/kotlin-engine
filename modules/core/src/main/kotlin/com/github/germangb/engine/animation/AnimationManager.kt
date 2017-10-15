@@ -4,12 +4,12 @@ interface AnimationManager {
     /**
      * Active animations
      */
-    val animations: List<Animation>
+    val animations: List<Animation<*>>
 
     /**
      * Create and manage animation
      */
-    fun createAnimation(control: AnimationController): Animation
+    fun <T: AnimationController> createAnimation(control: T): Animation<T>
 
     /**
      * Set animations

@@ -139,7 +139,7 @@ class Testbed(val ctx: Context) : Application {
     }
     val root = Actor()
     val animation by lazy {
-        val (frames, timeline) = timeline("attack3.txt")
+        val (frames, timeline) = timeline("idle2.txt")
         animationManager.createAnimation(SampledAnimationController(root, frames - 1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
@@ -259,7 +259,9 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        animation.controller.reset()
+        animation.controller.seek(0f)
+
+        animation.controller.time
     }
 
     override fun update() {
@@ -286,7 +288,7 @@ class Testbed(val ctx: Context) : Application {
         if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
         if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation.stop()
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
-            if (animation.state != AnimationState.PLAYING) animation.play(true)
+            if (animation.state != AnimationState.PLAYING) animation.play()
             else animation.pause()
         }
 

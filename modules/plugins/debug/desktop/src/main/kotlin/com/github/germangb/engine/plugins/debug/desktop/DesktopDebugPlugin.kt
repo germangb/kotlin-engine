@@ -27,7 +27,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     override fun onPostInit() {
         // create context
         color = NVGColor.malloc()
-        nv = nvgCreate(NVG_ANTIALIAS)
+        nv = nvgCreate(0)
 
         // load ttf font
         val fontData = resourceAsBuffer("NotoMono-Regular.ttf")

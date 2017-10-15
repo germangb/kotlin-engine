@@ -20,9 +20,4 @@ interface AnimationController {
      * Seek animation
      */
     fun seek(time: Float)
-
-    /**
-     * Reset animation
-     */
-    fun reset()
 }

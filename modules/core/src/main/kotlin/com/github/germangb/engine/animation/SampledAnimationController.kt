@@ -8,7 +8,7 @@ import com.github.germangb.engine.framework.Transform
  */
 class SampledAnimationController(private val root: Actor,
                                  private val frames: Int,
-                                 var fps: Int,
+                                 private val fps: Int,
                                  private val timeline: Map<String, AnimationTimeline>,
                                  private val interpolate: Boolean = true) : AnimationController {
     /**
@@ -33,14 +33,15 @@ class SampledAnimationController(private val root: Actor,
         updateTransforms()
     }
 
-    fun advance(step: Float) {
+    private fun advance(step: Float) {
         frameTime += step * fps
     }
 
-    fun updateTransforms() {
+    private fun updateTransforms() {
+        val modFrameTime = frameTime % frames
         timeline.forEach { node, timeline ->
             bones[node]?.let {
-                val timeCompute = maxOf(minOf(frameTime, frames.toFloat()), 0f)
+                val timeCompute = maxOf(minOf(modFrameTime, frames.toFloat()), 0f)
                 timeline.applyTransform(timeCompute, it.local.identity(), interpolate)
             }
         }
@@ -48,11 +49,6 @@ class SampledAnimationController(private val root: Actor,
 
     override fun seek(time: Float) {
         this.frameTime = time * fps
-        updateTransforms()
-    }
-
-    override fun reset() {
-        frameTime = 0f
         updateTransforms()
     }
 }
