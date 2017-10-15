@@ -6,24 +6,19 @@ import com.github.germangb.engine.core.Plugin
 /**
  * Plugin interface
  */
-interface DebugPlugin : Plugin, DebugAPI
+interface DebugPlugin : Plugin, DebugUtils
 
 /**
  * Debug plugin methods
  */
-interface DebugAPI {
+interface DebugUtils {
     /**
-     * Add debug addString
+     * Set debug text
      */
-    fun addString(x: Float, y: Float, text: String)
-
-    /**
-     * Adds a string to the list
-     */
-    fun addString(text: String)
+    fun setText(builder: StringBuilder.() -> Unit)
 }
 
 /**
  * Get debug plugin
  */
-val Context.debug get() = getPlugin(DebugPlugin::class) as? DebugAPI
+val Context.debug get() = getPlugin(DebugPlugin::class) as? DebugUtils

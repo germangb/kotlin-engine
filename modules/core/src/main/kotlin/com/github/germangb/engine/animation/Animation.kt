@@ -6,7 +6,9 @@ import com.github.germangb.engine.core.Destroyable
  * Animation channel
  */
 interface Animation<out T: AnimationController>: Destroyable {
-    /** Animation state */
+    /**
+     * Animation state
+     */
     val state: AnimationState
 
     /**

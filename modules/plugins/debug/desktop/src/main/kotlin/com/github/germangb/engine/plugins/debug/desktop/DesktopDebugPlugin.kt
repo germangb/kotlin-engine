@@ -3,9 +3,11 @@ package com.github.germangb.engine.plugins.debug.desktop
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.plugins.debug.DebugPlugin
 import org.lwjgl.nanovg.NVGColor
+import org.lwjgl.nanovg.NVGTextRow
 import org.lwjgl.nanovg.NanoVG.*
 import org.lwjgl.nanovg.NanoVGGL3.*
 import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryUtil.*
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -14,15 +16,14 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var nv = 0L
     var font = 0
     lateinit var color: NVGColor
-    val lines = LinkedList<String>()
     var fontSize = 16f
+    var string = ""
+    val rows = NVGTextRow.create(128)
 
-    override fun addString(x: Float, y: Float, text: String) {
-        //TODO
-    }
-
-    override fun addString(text: String) {
-        lines.add(text)
+    override fun setText(builder: StringBuilder.() -> Unit) {
+        val build = StringBuilder()
+        build.builder()
+        string = build.toString()
     }
 
     override fun onPostInit() {
@@ -34,11 +35,11 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         val fontData = resourceAsBuffer("NotoMono-Regular.ttf")
         font = nvgCreateFontMem(nv, "noto-mono", fontData, 0)
 
-        MemoryUtil.memFree(fontData.clear())
+        memFree(fontData.clear())
     }
 
     fun resourceAsBuffer(path: String): ByteBuffer {
-        val data = MemoryUtil.memAlloc(1000000)
+        val data = memAlloc(1000000)
 
         javaClass.getResourceAsStream("../../../../../../../$path")?.use {
             val buffer = ByteArray(512)
@@ -54,14 +55,20 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     }
 
     override fun onPostUpdate() {
+        if (string.isEmpty()) return
+
         // begin drawing context
         val (width, height) = Pair(ctx.graphics.width, ctx.graphics.height)
         nvgBeginFrame(nv, width, height, 1f)
 
+        // get paragraph
+        val numRows = nvgTextBreakLines(nv, string, width.toFloat(), rows)
+        string = ""
+
         // background
         nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.25f))
-        nvgRect(nv, 0f, 0f, width.toFloat(), fontSize * lines.size)
+        nvgRect(nv, 0f, 0f, width.toFloat(), fontSize * numRows)
         nvgFill(nv)
 
         // draw text and shit
@@ -69,28 +76,25 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         nvgFontFaceId(nv, font)
         nvgFontSize(nv, fontSize)
 
-        nvgFontBlur(nv, 2f)
+        nvgFontBlur(nv, 4f)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
-        lines.forEachIndexed { index, line ->
-            nvgText(nv, 0f, fontSize * index + 1, line)
+        for (i in 0 until numRows) {
+            val row = rows[i]
+            nnvgText(nv, 0f, fontSize*i+2, row.start(), row.end())
         }
 
         nvgFontBlur(nv, 0f)
         nvgFillColor(nv, color.rgba(1f, 1f, 1f, 0.75f))
-        lines.forEachIndexed { index, line ->
-            nvgText(nv, 0f, fontSize * index, line)
+        for (i in 0 until numRows) {
+            val row = rows[i]
+            nnvgText(nv, 0f, fontSize*i, row.start(), row.end())
         }
 
         nvgEndFrame(nv)
-
-        lines.clear()
     }
 
     fun NVGColor.rgba(r: Float, g: Float, b: Float, a: Float): NVGColor {
-        r(r)
-        g(g)
-        b(b)
-        a(a)
+        r(r); g(g); b(b); a(a)
         return this
     }
 

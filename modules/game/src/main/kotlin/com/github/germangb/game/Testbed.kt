@@ -265,16 +265,19 @@ class Testbed(val ctx: Context) : Application {
 
     override fun update() {
         if (!KeyboardKey.KEY_D.isPressed(ctx.input)) {
-            ctx.debug?.addString("> # Animations = ${animationManager.animations.size}")
-            animationManager.animations.forEachIndexed { index, anim ->
-                val time = NumberFormat.getNumberInstance().format(animation.time)
-                ctx.debug?.addString("> # $index [state = ${animation.state}, timer = $time]")
-            }
-            ctx.debug?.addString("-----------------------")
-            ctx.debug?.addString("> # Rigid bodies = ${world?.bodies?.size ?: 0}")
-            world?.bodies?.forEach {
-                val pos = it.transform.getTranslation(Vector3())
-                ctx.debug?.addString("> ${pos.toString(NumberFormat.getNumberInstance())}")
+            ctx.debug?.setText {
+                appendln("> Audio gain = ${ctx.audio.gain}")
+                appendln("> # Animations = ${animationManager.animations.size}")
+                animationManager.animations.forEachIndexed { index, anim ->
+                    val time = NumberFormat.getNumberInstance().format(animation.time)
+                    appendln("> # $index [state = ${animation.state}, timer = $time]")
+                }
+                appendln("-".repeat(80))
+                appendln("> # Rigid bodies = ${world?.bodies?.size ?: 0}")
+                world?.bodies?.forEach {
+                    val pos = it.transform.getTranslation(Vector3())
+                    appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
+                }
             }
         }
 
