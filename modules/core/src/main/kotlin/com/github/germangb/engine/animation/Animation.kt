@@ -15,9 +15,14 @@ interface Animation<out T: AnimationController>: Destroyable {
     val controller: T
 
     /**
+     * Animation time
+     */
+    val time: Float
+
+    /**
      * Play animation
      */
-    fun play()
+    fun play(loop: Boolean = false)
 
     /**
      * Pause animation

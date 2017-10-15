@@ -15,10 +15,11 @@ class SampledAnimationController(private val root: Actor,
      * Cached bone names
      */
     private val bones = mutableMapOf<String, Transform>()
-    private var frameTime = 0f
 
-    override val duration = frames.toFloat() / fps
-    override val time get() = frameTime / fps
+    /**
+     * Animation duration
+     */
+    override val duration = frames / fps.toFloat()
 
     init {
         timeline.forEach { node, _ ->
@@ -28,17 +29,8 @@ class SampledAnimationController(private val root: Actor,
         }
     }
 
-    override fun update(step: Float) {
-        advance(step)
-        updateTransforms()
-    }
-
-    private fun advance(step: Float) {
-        frameTime += step * fps
-    }
-
-    private fun updateTransforms() {
-        val modFrameTime = frameTime % frames
+    private fun updateTransforms(frameTime: Float) {
+        val modFrameTime = minOf(frameTime, frames.toFloat())
         timeline.forEach { node, timeline ->
             bones[node]?.let {
                 val timeCompute = maxOf(minOf(modFrameTime, frames.toFloat()), 0f)
@@ -48,7 +40,6 @@ class SampledAnimationController(private val root: Actor,
     }
 
     override fun seek(time: Float) {
-        this.frameTime = time * fps
-        updateTransforms()
+        updateTransforms(time * fps)
     }
 }

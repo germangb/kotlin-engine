@@ -139,8 +139,19 @@ class Testbed(val ctx: Context) : Application {
     }
     val root = Actor()
     val animation by lazy {
+        // load assimp scene with skinned mesh
+        val build = ctx.assimp?.loadActor("hellknight.md5mesh", assetManager)
+        var actor: Actor? = null
+
+        build?.let {
+            actor = root.addChild {
+                it()
+                transform.local.scale(0.025f)
+            }
+        }
+
         val (frames, timeline) = timeline("idle2.txt")
-        animationManager.createAnimation(SampledAnimationController(root, frames - 1, 24, timeline, interpolate = true))
+        animationManager.createAnimation(SampledAnimationController(actor!!, frames - 1, 24, timeline, interpolate = true))
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
@@ -158,16 +169,6 @@ class Testbed(val ctx: Context) : Application {
         ctx.input.mouse.setListener { (button, state) ->
             println("$button $state")
         }
-
-        // load assimp scene with skinned mesh
-        ctx.assimp
-                ?.loadActor("hellknight.md5mesh", assetManager)
-                ?.let { build ->
-                    root.addChild {
-                        build()
-                        transform.local.scale(0.025f)
-                    }
-                }
 
         assetManager.loadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
@@ -260,16 +261,14 @@ class Testbed(val ctx: Context) : Application {
         }
 
         animation.controller.seek(0f)
-
-        animation.controller.time
     }
 
     override fun update() {
         if (!KeyboardKey.KEY_D.isPressed(ctx.input)) {
             ctx.debug?.addString("> # Animations = ${animationManager.animations.size}")
             animationManager.animations.forEachIndexed { index, anim ->
-                val time = NumberFormat.getNumberInstance().format(animation.controller.time)
-                ctx.debug?.addString("> # $index [state: ${animation.state}, timer: $time]")
+                val time = NumberFormat.getNumberInstance().format(animation.time)
+                ctx.debug?.addString("> # $index [state = ${animation.state}, timer = $time]")
             }
             ctx.debug?.addString("-----------------------")
             ctx.debug?.addString("> # Rigid bodies = ${world?.bodies?.size ?: 0}")
@@ -287,8 +286,12 @@ class Testbed(val ctx: Context) : Application {
 
         if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
         if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation.stop()
+        if (KeyboardKey.KEY_0.isJustPressed(ctx.input)) {
+            animation.stop()
+            animation.play(false)
+        }
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
-            if (animation.state != AnimationState.PLAYING) animation.play()
+            if (animation.state != AnimationState.PLAYING) animation.play(false)
             else animation.pause()
         }
 

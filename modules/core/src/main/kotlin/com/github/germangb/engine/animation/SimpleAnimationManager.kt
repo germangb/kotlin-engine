@@ -39,19 +39,39 @@ class SimpleAnimationManager : AnimationManager {
 class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationManager, override val controller: T): Animation<T> {
     /** animation state */
     var istate = AnimationState.STOPPED
-    var time = 0f
+    var loops = false
+    var timer = 0f
+
+    override val time get() = timer
 
     fun update(step: Float) {
         if (istate == AnimationState.PLAYING) {
-            controller.update(step)
-            time += step
+            timer += step
+            controller.seek(timer)
+
+            // animation ending condition
+            if (timer > controller.duration) {
+                if (loops) {
+                    // rewing and continue playing
+                    while (timer > controller.duration) timer -= controller.duration
+                    controller.seek(timer)
+                } else {
+                    // stop animation
+                    controller.seek(controller.duration)
+                    istate = AnimationState.ENDED
+                }
+            }
         }
     }
 
     override val state get() = istate
 
-    override fun play() {
+    override fun play(loop: Boolean) {
+        if (istate == AnimationState.ENDED) {
+            timer = 0f
+        }
         istate = AnimationState.PLAYING
+        loops = loop
     }
 
     override fun pause() {
@@ -59,8 +79,8 @@ class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationM
     }
 
     override fun stop() {
-        time = 0f
         istate = AnimationState.STOPPED
+        timer = 0f
         controller.seek(0f)
     }
 

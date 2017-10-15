@@ -8,5 +8,10 @@ enum class AnimationState {
     STOPPED,
 
     /** Animation paused */
-    PAUSED
+    PAUSED,
+
+    /**
+     * Animation has ended
+     */
+    ENDED
 }

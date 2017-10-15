@@ -15,6 +15,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var font = 0
     lateinit var color: NVGColor
     val lines = LinkedList<String>()
+    var fontSize = 16f
 
     override fun addString(x: Float, y: Float, text: String) {
         //TODO
@@ -57,29 +58,27 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         val (width, height) = Pair(ctx.graphics.width, ctx.graphics.height)
         nvgBeginFrame(nv, width, height, 1f)
 
-        // font params
-        nvgFontFaceId(nv, font)
-        nvgFontSize(nv, 16f)
-
         // background
         nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.25f))
-        nvgRect(nv, 0f, 0f, width.toFloat(), 16f * lines.size)
+        nvgRect(nv, 0f, 0f, width.toFloat(), fontSize * lines.size)
         nvgFill(nv)
 
         // draw text and shit
         nvgTextAlign(nv, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
+        nvgFontFaceId(nv, font)
+        nvgFontSize(nv, fontSize)
 
         nvgFontBlur(nv, 2f)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         lines.forEachIndexed { index, line ->
-            nvgText(nv, 0f, 16f * index + 1, line)
+            nvgText(nv, 0f, fontSize * index + 1, line)
         }
 
         nvgFontBlur(nv, 0f)
         nvgFillColor(nv, color.rgba(1f, 1f, 1f, 0.75f))
         lines.forEachIndexed { index, line ->
-            nvgText(nv, 0f, 16f * index, line)
+            nvgText(nv, 0f, fontSize * index, line)
         }
 
         nvgEndFrame(nv)

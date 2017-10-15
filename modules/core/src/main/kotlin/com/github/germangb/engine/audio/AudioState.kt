@@ -8,5 +8,8 @@ enum class AudioState {
     PAUSED,
 
     /** Audio is stopped */
-    STOPPED
+    STOPPED,
+
+    /** Audio has ended */
+    ENDED
 }
