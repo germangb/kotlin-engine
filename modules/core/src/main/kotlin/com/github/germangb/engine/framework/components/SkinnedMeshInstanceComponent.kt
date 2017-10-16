@@ -7,11 +7,7 @@ import com.github.germangb.engine.framework.Component
 /**
  * Instance of skinned mesh
  */
-class SkinnedMeshInstanceComponent(val aab: AAB) : Component() {
-    override fun init() = Unit
-    override fun update() = Unit
-    override fun receive(message: Any, callback: (Any) -> Unit) = Unit
-}
+class SkinnedMeshInstanceComponent(val aab: AAB) : Component()
 
 /**
  * Adds a skinned mesh component

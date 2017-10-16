@@ -16,15 +16,10 @@ abstract class Component {
     /**
      * Called when the actor is added to the framework
      */
-    abstract fun init()
+    open fun init() = Unit
 
     /**
      * Called
      */
-    abstract fun update()
-
-    /**
-     * Message received
-     */
-    abstract fun receive(message: Any, callback: (Any) -> Unit)
+    open fun update() = Unit
 }

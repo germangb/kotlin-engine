@@ -7,9 +7,7 @@ import com.github.germangb.engine.framework.Component
  * Quick component
  */
 class UpdateComponent(val upd: () -> Unit) : Component() {
-    override fun init() = Unit
     override fun update() = upd.invoke()
-    override fun receive(message: Any, callback: (Any) -> Unit) = Unit
 }
 
 /**

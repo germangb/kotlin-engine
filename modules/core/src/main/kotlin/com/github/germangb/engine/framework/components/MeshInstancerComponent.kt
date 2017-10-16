@@ -8,11 +8,7 @@ import com.github.germangb.engine.graphics.Mesh
 /**
  * Contains mesh instancing information
  */
-class MeshInstancerComponent(val mesh: Mesh, val material: Materialc) : Component() {
-    override fun init() = Unit
-    override fun update() = Unit
-    override fun receive(message: Any, callback: (Any) -> Unit) = Unit
-}
+class MeshInstancerComponent(val mesh: Mesh, val material: Materialc) : Component()
 
 /**
  * Adds a mesh instancer to the actor

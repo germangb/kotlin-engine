@@ -95,29 +95,6 @@ class Actor {
     inline fun <reified T : Component> getComponent() = getComponent(T::class)
 
     /**
-     * Message mode
-     */
-    var messageMode = MessageMode.READ_SEND
-
-    /**
-     * Send a message to the actor
-     */
-    fun send(message: Any, callback: (Any) -> Unit = {}) {
-        if (messageMode.read) {
-            components.forEach {
-                it.receive(message, callback)
-            }
-        }
-
-        // pass message up the hierarchy
-        if (messageMode.send) {
-            children.forEach {
-                it.send(message, callback)
-            }
-        }
-    }
-
-    /**
      * In what order is this actor updated
      */
     var updateMode = UpdateMode.ROOT_FIRST
