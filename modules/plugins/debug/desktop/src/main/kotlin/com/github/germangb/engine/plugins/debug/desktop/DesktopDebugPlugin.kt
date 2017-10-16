@@ -6,10 +6,8 @@ import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NVGTextRow
 import org.lwjgl.nanovg.NanoVG.*
 import org.lwjgl.nanovg.NanoVGGL3.*
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.*
 import java.nio.ByteBuffer
-import java.util.*
 
 class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     /** NanoVG context pointer */
@@ -17,13 +15,13 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var font = 0
     lateinit var color: NVGColor
     var fontSize = 16f
-    var string = ""
+    val string = StringBuilder()
     val rows = NVGTextRow.create(128)
 
-    override fun setText(builder: StringBuilder.() -> Unit) {
-        val build = StringBuilder()
-        build.builder()
-        string = build.toString()
+    override fun add(build: StringBuilder.() -> Unit) = string.build()
+
+    override fun add(str: CharSequence) {
+        string.appendln(str)
     }
 
     override fun onPostInit() {
@@ -63,7 +61,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         // get paragraph
         val numRows = nvgTextBreakLines(nv, string, width.toFloat(), rows)
-        string = ""
+        string.setLength(0)
 
         // background
         nvgBeginPath(nv)

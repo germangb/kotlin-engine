@@ -15,7 +15,12 @@ interface DebugUtils {
     /**
      * Set debug text
      */
-    fun setText(builder: StringBuilder.() -> Unit)
+    fun add(build: StringBuilder.() -> Unit)
+
+    /**
+     * Add string
+     */
+    fun add(str: CharSequence)
 }
 
 /**
