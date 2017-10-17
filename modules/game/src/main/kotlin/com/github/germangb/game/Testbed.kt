@@ -156,7 +156,7 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        ctx.assimp?.loadAnimations("stand.md5anim")?.let { (frames, fps, timeline) ->
+        ctx.assimp?.loadAnimations("idle2.md5anim")?.let { (frames, fps, timeline) ->
             val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
             animationManager.createAnimation(sampled)
         }
@@ -270,7 +270,7 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        animation?.controller?.seek(0f)
+        animation?.play(true)
     }
 
     override fun update() {
@@ -286,7 +286,7 @@ class Testbed(val ctx: Context) : Application {
                 appendln("> Audio gain = ${ctx.audio.gain}")
                 appendln("> # Animations = ${animationManager.animations.size}")
                 animationManager.animations.forEachIndexed { index, anim ->
-                    val time = NumberFormat.getNumberInstance().format(animation?.time?:0)
+                    val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
                     appendln("> # $index [state = ${animation?.state}, timer = $time]")
                 }
             }
@@ -325,12 +325,12 @@ class Testbed(val ctx: Context) : Application {
             depthTest(TestFunction.LESS)
         }
 
-        val offX = ctx.input.mouse.x - ctx.graphics.width/2f
-        val offY = ctx.input.mouse.y - ctx.graphics.height/2f
+        val offX = ctx.input.mouse.x - ctx.graphics.width / 2f
+        val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY*0.001f, 3f + offX*0.001f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
 
         val stack = Stack<Actor>()
 

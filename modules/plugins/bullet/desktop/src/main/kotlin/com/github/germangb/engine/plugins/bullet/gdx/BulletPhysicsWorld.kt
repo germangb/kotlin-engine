@@ -15,7 +15,7 @@ import com.github.germangb.engine.plugin.bullet.RigidBody
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
-class BulletPhysicsWorld(val bullet: DesktopBulletPlugin) : PhysicsWorld {
+class BulletPhysicsWorld(val gravity: Vector3c, val bullet: DesktopBulletPlugin) : PhysicsWorld {
     val world: btDynamicsWorld
     val ibodies = mutableListOf<RigidBody>()
 
@@ -32,6 +32,7 @@ class BulletPhysicsWorld(val bullet: DesktopBulletPlugin) : PhysicsWorld {
         val broadPhase = btDbvtBroadphase()
         val solver = btSequentialImpulseConstraintSolver()
         world = btDiscreteDynamicsWorld(dispatcher, broadPhase, solver, config)
+        world.gravity = auxVec.set(gravity)
     }
 
     override fun stepSimulation(dt: Float) {

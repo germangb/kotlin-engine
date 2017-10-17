@@ -22,7 +22,7 @@ object DesktopBulletPlugin : BulletPlugin {
      * Register a new bullet world
      */
     override fun createWorld(gravity: Vector3c): PhysicsWorld {
-        val world = BulletPhysicsWorld(this)
+        val world = BulletPhysicsWorld(gravity, this)
         worlds.add(world)
         return world
     }
