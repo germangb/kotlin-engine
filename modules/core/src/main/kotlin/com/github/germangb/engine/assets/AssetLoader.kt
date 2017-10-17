@@ -20,7 +20,7 @@ interface AssetLoader {
     /**
      * Load audio
      */
-    fun loadAudio(path: String): Audio?
+    fun loadAudio(path: String, stream: Boolean = true): Audio?
 
     /**
      * Load a font

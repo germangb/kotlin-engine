@@ -16,7 +16,6 @@ import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.isJustPressed
-import com.github.germangb.engine.input.isPressed
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
@@ -32,8 +31,13 @@ val Materialc.diffuse get() = getTexture("diffuse")
 val Materialc.normals get() = getTexture("normals")
 
 class Testbed(val ctx: Context) : Application {
-    val animationManager = SimpleAnimationManager()
     val assetManager = NaiveAssetManager(ctx.assets)
+
+    init {
+        assetManager.preloadAudio("music.ogg", stream=true)
+    }
+
+    val animationManager = SimpleAnimationManager()
     val skin = Array<Matrix4c>(110) { Matrix4() }
     val outlineSkinShader = let {
         @Language("GLSL")
@@ -155,7 +159,9 @@ class Testbed(val ctx: Context) : Application {
     }
     val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
-    val music = ctx.assets.loadAudio("music.ogg")
+    val music = assetManager.getAudio("music.ogg")
+    val click = ctx.assets.loadAudio("click.ogg", stream = false)
+    var debug = true
 
     override fun init() {
         val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
@@ -170,7 +176,7 @@ class Testbed(val ctx: Context) : Application {
             println("$button $state")
         }
 
-        assetManager.loadTexture("cube.png", RGB8, NEAREST, NEAREST)
+        assetManager.preloadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
         assetManager.getTexture("cube.png")?.let { tex ->
             root.addChild {
@@ -264,7 +270,12 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun update() {
-        if (!KeyboardKey.KEY_D.isPressed(ctx.input)) {
+        if (KeyboardKey.KEY_D.isJustPressed(ctx.input)) {
+            println(click)
+            click?.play()
+            debug = debug.not()
+        }
+        if (debug) {
             ctx.debug?.add("HELLO WORLD!!")
 
             ctx.debug?.add {
@@ -299,7 +310,7 @@ class Testbed(val ctx: Context) : Application {
             animation.play(false)
         }
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
-            if (animation.state != AnimationState.PLAYING) animation.play(false)
+            if (animation.state != AnimationState.PLAYING) animation.play(true)
             else animation.pause()
         }
 

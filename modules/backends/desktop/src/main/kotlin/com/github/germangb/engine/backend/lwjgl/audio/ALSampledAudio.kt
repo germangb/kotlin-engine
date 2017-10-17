@@ -12,6 +12,10 @@ class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) 
         val DESTROYED_ERROR = "Sampled sound can't be used after destruction"
     }
 
+    init {
+        alSourcei(source, AL_BUFFER, buffer)
+    }
+
     /** Audio state property */
     override val state: AudioState
         get() = when {
@@ -25,15 +29,6 @@ class ALSampledAudio(private val audio: ALAudioDevice, private val buffer: Int) 
      * Has this audio been destroyed?
      */
     private var destroyed = false
-
-    private var igain = 1f
-
-    override var gain: Float
-        get() = igain
-        set(value) {
-            igain = value*audio.gain
-            alSourcef(source, AL_GAIN, igain)
-        }
 
     /**
      * Play sampled audio

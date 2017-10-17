@@ -17,10 +17,10 @@ import org.lwjgl.stb.STBImage.stbi_load
 import org.lwjgl.stb.STBTTPackContext
 import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype.*
-import org.lwjgl.stb.STBVorbis.stb_vorbis_get_info
-import org.lwjgl.stb.STBVorbis.stb_vorbis_open_filename
+import org.lwjgl.stb.STBVorbis.*
 import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil.NULL
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
@@ -124,23 +124,37 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : As
     /**
      * Load stream of audio
      */
-    override fun loadAudio(path: String): Audio? {
+    override fun loadAudio(path: String, stream: Boolean): Audio? {
         var sound: Audio? = null
 
         stackMemory {
             // open file
-            val error = mallocInt(1)
-            val handle = stb_vorbis_open_filename(path, error, null)
+            if (stream) {
+                val error = mallocInt(1)
 
-            if (handle != NULL) {
-                // decode info
-                val info = STBVorbisInfo.callocStack(this)
-                stb_vorbis_get_info(handle, info)
+                val handle = stb_vorbis_open_filename(path, error, null)
+                if (handle == NULL) {
+                    // TODO error
+                } else {
+                    // decode info
+                    val info = STBVorbisInfo.callocStack(this)
+                    stb_vorbis_get_info(handle, info)
 
-                // create decoder & return sound
-                val decoder = VorbisSTBAudioDecoder(handle, info.channels())
-                val vorbisSound = VorbisSTBStreamAudio(audio, info.sample_rate(), info.channels() == 2, decoder)
-                sound = audio.addStream(vorbisSound)
+                    // create decoder & return sound
+                    val decoder = VorbisSTBAudioDecoder(handle, info.channels())
+                    val vorbisSound = VorbisSTBStreamAudio(audio, info.sample_rate(), info.channels() == 2, decoder)
+                    sound = audio.addStream(vorbisSound)
+                }
+            } else {
+                val channels = mallocInt(1)
+                val sampling = mallocInt(1)
+                val samples = stb_vorbis_decode_filename(path, channels, sampling)
+
+                if (samples == null) {
+                    //TODO error
+                } else {
+                    sound = audio.createAudio(samples, sampling[0], channels[0] == 2)
+                }
             }
         }
 

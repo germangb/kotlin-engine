@@ -25,21 +25,21 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
         audios.forEach { (path, asset) -> println("$path [$asset]") }
     }
 
-    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter) {
+    override fun preloadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter) {
         if (textures[path] == null) {
             textures[path] = loader.loadTexture(path, format, min, mag)
         }
     }
 
-    override fun loadMesh(path: String, attributes: Set<VertexAttribute>) {
+    override fun preloadMesh(path: String, attributes: Set<VertexAttribute>) {
         if (meshes[path] == null) {
             meshes[path] = loader.loadMesh(path, attributes)
         }
     }
 
-    override fun loadAudio(path: String) {
+    override fun preloadAudio(path: String, stream: Boolean) {
         if (audios[path] == null) {
-            audios[path] = loader.loadAudio(path)
+            audios[path] = loader.loadAudio(path, stream)
         }
     }
 
@@ -47,7 +47,11 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
 
     override fun getMesh(path: String) = meshes[path]
 
-    override fun getAudio(path: String) = audios[path]
+    override fun getAudio(path: String) = audios[path] ?: let {
+        val loaded = loader.loadAudio(path)
+        loader.loadAudio(path)?.let { audios[path] = it }
+        loaded
+    }
 
     override fun delegateTexture(texture: Texture, path: String) {
         textures[path] = texture

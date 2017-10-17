@@ -11,17 +11,17 @@ interface AssetManager: Destroyable {
     /**
      * Tell the resource manager to load a texture
      */
-    fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
+    fun preloadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
 
     /**
      * Tell the resource manager to load a mesh
      */
-    fun loadMesh(path: String, attributes: Set<VertexAttribute>)
+    fun preloadMesh(path: String, attributes: Set<VertexAttribute>)
 
     /**
      * Load audio file
      */
-    fun loadAudio(path: String)
+    fun preloadAudio(path: String, stream: Boolean = false)
 
     /**
      * Check if resource is loaded

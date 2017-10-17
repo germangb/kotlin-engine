@@ -9,7 +9,6 @@ import org.lwjgl.openal.AL10.*
  * Registers a source in AL audio device
  */
 abstract class ALAudio(val dev: ALAudioDevice) : Audio {
-
     /** OpenAL audio source */
     val source = alGenSources()
 
