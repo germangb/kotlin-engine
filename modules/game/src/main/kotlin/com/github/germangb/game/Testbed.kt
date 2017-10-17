@@ -34,7 +34,9 @@ class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx.assets)
 
     init {
-        assetManager.preloadAudio("music.ogg", stream=true)
+        assetManager.preloadAudio("music.ogg")
+        assetManager.preloadAudio("click.ogg", stream = false)
+        assetManager.preloadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     }
 
     val animationManager = SimpleAnimationManager()
@@ -154,13 +156,15 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        val (frames, timeline) = timeline("idle2.txt")
-        animationManager.createAnimation(SampledAnimationController(actor!!, frames - 1, 24, timeline, interpolate = true))
+        ctx.assimp?.loadAnimations("stand.md5anim")?.let { (frames, fps, timeline) ->
+            val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
+            animationManager.createAnimation(sampled)
+        }
     }
-    val cube = ctx.assets.loadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
+    val cube = assetManager.getMesh("cube.blend")
     val music = assetManager.getAudio("music.ogg")
-    val click = ctx.assets.loadAudio("click.ogg", stream = false)
+    val click = assetManager.getAudio("click.ogg")
     var debug = true
 
     override fun init() {
@@ -266,7 +270,7 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        animation.controller.seek(0f)
+        animation?.controller?.seek(0f)
     }
 
     override fun update() {
@@ -282,8 +286,8 @@ class Testbed(val ctx: Context) : Application {
                 appendln("> Audio gain = ${ctx.audio.gain}")
                 appendln("> # Animations = ${animationManager.animations.size}")
                 animationManager.animations.forEachIndexed { index, anim ->
-                    val time = NumberFormat.getNumberInstance().format(animation.time)
-                    appendln("> # $index [state = ${animation.state}, timer = $time]")
+                    val time = NumberFormat.getNumberInstance().format(animation?.time?:0)
+                    appendln("> # $index [state = ${animation?.state}, timer = $time]")
                 }
             }
 
@@ -304,14 +308,14 @@ class Testbed(val ctx: Context) : Application {
         //println("animation(s) = ${animation.controller.time}")
 
         if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
-        if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation.stop()
+        if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation?.stop()
         if (KeyboardKey.KEY_0.isJustPressed(ctx.input)) {
-            animation.stop()
-            animation.play(false)
+            animation?.stop()
+            animation?.play(false)
         }
         if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
-            if (animation.state != AnimationState.PLAYING) animation.play(true)
-            else animation.pause()
+            if (animation?.state != AnimationState.PLAYING) animation?.play(true)
+            else animation?.pause()
         }
 
         ctx.graphics.state {
@@ -321,11 +325,12 @@ class Testbed(val ctx: Context) : Application {
             depthTest(TestFunction.LESS)
         }
 
+        val offX = ctx.input.mouse.x - ctx.graphics.width/2f
+        val offY = ctx.input.mouse.y - ctx.graphics.height/2f
+
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4()
-                .setLookAt(Vector3(3f, 1.0f, 1f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
-                .setLookAt(Vector3(6f, 4.0f, 3f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY*0.001f, 3f + offX*0.001f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
 
         val stack = Stack<Actor>()
 

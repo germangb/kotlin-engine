@@ -1,5 +1,9 @@
 package com.github.germangb.engine.plugins.assimp.lwjgl
 
+import com.github.germangb.engine.animation.AnimationTimeline
+import com.github.germangb.engine.animation.PositionKey
+import com.github.germangb.engine.animation.RotationKey
+import com.github.germangb.engine.animation.ScaleKey
 import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.AAB
@@ -12,13 +16,55 @@ import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
-import org.lwjgl.assimp.AIBone
-import org.lwjgl.assimp.AIMatrix4x4
-import org.lwjgl.assimp.AIMesh
-import org.lwjgl.assimp.AINode
+import com.github.germangb.engine.math.Quaternion
+import com.github.germangb.engine.math.Vector3
+import com.github.germangb.engine.plugins.assimp.AnimationData
+import org.lwjgl.assimp.*
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
+
+/**
+ * Load animation data
+ */
+fun loadAIAnimation(path: String): AnimationData? {
+    val scene = aiImportFile(path, aiProcessPreset_TargetRealtime_Fast) ?: return null
+    val anim = AIAnimation.create(scene.mAnimations()[0])
+
+    val fps = anim.mTicksPerSecond()
+    val duration = anim.mDuration().toInt()
+    val timelines = mutableMapOf<String, AnimationTimeline>()
+
+    // dump keyframes
+    (0 until anim.mNumChannels())
+            .map { AINodeAnim.create(anim.mChannels()[it]) }
+            .forEachIndexed { i, ch ->
+                val node = ch.mNodeName().dataString()
+
+                // timeline
+                val pos = mutableListOf<PositionKey>()
+                val rot = mutableListOf<RotationKey>()
+                val sca = mutableListOf<ScaleKey>()
+
+                // dump rotation keys
+                (0 until ch.mNumRotationKeys())
+                        .map { ch.mRotationKeys()[it] }
+                        .forEachIndexed { index, it ->
+                            val time = it.mTime()
+                            val quat = it.mValue()
+                            val trans = ch.mPositionKeys()[index].mValue()
+
+                            pos.add(PositionKey(time.toFloat(), Vector3(trans.x(), trans.y(), trans.z())))
+                            rot.add(RotationKey(time.toFloat(), Quaternion(quat.x(), quat.y(), quat.z(), quat.w())))
+                            sca.add(ScaleKey(time.toFloat(), Vector3(1f)))
+                        }
+                //println("node:$node")
+                timelines[node] = AnimationTimeline(rot, pos, sca)
+            }
+
+    aiFreeScene(scene)
+    return AnimationData(duration, fps.toInt(), timelines)
+}
 
 /**
  * Load actor
