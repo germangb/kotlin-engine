@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotl in-gradle-plugin:$kotlinVersion"
     }
 }
 
@@ -19,7 +19,7 @@ ext {
 }
 
 allprojects {
-    if (properties["js"]) {
+    if (properties["javascript"]) {
         apply plugin: "kotlin2js"
     } else {
         apply plugin: "kotlin"
