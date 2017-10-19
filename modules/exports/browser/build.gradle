@@ -1,0 +1,8 @@
+compileKotlin2Js {
+    kotlinOptions.verbose = true
+    kotlinOptions.moduleKind = "plain"
+}
+
+dependencies {
+    compile project(":modules:backends:browser")
+}

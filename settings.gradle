@@ -3,6 +3,7 @@ include ":modules:game"
 
 // exports
 include ":modules:exports:desktop"
+include ":modules:exports:browser"
 
 // plugins
 include ":modules:plugins:bullet"
@@ -11,6 +12,7 @@ include ":modules:plugins:debug"
 
 // engine backends
 include ":modules:backends:desktop"
+include ":modules:backends:browser"
 
 // plugin backends
 include ":modules:plugins:bullet:desktop"

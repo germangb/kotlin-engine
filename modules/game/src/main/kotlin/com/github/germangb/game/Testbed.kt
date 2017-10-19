@@ -275,7 +275,6 @@ class Testbed(val ctx: Context) : Application {
 
     override fun update() {
         if (KeyboardKey.KEY_D.isJustPressed(ctx.input)) {
-            println(click)
             click?.play()
             debug = debug.not()
         }
@@ -330,7 +329,7 @@ class Testbed(val ctx: Context) : Application {
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.25f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
 
         val stack = Stack<Actor>()
 
