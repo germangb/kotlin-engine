@@ -2,8 +2,7 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.animation.*
 import com.github.germangb.engine.assets.NaiveAssetManager
-import com.github.germangb.engine.audio.AudioState
-import com.github.germangb.engine.audio.AudioState.*
+import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
@@ -16,7 +15,6 @@ import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
-import com.github.germangb.engine.input.KeyboardKey
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
