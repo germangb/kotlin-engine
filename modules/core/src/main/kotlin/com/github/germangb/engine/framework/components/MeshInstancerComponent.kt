@@ -2,7 +2,7 @@ package com.github.germangb.engine.framework.components
 
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.Component
-import com.github.germangb.engine.framework.Materialc
+import com.github.germangb.engine.framework.materials.Materialc
 import com.github.germangb.engine.graphics.Mesh
 
 /**

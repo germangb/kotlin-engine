@@ -29,13 +29,6 @@ fun glCheckError(message: String = "No message provided", action: () -> Unit) {
     }
 }
 
-/**
- * Assert audio condition
- */
-fun ASSERT_CONDITION(condition: Boolean, message: String = "No message provided") {
-    if (condition) throw Exception(message)
-}
-
 /** Convert gl error to readable string */
 internal fun Int.asGlError() = when (this) {
     GL_NO_ERROR -> "GL_NO_ERROR"

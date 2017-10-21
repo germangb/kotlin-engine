@@ -2,19 +2,22 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.animation.*
 import com.github.germangb.engine.assets.NaiveAssetManager
+import com.github.germangb.engine.audio.AudioState
+import com.github.germangb.engine.audio.AudioState.*
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.Material
-import com.github.germangb.engine.framework.Materialc
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
+import com.github.germangb.engine.framework.materials.Material
+import com.github.germangb.engine.framework.materials.diffuse
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.TestFunction
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey
+import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
@@ -26,9 +29,6 @@ import com.github.germangb.engine.plugins.debug.debug
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
-
-val Materialc.diffuse get() = getTexture("diffuse")
-val Materialc.normals get() = getTexture("normals")
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx.assets)
@@ -185,7 +185,7 @@ class Testbed(val ctx: Context) : Application {
         assetManager.getTexture("cube.png")?.let { tex ->
             root.addChild {
                 val mat = Material()
-                mat.setTexture("diffuse", tex)
+                mat.diffuse = tex
                 addMeshInstancer(cube!!, mat)
 
                 addChild {
@@ -274,7 +274,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun update() {
-        if (KeyboardKey.KEY_D.isJustPressed(ctx.input)) {
+        if (KEY_D.isJustPressed(ctx.input)) {
             click?.play()
             debug = debug.not()
         }
@@ -282,7 +282,13 @@ class Testbed(val ctx: Context) : Application {
             ctx.debug?.add("HELLO WORLD!!")
 
             ctx.debug?.add {
-                appendln("> Audio gain = ${ctx.audio.gain}")
+                val src = ctx.audio.sources
+                appendln("> # Audio sources = ${src.size}, gain = ${ctx.audio.gain}")
+                src.forEachIndexed { index, audio ->
+                    appendln("> # $index state = ${audio.state}, gain = ${audio.gain}")
+                }
+
+                appendln("-".repeat(80))
                 appendln("> # Animations = ${animationManager.animations.size}")
                 animationManager.animations.forEachIndexed { index, anim ->
                     val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
@@ -306,13 +312,16 @@ class Testbed(val ctx: Context) : Application {
 
         //println("animation(s) = ${animation.controller.time}")
 
-        if (KeyboardKey.KEY_SPACE.isJustPressed(ctx.input)) music?.play()
-        if (KeyboardKey.KEY_S.isJustPressed(ctx.input)) animation?.stop()
-        if (KeyboardKey.KEY_0.isJustPressed(ctx.input)) {
+        if (KEY_SPACE.isJustPressed(ctx.input)) {
+            if (music?.state == PLAYING) music.pause()
+            else music?.play()
+        }
+        if (KEY_S.isJustPressed(ctx.input)) animation?.stop()
+        if (KEY_0.isJustPressed(ctx.input)) {
             animation?.stop()
             animation?.play(false)
         }
-        if (KeyboardKey.KEY_P.isJustPressed(ctx.input)) {
+        if (KEY_P.isJustPressed(ctx.input)) {
             if (animation?.state != AnimationState.PLAYING) animation?.play(true)
             else animation?.pause()
         }
@@ -393,7 +402,6 @@ class Testbed(val ctx: Context) : Application {
                         proj bindsTo "u_projection"
                         view bindsTo "u_view"
                         mat.diffuse bindsTo "u_texture"
-                        mat.normals bindsTo "u_texture_normals"
                     }
 
                     actor.children

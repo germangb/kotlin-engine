@@ -15,6 +15,11 @@ interface AudioDevice {
     var gain: Float
 
     /**
+     * Active audio sources
+     */
+    val sources: List<Audio>
+
+    /**
      * Set listener orientation (for 3D audio rendering)
      */
     fun setListener(position: Vector3c, look: Vector3c, up: Vector3c)

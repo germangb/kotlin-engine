@@ -2,17 +2,12 @@ package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.AudioState
 import com.github.germangb.engine.audio.GenericAudioDecoder
-import com.github.germangb.engine.backend.lwjgl.core.ASSERT_CONDITION
 import org.lwjgl.openal.AL10.*
 
 /**
  * Generic audio streaming
  */
 abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, stereo: Boolean, val decoder: GenericAudioDecoder<*>) : ALAudio(audio) {
-    companion object {
-        val STREAM_CLOSED = "The audio stream is closed"
-    }
-
     /**
      * Audio state
      */
@@ -94,8 +89,6 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
      * Ensure buffer is always full
      */
     fun updateStreaming() {
-        ASSERT_CONDITION(destroyed, STREAM_CLOSED)
-
         if (state == AudioState.PLAYING) {
             updateBuffer()
 
@@ -110,8 +103,6 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
     }
 
     override fun play(loop: Boolean) {
-        ASSERT_CONDITION(destroyed, STREAM_CLOSED)
-
         if (state == AudioState.STOPPED) {
             decoder.rewind()
             updateBuffer()
@@ -122,15 +113,11 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
     }
 
     override fun pause() {
-        ASSERT_CONDITION(destroyed, STREAM_CLOSED)
-
         alSourcePause(source)
         istate = AudioState.PAUSED
     }
 
     override fun stop() {
-        ASSERT_CONDITION(destroyed, STREAM_CLOSED)
-
         if (state != AudioState.STOPPED) {
             alSourceStop(source)
             istate = AudioState.STOPPED
@@ -146,7 +133,7 @@ abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: In
             emptyBuffer()
             alDeleteSources(source)
             istate = AudioState.STOPPED
-            audio.removeStream(this)
+            audio.UNREGISTER_AUDIO(this)
         }
     }
 

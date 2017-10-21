@@ -21,7 +21,7 @@ interface AssetManager: Destroyable {
     /**
      * Load audio file
      */
-    fun preloadAudio(path: String, stream: Boolean = false)
+    fun preloadAudio(path: String, stream: Boolean = true)
 
     /**
      * Check if resource is loaded

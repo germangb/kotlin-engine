@@ -5,4 +5,6 @@ compileKotlin2Js {
 
 dependencies {
     compile project(":modules:backends:browser")
+    compile project(":modules:game")
+    compile project(":modules:core")
 }

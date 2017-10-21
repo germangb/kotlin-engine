@@ -8,8 +8,9 @@ import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.Material
 import com.github.germangb.engine.framework.components.*
+import com.github.germangb.engine.framework.materials.Material
+import com.github.germangb.engine.framework.materials.diffuse
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
@@ -109,7 +110,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
         val mat = Material()
         backend.assets.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)?.let {
             manager.delegateTexture(it, "hellknight.png")
-            mat.setTexture("diffuse", it)
+            mat.diffuse = it
         }
         mat
     }

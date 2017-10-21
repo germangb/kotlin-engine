@@ -46,5 +46,6 @@ abstract class ALAudio(val dev: ALAudioDevice) : Audio {
     override fun destroy() {
         alDeleteSources(source)
         dev.alSources.remove(this)
+        dev.UNREGISTER_AUDIO(this)
     }
 }

@@ -20,7 +20,6 @@ import org.lwjgl.stb.STBTruetype.*
 import org.lwjgl.stb.STBVorbis.*
 import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil.NULL
-import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
@@ -143,7 +142,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : As
                     // create decoder & return sound
                     val decoder = VorbisSTBAudioDecoder(handle, info.channels())
                     val vorbisSound = VorbisSTBStreamAudio(audio, info.sample_rate(), info.channels() == 2, decoder)
-                    sound = audio.addStream(vorbisSound)
+                    sound = audio.REGISTER_AUDIO(vorbisSound)
                 }
             } else {
                 val channels = mallocInt(1)
