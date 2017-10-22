@@ -23,8 +23,14 @@ class BulletPhysicsWorld(val gravity: Vector3c, val bullet: DesktopBulletPlugin)
 
     companion object {
         val auxMat = GdxMatrix4()
-        val auxVec = GdxVector3()
+        val auxVec0 = GdxVector3()
+        val auxVec1 = GdxVector3()
     }
+
+    /**
+     * Ray test callback
+     */
+    val closestCallback = ClosestRayResultCallback(auxVec0, auxVec1)
 
     init {
         val config = btDefaultCollisionConfiguration()
@@ -32,7 +38,7 @@ class BulletPhysicsWorld(val gravity: Vector3c, val bullet: DesktopBulletPlugin)
         val broadPhase = btDbvtBroadphase()
         val solver = btSequentialImpulseConstraintSolver()
         world = btDiscreteDynamicsWorld(dispatcher, broadPhase, solver, config)
-        world.gravity = auxVec.set(gravity)
+        world.gravity = auxVec0.set(gravity)
     }
 
     override fun stepSimulation(dt: Float) {
@@ -43,22 +49,36 @@ class BulletPhysicsWorld(val gravity: Vector3c, val bullet: DesktopBulletPlugin)
         bullet.worlds.remove(this)
     }
 
+    override fun rayTestClosest(from: Vector3c, to: Vector3c): RigidBody? {
+        val fromGdx = auxVec0.set(from)
+        val toGdx = auxVec1.set(to)
+        closestCallback.setRayFromWorld(fromGdx)
+        closestCallback.setRayToWorld(toGdx)
+
+        // collision test
+        world.rayTest(fromGdx, toGdx, closestCallback)
+        val collision = closestCallback.collisionObject.userData
+        if (collision is RigidBody) return collision
+        return null
+    }
+
     override fun createBody(shape: PhysicsShape, fixedRotation: Boolean, mass: Float, friction: Float, restitution: Float, transform: Matrix4c): RigidBody {
         if (shape !is BulletPhysicsShape) throw IllegalArgumentException()
         val collShape = shape.btShape
 
         // compute inertia momentum
-        if (fixedRotation) auxVec.setZero()
-        else collShape.calculateLocalInertia(mass, auxVec)
+        if (fixedRotation) auxVec0.setZero()
+        else collShape.calculateLocalInertia(mass, auxVec0)
 
         val motionSate = BulletMotionState(Matrix4())
-        val btBody = btRigidBody(mass, motionSate, collShape, auxVec)
+        val btBody = btRigidBody(mass, motionSate, collShape, auxVec0)
         btBody.worldTransform = auxMat.set(transform)
         btBody.restitution = restitution
         btBody.friction = friction
         world.addRigidBody(btBody)
 
         val rb = BulletRigidBody(this, btBody, motionSate)
+        btBody.userData = rb
         ibodies.add(rb)
         return rb
     }
@@ -75,7 +95,7 @@ class BulletPhysicsWorld(val gravity: Vector3c, val bullet: DesktopBulletPlugin)
         return BulletPhysicsShape(shape)
     }
 
-    override fun createBox(half: Vector3c) = BulletPhysicsShape(btBoxShape(auxVec.set(half)))
+    override fun createBox(half: Vector3c) = BulletPhysicsShape(btBoxShape(auxVec0.set(half)))
 
     override fun createShere(radius: Float) = BulletPhysicsShape(btSphereShape(radius))
 

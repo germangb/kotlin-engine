@@ -31,9 +31,9 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
         }
     }
 
-    override fun preloadMesh(path: String, attributes: Set<VertexAttribute>) {
+    override fun preloadMesh(path: String, usage: MeshUsage, vararg attributes: VertexAttribute) {
         if (meshes[path] == null) {
-            meshes[path] = loader.loadMesh(path, attributes)
+            meshes[path] = loader.loadMesh(path, usage, *attributes)
         }
     }
 

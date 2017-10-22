@@ -8,10 +8,12 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
-import com.github.germangb.engine.framework.materials.Material
-import com.github.germangb.engine.framework.materials.diffuse
+import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
+import com.github.germangb.engine.graphics.MeshUsage
+import com.github.germangb.engine.graphics.RenderMode.WIREFRAME
 import com.github.germangb.engine.graphics.TestFunction
+import com.github.germangb.engine.graphics.TestFunction.*
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
@@ -19,7 +21,6 @@ import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
-import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -28,13 +29,19 @@ import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
 
+class MyListener : AnimationListener {
+    override fun onLoop(animation: Animation<*>) {
+        //println("loop $animation (${animation.controller.duration})")
+    }
+}
+
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx.assets)
 
     init {
         assetManager.preloadAudio("music.ogg")
         assetManager.preloadAudio("click.ogg", stream = false)
-        assetManager.preloadMesh("cube.blend", setOf(POSITION, NORMAL, UV))
+        assetManager.preloadMesh("cube.blend", MeshUsage.STATIC, POSITION, NORMAL, UV)
     }
 
     val animationManager = SimpleAnimationManager()
@@ -156,7 +163,9 @@ class Testbed(val ctx: Context) : Application {
 
         ctx.assimp?.loadAnimations("idle2.md5anim")?.let { (frames, fps, timeline) ->
             val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
-            animationManager.createAnimation(sampled)
+            val anim = animationManager.createAnimation(sampled)
+            anim.listener = MyListener()
+            anim
         }
     }
     val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
@@ -169,20 +178,11 @@ class Testbed(val ctx: Context) : Application {
         val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
         world?.createBody(floor!!, false, 0f, 0.5f, 0f, Matrix4())
 
-//        ctx.input.keyboard.setListener { (key, state) ->
-//            if (state == InputState.PRESSED && key.isPrintable)
-//                println("$key")
-//        }
-
-        ctx.input.mouse.setListener { (button, state) ->
-            println("$button $state")
-        }
-
         assetManager.preloadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
         assetManager.getTexture("cube.png")?.let { tex ->
             root.addChild {
-                val mat = Material()
+                val mat = DiffuseMaterial()
                 mat.diffuse = tex
                 addMeshInstancer(cube!!, mat)
 
@@ -277,7 +277,7 @@ class Testbed(val ctx: Context) : Application {
             debug = debug.not()
         }
         if (debug) {
-            ctx.debug?.add("HELLO WORLD!!")
+            //ctx.debug?.add("HELLO WORLD!!")
 
             ctx.debug?.add {
                 val src = ctx.audio.sources
@@ -324,11 +324,11 @@ class Testbed(val ctx: Context) : Application {
             else animation?.pause()
         }
 
-        ctx.graphics.state {
+        with(ctx.graphics.state) {
             clearColor(0.2f, 0.2f, 0.2f, 1f)
             clearColorBuffer()
             clearDepthBuffer()
-            depthTest(TestFunction.LESS)
+            depthTest(LESS)
         }
 
         val offX = ctx.input.mouse.x - ctx.graphics.width / 2f
@@ -357,11 +357,16 @@ class Testbed(val ctx: Context) : Application {
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
             actor.getComponent<MeshInstancerComponent>()?.let { inst ->
-                ctx.graphics.render(inst.mesh, staticShader) {
+                ctx.graphics.state.cullMode(CullMode.BACK_FACES)
+                ctx.graphics.instancing(inst.mesh, staticShader) {
                     uniforms {
                         proj bindsTo "u_projection"
                         view bindsTo "u_view"
-                        inst.material.diffuse bindsTo "u_texture"
+
+                        val mat = inst.material
+                        if (mat is DiffuseMaterial) {
+                            mat.diffuse bindsTo "u_texture"
+                        }
                     }
                     inst.actor.children
                             .mapNotNull { it.getComponent<MeshInstanceComponent>() }
@@ -372,13 +377,9 @@ class Testbed(val ctx: Context) : Application {
                 }
             }
             actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
-                val mat = inst.material
+                ctx.graphics.state.cullMode(CullMode.FRONT_FACES)
 
-                ctx.graphics.state {
-                    cullMode(CullMode.FRONT_FACES)
-                }
-
-                ctx.graphics.render(inst.mesh, outlineSkinShader) {
+                ctx.graphics.instancing(inst.mesh, outlineSkinShader) {
                     uniforms {
                         skin bindsTo "u_skin"
                         proj bindsTo "u_projection"
@@ -390,21 +391,25 @@ class Testbed(val ctx: Context) : Application {
                             .forEach { instance() }
                 }
 
-                ctx.graphics.state {
-                    cullMode(CullMode.BACK_FACES)
-                }
+                ctx.graphics.state.cullMode(CullMode.BACK_FACES)
 
-                ctx.graphics.render(inst.mesh, skinShader) {
+                ctx.graphics.instancing(inst.mesh, skinShader) {
                     uniforms {
                         skin bindsTo "u_skin"
                         proj bindsTo "u_projection"
                         view bindsTo "u_view"
-                        mat.diffuse bindsTo "u_texture"
+
+                        val mat = inst.material
+                        if (mat is DiffuseMaterial) {
+                            mat.diffuse bindsTo "u_texture"
+                        }
                     }
 
                     actor.children
                             .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-                            .forEach { instance() }
+                            .forEach {
+                                instance()
+                            }
                 }
             }
 
@@ -419,29 +424,5 @@ class Testbed(val ctx: Context) : Application {
         staticShader.destroy()
         cube?.destroy()
         world?.destroy()
-    }
-
-    fun timeline(file: String): Pair<Int, MutableMap<String, AnimationTimeline>> {
-        var rotKeys = mutableListOf<RotationKey>()
-        var posKeys = mutableListOf<PositionKey>()
-        val timelines = mutableMapOf<String, AnimationTimeline>()
-        var frames = 0
-        ctx.assets.loadGeneric(file)?.use {
-            it.reader().forEachLine {
-                if (it.startsWith("node:")) {
-                    val node = it.split(":").last()
-                    timelines[node] = AnimationTimeline(rotKeys, posKeys, emptyList())
-                    frames = posKeys.size
-                    rotKeys = mutableListOf()
-                    posKeys = mutableListOf()
-                } else {
-                    val values = it.split("|").map { it.toFloat() }
-                    rotKeys.add(RotationKey(values[0], Quaternion(values[1], values[2], values[3], values[4])))
-                    posKeys.add(PositionKey(values[0], Vector3(values[5], values[6], values[7])))
-                }
-            }
-        }
-        //println(frames)
-        return Pair(frames, timelines)
     }
 }

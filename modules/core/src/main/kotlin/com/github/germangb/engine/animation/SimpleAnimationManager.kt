@@ -41,8 +41,13 @@ class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationM
     var istate = AnimationState.STOPPED
     var loops = false
     var timer = 0f
+    var ilistener: AnimationListener? = null
 
     override val time get() = timer
+
+    override var listener: AnimationListener?
+        get() = ilistener
+        set(value) { ilistener = value }
 
     fun update(step: Float) {
         if (istate == AnimationState.PLAYING) {
@@ -55,10 +60,12 @@ class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationM
                     // rewing and continue playing
                     while (timer > controller.duration) timer -= controller.duration
                     controller.seek(timer)
+                    listener?.onLoop(this)
                 } else {
                     // stop animation
                     controller.seek(controller.duration)
                     istate = AnimationState.ENDED
+                    listener?.onEnd(this)
                 }
             }
         }
@@ -72,16 +79,19 @@ class ManagedAnimation<out T: AnimationController>(val manager: SimpleAnimationM
         }
         istate = AnimationState.PLAYING
         loops = loop
+        listener?.onPlay(this)
     }
 
     override fun pause() {
         istate = AnimationState.PAUSED
+        listener?.onPause(this)
     }
 
     override fun stop() {
         istate = AnimationState.STOPPED
         timer = 0f
         controller.seek(0f)
+        listener?.onStop(this)
     }
 
     override fun destroy() = manager.destroyAnimation(this)

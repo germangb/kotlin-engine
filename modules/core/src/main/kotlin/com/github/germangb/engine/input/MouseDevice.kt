@@ -1,12 +1,14 @@
 package com.github.germangb.engine.input
 
-/** Input event */
-data class MouseInputEvent(val button: MouseButton, val state: InputState)
+/**
+ * Input event
+ */
+data class MouseEvent(val button: MouseButton, val state: InputState)
 
 /**
  * Listener alias
  */
-typealias MouseInputListener = (MouseInputEvent) -> Unit
+typealias MouseListener = (MouseEvent) -> Unit
 
 /**
  * Mouse device
@@ -21,7 +23,7 @@ interface MouseDevice {
     /**
      * Set keyboard listener
      */
-    fun setListener(listener: ((MouseInputEvent) -> Unit)?)
+    fun setListener(listener: ((MouseEvent) -> Unit)?)
 
     /**
      * Get mouse button state

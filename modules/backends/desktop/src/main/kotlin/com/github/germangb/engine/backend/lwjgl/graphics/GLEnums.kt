@@ -14,6 +14,14 @@ import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30.*
 
 /**
+ * Render mode
+ */
+val RenderMode.glEnum get() = when(this) {
+    RenderMode.WIREFRAME -> GL_LINE
+    RenderMode.SOLID -> GL_FILL
+}
+
+/**
  * Stencil op GLEnum
  */
 val StencilOperation.glEnum get() = when(this) {

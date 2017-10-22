@@ -10,7 +10,7 @@ interface Mesh : Destroyable {
     /**
      * Vertex attributes in buffer
      */
-    val attributes: Set<VertexAttribute>
+    val attributes: Array<out VertexAttribute>
 
     /**
      * Mesh primitive

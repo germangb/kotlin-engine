@@ -3,7 +3,7 @@ package com.github.germangb.engine.graphics
 import com.github.germangb.engine.math.Matrix4
 
 /**
- * Build an instancing render call
+ * Build an instancing instancing call
  */
 interface Instancer {
     /**
@@ -12,7 +12,7 @@ interface Instancer {
     val transform: Matrix4
 
     /**
-     * Add an instance to the render call
+     * Add an instance to the instancing call
      */
     fun instance()
 

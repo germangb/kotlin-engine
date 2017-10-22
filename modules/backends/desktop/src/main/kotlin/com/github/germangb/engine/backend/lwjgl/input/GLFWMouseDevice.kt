@@ -6,7 +6,7 @@ import com.github.germangb.engine.input.InputState
 import com.github.germangb.engine.input.InputState.*
 import com.github.germangb.engine.input.MouseButton
 import com.github.germangb.engine.input.MouseDevice
-import com.github.germangb.engine.input.MouseInputEvent
+import com.github.germangb.engine.input.MouseEvent
 import org.lwjgl.glfw.GLFW.*
 
 /**
@@ -40,10 +40,10 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
         glfwSetMouseButtonCallback(window) { _, button, action, _ ->
             if (action == GLFW_PRESS) {
                 justPressed.add(button.asEnum)
-                mouseListener?.invoke(MouseInputEvent(button.asEnum, PRESSED))
+                mouseListener?.invoke(MouseEvent(button.asEnum, PRESSED))
             } else if (action == GLFW_RELEASE) {
                 justReleased.add(button.asEnum)
-                mouseListener?.invoke(MouseInputEvent(button.asEnum, RELEASED))
+                mouseListener?.invoke(MouseEvent(button.asEnum, RELEASED))
             }
         }?.free()
     }
@@ -58,9 +58,9 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
      */
     override val y get() = iy
 
-    var mouseListener: ((MouseInputEvent) -> Unit)? = null
+    var mouseListener: ((MouseEvent) -> Unit)? = null
 
-    override fun setListener(listener: ((MouseInputEvent) -> Unit)?) {
+    override fun setListener(listener: ((MouseEvent) -> Unit)?) {
         mouseListener = listener
     }
 

@@ -1,18 +1,23 @@
 package com.github.germangb.engine.input
 
-/** Input event */
-data class KeyboardInputEvent(val key: KeyboardKey, val state: InputState)
+/**
+ * Input event
+ */
+data class KeyboardEvent(val key: KeyboardKey, val state: InputState)
 
 /**
  * Listener alias
  */
-typealias KeyboardInputListener = (KeyboardInputEvent) -> Unit
+typealias KeyboardListener = (KeyboardEvent) -> Unit
 
+/**
+ * Keyboard device
+ */
 interface KeyboardDevice {
     /**
      * Set keyboard listener
      */
-    fun setListener(listener: ((KeyboardInputEvent) -> Unit)?)
+    fun setListener(listener: ((KeyboardEvent) -> Unit)?)
 
     /**
      * Get keyboard key state

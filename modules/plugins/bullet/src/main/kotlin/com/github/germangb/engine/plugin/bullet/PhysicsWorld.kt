@@ -16,6 +16,11 @@ interface PhysicsWorld : Destroyable {
     val bodies: List<RigidBody>
 
     /**
+     * Get closest rigid body hit by raycast
+     */
+    fun rayTestClosest(from: Vector3c, to: Vector3c): RigidBody?
+
+    /**
      * Create a box rigid body
      */
     fun createBody(shape: PhysicsShape, fixedRotation: Boolean, mass: Float, friction: Float, restitution: Float, transform: Matrix4c): RigidBody

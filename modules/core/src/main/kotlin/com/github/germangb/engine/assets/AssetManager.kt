@@ -16,7 +16,7 @@ interface AssetManager: Destroyable {
     /**
      * Tell the resource manager to load a mesh
      */
-    fun preloadMesh(path: String, attributes: Set<VertexAttribute>)
+    fun preloadMesh(path: String, usage: MeshUsage, vararg attributes: VertexAttribute)
 
     /**
      * Load audio file
@@ -27,10 +27,6 @@ interface AssetManager: Destroyable {
      * Check if resource is loaded
      */
     fun isLoaded(path: String): Boolean
-
-    //
-    // Loaded resources
-    //
 
     /**
      * Get loaded texture, or null if it is not loaded
@@ -46,10 +42,6 @@ interface AssetManager: Destroyable {
      * Get audio file
      */
     fun getAudio(path: String): Audio?
-
-    //
-    // Delegate assets
-    //
 
     /**
      * Delegate texture to AM

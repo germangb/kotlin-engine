@@ -9,8 +9,8 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.*
+import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.framework.materials.Material
-import com.github.germangb.engine.framework.materials.diffuse
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
@@ -97,7 +97,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
     // get meshes
     val meshes = List(scene.mNumMeshes()) {
         val aimesh = AIMesh.create(scene.mMeshes()[it])
-        val attrs = setOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
+        val attrs = arrayOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
         val mesh = aiMeshToGL(aimesh, attrs, backend.graphics, bones)
         val meshPath = "$path/mesh_$it"
         manager.delegateMesh(mesh, meshPath)
@@ -107,9 +107,10 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
 
     // gen materials
     val materials = List(scene.mNumMeshes()) {
-        val mat = Material()
+        val mat = DiffuseMaterial()
+        //mat.wireframe = true
         backend.assets.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)?.let {
-            manager.delegateTexture(it, "hellknight.png")
+            manager.delegateTexture(it, "hellknight.png?$it")
             mat.diffuse = it
         }
         mat
@@ -125,7 +126,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
 /**
  * Convert aiMesh to engine mesh
  */
-fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
+fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
     // mesh attributes
     val positions = mesh.mVertices()
     val normals = mesh.mNormals()
@@ -155,7 +156,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
         indexData.putInt(ind[2])
     }
 
-    val hasSkin = attributes.containsAll(listOf(JOINT_IDS, JOINT_WEIGHTS))
+    val hasSkin = JOINT_IDS in attributes
 
     fun VertexAttribute.addData(i: Int) {
         when (this) {
@@ -227,7 +228,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Set<VertexAttribute>, gfx: GraphicsDevi
     // create mesh
     indexData.flip()
     vertexData.flip()
-    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, attributes, MeshUsage.STATIC)
+    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, MeshUsage.STATIC, *attributes)
 
     // free resources
     vertexData.clear()

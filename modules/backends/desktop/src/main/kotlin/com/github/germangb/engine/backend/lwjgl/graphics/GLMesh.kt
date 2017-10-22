@@ -15,7 +15,7 @@ class GLMesh(val vbo: Int,
              val vao: Int,
              override var indices: Int,
              override val primitive: MeshPrimitive,
-             override val attributes: Set<VertexAttribute>) : Mesh {
+             override val attributes: Array<out VertexAttribute>) : Mesh {
 
     override fun destroy() {
         glDeleteBuffers(vbo)

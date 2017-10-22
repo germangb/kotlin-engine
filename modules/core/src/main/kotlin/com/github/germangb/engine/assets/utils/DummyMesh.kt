@@ -6,7 +6,7 @@ import com.github.germangb.engine.graphics.VertexAttribute
 import java.nio.ByteBuffer
 
 object DummyMesh : Mesh {
-    override val attributes = emptySet<VertexAttribute>()
+    override val attributes = emptyArray<VertexAttribute>()
     override val primitive = MeshPrimitive.TRIANGLES
     override fun setVertexData(data: ByteBuffer, offset: Long) = Unit
     override fun setIndexData(data: ByteBuffer, offset: Long) = Unit

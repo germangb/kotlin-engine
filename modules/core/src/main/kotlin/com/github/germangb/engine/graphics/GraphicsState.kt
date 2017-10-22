@@ -11,6 +11,11 @@ interface GraphicsState {
     fun clearStencil(s: Int)
 
     /**
+     * Render mode
+     */
+    fun renderMode(mode: RenderMode)
+
+    /**
      * Set line width
      */
     fun lineWidth(width: Float)

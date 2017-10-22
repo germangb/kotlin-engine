@@ -106,7 +106,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : As
     /**
      * Load mesh
      */
-    override fun loadMesh(path: String, attributes: Set<VertexAttribute>): Mesh? {
+    override fun loadMesh(path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh? {
         val flags = aiProcess_Triangulate or
                     aiProcess_GenUVCoords or
                     aiProcess_GenNormals or
@@ -115,7 +115,7 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : As
 
         val scene = aiImportFile(path, flags) ?: return null
         val aimesh = AIMesh.create(scene.mMeshes()[0])
-        val mesh = aiMeshToGL(aimesh, attributes, backend.graphics)
+        val mesh = aiMeshToGL(aimesh, attributes, usage, backend.graphics)
         aiFreeScene(scene)
         return mesh
     }

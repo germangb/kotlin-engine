@@ -25,6 +25,11 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     }
 
     /**
+     * Graphics state thing
+     */
+    override val state = GLGraphicsState()
+
+    /**
      * Create OpenGL texture
      */
     override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
@@ -88,7 +93,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Create a mesh
      */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: Set<VertexAttribute>, usage: MeshUsage): Mesh {
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -187,16 +192,9 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     }
 
     /**
-     * GL state
-     */
-    override fun state(action: GraphicsState.() -> Unit) {
-        GLGraphicsState().action()
-    }
-
-    /**
      * Render a mesh using instance rendering
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
+    override fun instancing(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
         if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
             instancer.begin(mesh, program, framebuffer)
             instancer.action()
@@ -207,6 +205,6 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render to default framebuffer
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit) = render(mesh, program, windowFramebuffer, action)
+    override fun instancing(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit) = instancing(mesh, program, windowFramebuffer, action)
 
 }

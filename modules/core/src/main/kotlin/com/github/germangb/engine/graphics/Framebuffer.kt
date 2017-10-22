@@ -15,7 +15,7 @@ interface Framebuffer {
     val height: Int
 
     /**
-     * Get render texture
+     * Get instancing texture
      */
     val targets: List<Texture>
 }

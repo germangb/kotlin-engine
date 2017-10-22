@@ -3,9 +3,39 @@ package com.github.germangb.engine.animation
 import com.github.germangb.engine.core.Destroyable
 
 /**
+ * Animation listener
+ */
+interface AnimationListener {
+    /**
+     * Called when animation starts
+     */
+    fun onPlay(animation: Animation<*>) = Unit
+
+    /**
+     * Called when animation is paused
+     */
+    fun onPause(animation: Animation<*>) = Unit
+
+    /**
+     * Called when animation stops
+     */
+    fun onStop(animation: Animation<*>) = Unit
+
+    /**
+     * Called when animation ends
+     */
+    fun onEnd(animation: Animation<*>) = Unit
+
+    /**
+     * Called when animation loops
+     */
+    fun onLoop(animation: Animation<*>) = Unit
+}
+
+/**
  * Animation channel
  */
-interface Animation<out T: AnimationController>: Destroyable {
+interface Animation<out T : AnimationController> : Destroyable {
     /**
      * Animation state
      */
@@ -15,6 +45,11 @@ interface Animation<out T: AnimationController>: Destroyable {
      * Animation controller of this animation
      */
     val controller: T
+
+    /**
+     * Animation listener
+     */
+    var listener: AnimationListener?
 
     /**
      * Animation time

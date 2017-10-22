@@ -1,13 +1,20 @@
 package com.github.germangb.engine.framework.materials
 
+import com.github.germangb.engine.assets.utils.DummyTexture
 import com.github.germangb.engine.graphics.Texture
 
-/** Access diffuse map in material */
-val DIFFUSE_MAP_KEY = "diffuse_map"
+class DiffuseMaterial : Material() {
+    /**
+     * Diffuse map
+     */
+    private var idiffuse: Texture = DummyTexture
 
-/**
- * Diffuse texture
- */
-var Materialc.diffuse: Texture
-    get() = getTexture(DIFFUSE_MAP_KEY)
-    set(value) = (this as Material).setTexture(DIFFUSE_MAP_KEY, value)
+    /**
+     * Diffuse color texture
+     */
+    var diffuse: Texture
+        get() = idiffuse
+        set(value) {
+            idiffuse = value
+        }
+}

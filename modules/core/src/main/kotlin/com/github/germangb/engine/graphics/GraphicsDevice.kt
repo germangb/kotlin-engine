@@ -17,6 +17,11 @@ interface GraphicsDevice {
     val height: Int
 
     /**
+     * Graphics state
+     */
+    val state: GraphicsState
+
+    /**
      * Create a texture
      */
     fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
@@ -29,7 +34,7 @@ interface GraphicsDevice {
     /**
      * Create a mesh
      */
-    fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, attributes: Set<VertexAttribute>, usage: MeshUsage = MeshUsage.STATIC): Mesh
+    fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh
 
     /**
      * Create a shader program
@@ -37,17 +42,12 @@ interface GraphicsDevice {
     fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
-     * Default framebuffer state
+     * Perform a instancing call
      */
-    fun state(action: GraphicsState.() -> Unit)
+    fun instancing(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit)
 
     /**
-     * Perform a render call
+     * Perform a instancing call in the default framebuffer
      */
-    fun render(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit)
-
-    /**
-     * Perform a render call in the default framebuffer
-     */
-    fun render(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit)
+    fun instancing(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit)
 }
