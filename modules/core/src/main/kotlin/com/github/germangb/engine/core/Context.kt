@@ -2,6 +2,7 @@ package com.github.germangb.engine.core
 
 import com.github.germangb.engine.assets.AssetLoader
 import com.github.germangb.engine.audio.AudioDevice
+import com.github.germangb.engine.files.Files
 import com.github.germangb.engine.graphics.GraphicsDevice
 import com.github.germangb.engine.input.InputDevice
 import kotlin.reflect.KClass
@@ -29,6 +30,11 @@ interface Context {
      * Resources backend
      */
     val assets: AssetLoader
+
+    /**
+     * Files backend
+     */
+    val files: Files
 
     /**
      * Buffer management

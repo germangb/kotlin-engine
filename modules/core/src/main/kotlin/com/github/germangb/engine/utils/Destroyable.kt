@@ -1,4 +1,4 @@
-package com.github.germangb.engine.core
+package com.github.germangb.engine.utils
 
 interface Destroyable {
     /**

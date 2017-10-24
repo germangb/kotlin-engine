@@ -1,6 +1,6 @@
 package com.github.germangb.engine.audio
 
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.math.Vector3c
 
 interface Audio : Destroyable {

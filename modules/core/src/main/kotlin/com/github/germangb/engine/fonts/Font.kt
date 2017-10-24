@@ -1,6 +1,6 @@
 package com.github.germangb.engine.fonts
 
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.graphics.Texture
 
 /**

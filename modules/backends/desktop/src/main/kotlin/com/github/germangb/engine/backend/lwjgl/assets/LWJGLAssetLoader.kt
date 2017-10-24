@@ -23,23 +23,8 @@ import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 
 class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : AssetLoader {
-    /**
-     * Load a generic resource
-     */
-    override fun loadGeneric(path: String) = try {
-        FileInputStream(path)
-    } catch (e: FileNotFoundException) {
-        null
-    }
-
-    /**
-     * Load assimp scene (skinned meshes and stuff)
-     */
-    //override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, ctx)
-
     /**
      * Load texture file
      */
@@ -108,10 +93,10 @@ class LWJGLAssetLoader(val audio: ALAudioDevice, val backend: LWJGLContext) : As
      */
     override fun loadMesh(path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh? {
         val flags = aiProcess_Triangulate or
-                    aiProcess_GenUVCoords or
-                    aiProcess_GenNormals or
-                    aiProcess_LimitBoneWeights or
-                    aiProcess_FlipUVs
+                aiProcess_GenUVCoords or
+                aiProcess_GenNormals or
+                aiProcess_LimitBoneWeights or
+                aiProcess_FlipUVs
 
         val scene = aiImportFile(path, flags) ?: return null
         val aimesh = AIMesh.create(scene.mMeshes()[0])

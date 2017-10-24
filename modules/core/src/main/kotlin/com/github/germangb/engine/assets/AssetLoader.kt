@@ -1,10 +1,9 @@
 package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.fonts.Font
-import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.graphics.*
-import java.io.InputStream
 
 interface AssetLoader {
     /**
@@ -26,9 +25,4 @@ interface AssetLoader {
      * Load a font
      */
     fun loadFont(path: String, size: Int, charset: IntRange): Font?
-
-    /**
-     * Load a generic resource (InputStream is not managed...)
-     */
-    fun loadGeneric(path: String): InputStream?
 }

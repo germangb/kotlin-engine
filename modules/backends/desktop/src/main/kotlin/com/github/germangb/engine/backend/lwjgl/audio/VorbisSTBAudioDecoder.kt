@@ -1,7 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
 import com.github.germangb.engine.audio.ShortAudioDecoder
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.stb.STBVorbis.*
 import java.nio.ShortBuffer
 

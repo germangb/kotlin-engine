@@ -1,10 +1,21 @@
-compileKotlin2Js {
-    kotlinOptions.verbose = true
-    kotlinOptions.moduleKind = "plain"
+buildscript {
+    ext {
+        version = "0.4.3"
+    }
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        //classpath project(":modules:exports:browser:teavm-gradle-plugin")
+    }
 }
 
+//apply plugin: "com.edibleday.teavm"
+//mainClassName = "com.germangb.Main"
+
 dependencies {
-    compile project(":modules:backends:browser")
-    compile project(":modules:game")
-    compile project(":modules:core")
+    //compile project(":modules:backends:browser")
+    //compile project(":modules:game")
+    //compile project(":modules:core")
 }

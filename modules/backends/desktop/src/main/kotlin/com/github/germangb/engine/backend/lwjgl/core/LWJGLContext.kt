@@ -16,8 +16,12 @@ class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     override val input get() = runtime.input
     override val assets get() = runtime.res
     override val buffers get() = runtime.mem
+    override val files get() = runtime.files
 
-    fun <T: Plugin> install(type: KClass<T>, plugin: T) {
+    /**
+     * Install plugin in backend
+     */
+    fun <T : Plugin> install(type: KClass<T>, plugin: T) {
         runtime.plugins.add(plugin)
         plugins.put(type, plugin)
     }

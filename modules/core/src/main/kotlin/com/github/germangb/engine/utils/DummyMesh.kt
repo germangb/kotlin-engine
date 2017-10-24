@@ -1,4 +1,4 @@
-package com.github.germangb.engine.assets.utils
+package com.github.germangb.engine.utils
 
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.MeshPrimitive

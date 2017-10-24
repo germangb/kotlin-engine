@@ -1,7 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
 import com.github.germangb.engine.backend.lwjgl.core.glCheckError
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*

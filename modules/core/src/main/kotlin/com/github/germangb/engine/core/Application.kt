@@ -1,5 +1,7 @@
 package com.github.germangb.engine.core
 
+import com.github.germangb.engine.utils.Destroyable
+
 interface Application : Destroyable {
     /**
      * Called to init application

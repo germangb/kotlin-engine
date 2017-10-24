@@ -19,11 +19,7 @@ ext {
 }
 
 allprojects {
-    if (properties["javascript"]) {
-        apply plugin: "kotlin2js"
-    } else {
-        apply plugin: "kotlin"
-    }
+    apply plugin: "kotlin"
 
     repositories {
         mavenCentral()

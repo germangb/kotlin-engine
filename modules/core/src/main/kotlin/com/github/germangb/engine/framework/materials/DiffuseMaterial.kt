@@ -1,6 +1,6 @@
 package com.github.germangb.engine.framework.materials
 
-import com.github.germangb.engine.assets.utils.DummyTexture
+import com.github.germangb.engine.utils.DummyTexture
 import com.github.germangb.engine.graphics.Texture
 
 class DiffuseMaterial : Material() {

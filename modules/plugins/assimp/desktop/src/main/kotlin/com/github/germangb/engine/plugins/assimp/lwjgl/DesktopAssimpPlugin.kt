@@ -11,5 +11,8 @@ class DesktopAssimpPlugin(val ctx: Context) : AssimpPlugin {
      */
     override fun loadActor(path: String, manager: AssetManager) = loadActor(path, manager, ctx)
 
+    /**
+     * Load assimp animation
+     */
     override fun loadAnimations(path: String): AnimationData? = loadAIAnimation(path)
 }

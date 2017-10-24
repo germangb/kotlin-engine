@@ -2,6 +2,7 @@ package com.github.germangb.engine.backend.lwjgl.core
 
 import com.github.germangb.engine.backend.lwjgl.assets.LWJGLAssetLoader
 import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
+import com.github.germangb.engine.backend.lwjgl.files.DesktopFiles
 import com.github.germangb.engine.backend.lwjgl.graphics.GLGraphicsDevice
 import com.github.germangb.engine.backend.lwjgl.input.GLFWInputDevice
 import com.github.germangb.engine.core.Application
@@ -17,6 +18,7 @@ class LWJGLRuntime(width: Int, height: Int) {
     val res: LWJGLAssetLoader
     val mem: LWJGLBufferManager
     val input: GLFWInputDevice
+    val files: DesktopFiles
     val window: Long
 
     val plugins = mutableListOf<Plugin>()
@@ -44,6 +46,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         System.err.println("GL_EXTENSIONS=${glGetString(GL_EXTENSIONS)}")
         glGetError()
 
+        files = DesktopFiles()
         gfx = GLGraphicsDevice(width, height)
         audio = ALAudioDevice()
         res = LWJGLAssetLoader(audio, LWJGLContext(this))

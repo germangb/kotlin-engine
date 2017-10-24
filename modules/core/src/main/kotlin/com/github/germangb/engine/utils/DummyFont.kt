@@ -1,6 +1,5 @@
-package com.github.germangb.engine.assets.utils
+package com.github.germangb.engine.utils
 
-import com.github.germangb.engine.assets.utils.DummyTexture
 import com.github.germangb.engine.fonts.Font
 
 object DummyFont : Font {

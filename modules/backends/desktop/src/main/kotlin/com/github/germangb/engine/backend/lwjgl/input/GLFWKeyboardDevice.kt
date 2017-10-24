@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.input
 
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.input.InputState
 import com.github.germangb.engine.input.InputState.*
 import com.github.germangb.engine.input.KeyboardDevice

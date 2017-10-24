@@ -1,7 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.graphics
 
 import com.github.germangb.engine.backend.lwjgl.core.glCheckError
-import com.github.germangb.engine.core.Destroyable
+import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.graphics.Instancer
 import com.github.germangb.engine.graphics.Uniforms
 import com.github.germangb.engine.math.Matrix4

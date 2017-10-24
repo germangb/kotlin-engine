@@ -11,9 +11,7 @@ import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.MeshUsage
-import com.github.germangb.engine.graphics.RenderMode.WIREFRAME
-import com.github.germangb.engine.graphics.TestFunction
-import com.github.germangb.engine.graphics.TestFunction.*
+import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
@@ -151,7 +149,7 @@ class Testbed(val ctx: Context) : Application {
     val root = Actor()
     val animation by lazy {
         // load assimp scene with skinned mesh
-        val build = ctx.assimp?.loadActor("hellknight.md5mesh", assetManager)
+        val build = ctx.assimp.loadActor("hellknight.md5mesh", assetManager)
         var actor: Actor? = null
 
         build?.let {
@@ -161,22 +159,22 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        ctx.assimp?.loadAnimations("idle2.md5anim")?.let { (frames, fps, timeline) ->
+        ctx.assimp.loadAnimations("idle2.md5anim")?.let { (frames, fps, timeline) ->
             val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
             val anim = animationManager.createAnimation(sampled)
             anim.listener = MyListener()
             anim
         }
     }
-    val world = ctx.bullet?.createWorld(Vector3(0f, -9.8f, 0f))
+    val world = ctx.bullet.createWorld(Vector3(0f, -9.8f, 0f))
     val cube = assetManager.getMesh("cube.blend")
     val music = assetManager.getAudio("music.ogg")
     val click = assetManager.getAudio("click.ogg")
     var debug = true
 
     override fun init() {
-        val floor = world?.createBox(Vector3(16f, 0.02f, 16f))
-        world?.createBody(floor!!, false, 0f, 0.5f, 0f, Matrix4())
+        val floor = world.createBox(Vector3(16f, 0.02f, 16f))
+        world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
 
         assetManager.preloadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
@@ -191,12 +189,12 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(-4f, 12f, 2f)
                     transform.local.rotateX(2f)
                     transform.local.rotateZ(0.3f)
-                    val compShape = world?.createCompound()
-                    compShape?.addChild(world?.createBox(Vector3(1f))!!, Matrix4())
-                    val body = world?.createBody(compShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val compShape = world.createCompound()
+                    compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                    val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
 
@@ -205,12 +203,12 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(-4f, 8f, 2f)
                     transform.local.rotateX(2f)
                     transform.local.rotateZ(0.3f)
-                    val compShape = world?.createCompound()
-                    compShape?.addChild(world?.createBox(Vector3(1f))!!, Matrix4())
-                    val body = world?.createBody(compShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val compShape = world.createCompound()
+                    compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                    val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
 
@@ -219,11 +217,11 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(-4f, 4f, 2f)
                     transform.local.rotateX(2f)
                     transform.local.rotateZ(0.3f)
-                    val boxShape = world?.createBox(Vector3(1f))
-                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val boxShape = world.createBox(Vector3(1f))
+                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
 
@@ -232,11 +230,11 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(0f, 4f, 4f)
                     transform.local.rotateX(0.8f)
                     transform.local.rotateZ(0.3f)
-                    val boxShape = world?.createBox(Vector3(1f))
-                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val boxShape = world.createBox(Vector3(1f))
+                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
 
@@ -245,11 +243,11 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(0f, 4f, -4f)
                     transform.local.rotateX(0.8f)
                     transform.local.rotateZ(0.3f)
-                    val boxShape = world?.createBox(Vector3(1f))
-                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val boxShape = world.createBox(Vector3(1f))
+                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
 
@@ -258,11 +256,11 @@ class Testbed(val ctx: Context) : Application {
                     transform.local.translate(0f, 8f, -4f)
                     transform.local.rotateX(0.8f)
                     transform.local.rotateZ(0.3f)
-                    val boxShape = world?.createBox(Vector3(1f))
-                    val body = world?.createBody(boxShape!!, false, 1f, 0.5f, 0f, transform.local)
+                    val boxShape = world.createBox(Vector3(1f))
+                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                     addMeshInstance()
                     addUpdate {
-                        body?.transform?.get(transform.local)
+                        body.transform.get(transform.local)
                     }
                 }
             }
@@ -296,15 +294,15 @@ class Testbed(val ctx: Context) : Application {
 
             ctx.debug?.add {
                 appendln("-".repeat(80))
-                appendln("> # Rigid bodies = ${world?.bodies?.size ?: 0}")
-                world?.bodies?.forEach {
+                appendln("> # Rigid bodies = ${world.bodies?.size ?: 0}")
+                world.bodies?.forEach {
                     val pos = it.transform.getTranslation(Vector3())
                     appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
                 }
             }
         }
 
-        world?.stepSimulation(1 / 60f)
+        world.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
         root.update()
 
@@ -423,6 +421,6 @@ class Testbed(val ctx: Context) : Application {
         assetManager.destroy()
         staticShader.destroy()
         cube?.destroy()
-        world?.destroy()
+        world.destroy()
     }
 }
