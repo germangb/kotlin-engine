@@ -1,4 +1,4 @@
-package com.github.germangb.engine.backend.lwjgl.assets
+package com.github.germangb.engine.assets.desktop
 
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.VertexAttribute.*

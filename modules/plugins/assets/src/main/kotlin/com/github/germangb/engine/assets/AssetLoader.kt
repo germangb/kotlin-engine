@@ -1,10 +1,11 @@
 package com.github.germangb.engine.assets
 
-import com.github.germangb.engine.audio.Audio
-import com.github.germangb.engine.files.FileHandle
-import com.github.germangb.engine.fonts.Font
+import com.github.germangb.engine.audio.desktop.Audio
 import com.github.germangb.engine.graphics.*
 
+/**
+ * Asset loader API
+ */
 interface AssetLoader {
     /**
      * Load a texture
@@ -20,9 +21,5 @@ interface AssetLoader {
      * Load audio
      */
     fun loadAudio(path: String, stream: Boolean = true): Audio?
-
-    /**
-     * Load a font
-     */
-    fun loadFont(path: String, size: Int, charset: IntRange): Font?
 }
+

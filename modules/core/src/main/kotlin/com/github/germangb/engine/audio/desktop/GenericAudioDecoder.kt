@@ -1,4 +1,4 @@
-package com.github.germangb.engine.audio
+package com.github.germangb.engine.audio.desktop
 
 import java.nio.Buffer
 import java.nio.ByteBuffer

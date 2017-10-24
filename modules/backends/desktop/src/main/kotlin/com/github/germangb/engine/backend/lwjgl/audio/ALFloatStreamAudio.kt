@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.FloatAudioDecoder
+import com.github.germangb.engine.audio.desktop.FloatAudioDecoder
 import org.lwjgl.openal.AL10.alBufferData
 import org.lwjgl.openal.EXTFloat32.AL_FORMAT_MONO_FLOAT32
 import org.lwjgl.openal.EXTFloat32.AL_FORMAT_STEREO_FLOAT32

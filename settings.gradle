@@ -9,6 +9,7 @@ include ":modules:exports:browser"
 include ":modules:plugins:bullet"
 include ":modules:plugins:assimp"
 include ":modules:plugins:debug"
+include ":modules:plugins:assets"
 
 // engine backends
 include ":modules:backends:desktop"
@@ -18,3 +19,4 @@ include ":modules:backends:browser"
 include ":modules:plugins:bullet:desktop"
 include ":modules:plugins:assimp:desktop"
 include ":modules:plugins:debug:desktop"
+include ":modules:plugins:assets:desktop"

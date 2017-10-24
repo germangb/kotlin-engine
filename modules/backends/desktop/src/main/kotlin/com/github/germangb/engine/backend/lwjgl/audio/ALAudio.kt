@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.desktop.Audio
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.math.Vector3c
 import org.lwjgl.openal.AL10.*

@@ -5,6 +5,7 @@ import com.github.germangb.engine.animation.PositionKey
 import com.github.germangb.engine.animation.RotationKey
 import com.github.germangb.engine.animation.ScaleKey
 import com.github.germangb.engine.assets.AssetManager
+import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor

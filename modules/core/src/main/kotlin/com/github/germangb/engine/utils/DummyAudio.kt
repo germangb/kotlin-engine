@@ -1,7 +1,7 @@
 package com.github.germangb.engine.utils
 
-import com.github.germangb.engine.audio.Audio
-import com.github.germangb.engine.audio.AudioState
+import com.github.germangb.engine.audio.desktop.Audio
+import com.github.germangb.engine.audio.desktop.AudioState
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.math.Vector3c
 

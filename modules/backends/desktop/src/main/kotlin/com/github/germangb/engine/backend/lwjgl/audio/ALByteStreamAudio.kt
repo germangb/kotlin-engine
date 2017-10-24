@@ -1,6 +1,6 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.ByteAudioDecoder
+import com.github.germangb.engine.audio.desktop.ByteAudioDecoder
 import org.lwjgl.openal.AL10.*
 
 /**

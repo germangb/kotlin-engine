@@ -1,5 +1,7 @@
 package com.github.germangb.game
 
+import com.github.germangb.engine.assets.AssetLoaderPlugin
+import com.github.germangb.engine.assets.desktop.DesktopAssetLoader
 import com.github.germangb.engine.backend.lwjgl.core.LWJGLContext
 import com.github.germangb.engine.backend.lwjgl.core.LWJGLRuntime
 import com.github.germangb.engine.plugin.bullet.BulletPlugin
@@ -13,6 +15,7 @@ fun LWJGLContext.installPlugins() {
     install(AssimpPlugin::class, DesktopAssimpPlugin(this))
     install(DebugPlugin::class, DesktopDebugPlugin(this))
     install(BulletPlugin::class, DesktopBulletPlugin)
+    install(AssetLoaderPlugin::class, DesktopAssetLoader(this))
 }
 
 fun main(args: Array<String>) {

@@ -1,4 +1,4 @@
-package com.github.germangb.engine.audio
+package com.github.germangb.engine.audio.desktop
 
 import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.math.Vector3c

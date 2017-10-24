@@ -1,7 +1,7 @@
 package com.github.germangb.engine.backend.lwjgl.audio
 
-import com.github.germangb.engine.audio.AudioState
-import com.github.germangb.engine.audio.GenericAudioDecoder
+import com.github.germangb.engine.audio.desktop.AudioState
+import com.github.germangb.engine.audio.desktop.GenericAudioDecoder
 import org.lwjgl.openal.AL10.*
 
 /**

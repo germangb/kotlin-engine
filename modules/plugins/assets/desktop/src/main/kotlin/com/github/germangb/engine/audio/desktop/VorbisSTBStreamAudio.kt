@@ -1,4 +1,7 @@
-package com.github.germangb.engine.backend.lwjgl.audio
+package com.github.germangb.engine.audio.desktop
+
+import com.github.germangb.engine.backend.lwjgl.audio.ALAudioDevice
+import com.github.germangb.engine.backend.lwjgl.audio.ALShortStreamAudio
 
 /**
  * AudioDevice decoded with Vorbis codec

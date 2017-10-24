@@ -2,7 +2,8 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.animation.*
 import com.github.germangb.engine.assets.NaiveAssetManager
-import com.github.germangb.engine.audio.AudioState.PLAYING
+import com.github.germangb.engine.assets.assets
+import com.github.germangb.engine.audio.desktop.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
@@ -294,8 +295,8 @@ class Testbed(val ctx: Context) : Application {
 
             ctx.debug?.add {
                 appendln("-".repeat(80))
-                appendln("> # Rigid bodies = ${world.bodies?.size ?: 0}")
-                world.bodies?.forEach {
+                appendln("> # Rigid bodies = ${world.bodies.size ?: 0}")
+                world.bodies.forEach {
                     val pos = it.transform.getTranslation(Vector3())
                     appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
                 }

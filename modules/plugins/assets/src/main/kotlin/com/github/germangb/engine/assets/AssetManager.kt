@@ -1,13 +1,13 @@
 package com.github.germangb.engine.assets
 
-import com.github.germangb.engine.audio.Audio
-import com.github.germangb.engine.utils.Destroyable
+import com.github.germangb.engine.audio.desktop.Audio
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.utils.Destroyable
 
 /**
  * Manage resource loading/unloading
  */
-interface AssetManager: Destroyable {
+interface AssetManager : Destroyable {
     /**
      * Tell the resource manager to load a texture
      */

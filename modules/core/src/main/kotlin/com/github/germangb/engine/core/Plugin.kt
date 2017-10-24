@@ -3,7 +3,7 @@ package com.github.germangb.engine.core
 /**
  * Does nothing...
  */
-fun _TODO() = Unit
+private fun TODO() = Unit
 
 /**
  * Plugin interface
@@ -12,30 +12,30 @@ interface Plugin {
     /**
      * Called before init
      */
-    fun onPreInit() = _TODO()
+    fun onPreInit() = TODO()
 
     /**
      * Called after init
      */
-    fun onPostInit() = _TODO()
+    fun onPostInit() = TODO()
 
     /**
      * Called before update
      */
-    fun onPreUpdate() = _TODO()
+    fun onPreUpdate() = TODO()
 
     /**
      * Called after update
      */
-    fun onPostUpdate() = _TODO()
+    fun onPostUpdate() = TODO()
 
     /**
      * Called before destruction
      */
-    fun onPreDestroy() = _TODO()
+    fun onPreDestroy() = TODO()
 
     /**
      * Called after destruction
      */
-    fun onPostDestroy() = _TODO()
+    fun onPostDestroy() = TODO()
 }

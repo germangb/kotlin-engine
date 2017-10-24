@@ -6,4 +6,5 @@ dependencies {
     compile project(":modules:plugins:bullet:desktop")
     compile project(":modules:plugins:assimp:desktop")
     compile project(":modules:plugins:debug:desktop")
+    compile project(":modules:plugins:assets:desktop")
 }

@@ -14,7 +14,6 @@ class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     override val graphics get() = runtime.gfx
     override val audio get() = runtime.audio
     override val input get() = runtime.input
-    override val assets get() = runtime.res
     override val buffers get() = runtime.mem
     override val files get() = runtime.files
 

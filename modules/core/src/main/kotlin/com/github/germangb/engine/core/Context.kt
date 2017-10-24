@@ -1,7 +1,6 @@
 package com.github.germangb.engine.core
 
-import com.github.germangb.engine.assets.AssetLoader
-import com.github.germangb.engine.audio.AudioDevice
+import com.github.germangb.engine.audio.desktop.AudioDevice
 import com.github.germangb.engine.files.Files
 import com.github.germangb.engine.graphics.GraphicsDevice
 import com.github.germangb.engine.input.InputDevice
@@ -27,11 +26,6 @@ interface Context {
     val input: InputDevice
 
     /**
-     * Resources backend
-     */
-    val assets: AssetLoader
-
-    /**
      * Files backend
      */
     val files: Files
@@ -44,5 +38,5 @@ interface Context {
     /**
      * Get plugin
      */
-    fun <T: Plugin> getPlugin(plug: KClass<T>): T?
+    fun <T : Plugin> getPlugin(plug: KClass<T>): T?
 }
