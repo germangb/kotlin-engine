@@ -7,7 +7,7 @@ import java.io.FileInputStream
 /**
  * File handle for Desktop platform
  */
-class DesktopFileHandle(val path: String) : FileHandle {
+class DesktopFileHandle(override val path: String) : FileHandle {
     /**
      * Get a file input stream of the file
      */

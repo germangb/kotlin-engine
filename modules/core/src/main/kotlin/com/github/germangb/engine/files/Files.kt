@@ -1,7 +1,5 @@
 package com.github.germangb.engine.files
 
-import com.github.germangb.engine.files.FileHandle
-
 /**
  * API for interacting with files
  */

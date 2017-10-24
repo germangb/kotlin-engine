@@ -8,6 +8,11 @@ import java.io.InputStream
  */
 interface FileHandle {
     /**
+     * Some file path (for visualization purposes)
+     */
+    val path: String
+
+    /**
      * Get a generic input stream to read from the file
      */
     fun read(): InputStream

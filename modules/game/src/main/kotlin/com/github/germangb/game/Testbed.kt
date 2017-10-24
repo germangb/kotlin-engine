@@ -30,7 +30,7 @@ import java.util.*
 
 class MyListener : AnimationListener {
     override fun onLoop(animation: Animation<*>) {
-        //println("loop $animation (${animation.controller.duration})")
+        println("loop $animation (${animation.controller.duration})")
     }
 }
 
