@@ -1,6 +1,6 @@
 package com.github.germangb.engine.core
 
-import com.github.germangb.engine.audio.desktop.AudioDevice
+import com.github.germangb.engine.audio.AudioDevice
 import com.github.germangb.engine.files.Files
 import com.github.germangb.engine.graphics.GraphicsDevice
 import com.github.germangb.engine.input.InputDevice

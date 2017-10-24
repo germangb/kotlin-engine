@@ -1,6 +1,6 @@
 package com.github.germangb.engine.assets
 
-import com.github.germangb.engine.audio.desktop.Audio
+import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.utils.Destroyable
 

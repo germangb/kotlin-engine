@@ -3,7 +3,7 @@ package com.github.germangb.game
 import com.github.germangb.engine.animation.*
 import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.assets.assets
-import com.github.germangb.engine.audio.desktop.AudioState.PLAYING
+import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor

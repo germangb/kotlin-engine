@@ -2,8 +2,8 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.assets.AssetLoaderPlugin
 import com.github.germangb.engine.assets.desktop.DesktopAssetLoader
-import com.github.germangb.engine.backend.lwjgl.core.LWJGLContext
-import com.github.germangb.engine.backend.lwjgl.core.LWJGLRuntime
+import com.github.germangb.engine.backend.dektop.core.LWJGLContext
+import com.github.germangb.engine.backend.dektop.core.LWJGLRuntime
 import com.github.germangb.engine.plugin.bullet.BulletPlugin
 import com.github.germangb.engine.plugins.assimp.AssimpPlugin
 import com.github.germangb.engine.plugins.assimp.lwjgl.DesktopAssimpPlugin

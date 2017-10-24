@@ -1,11 +1,11 @@
 package com.github.germangb.engine.assets.desktop
 
 import com.github.germangb.engine.assets.AssetLoaderPlugin
-import com.github.germangb.engine.audio.desktop.Audio
-import com.github.germangb.engine.audio.desktop.VorbisSTBAudioDecoder
-import com.github.germangb.engine.audio.desktop.VorbisSTBStreamAudio
-import com.github.germangb.engine.backend.lwjgl.core.LWJGLContext
-import com.github.germangb.engine.backend.lwjgl.core.stackMemory
+import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.audio.VorbisSTBAudioDecoder
+import com.github.germangb.engine.audio.VorbisSTBStreamAudio
+import com.github.germangb.engine.backend.dektop.core.LWJGLContext
+import com.github.germangb.engine.backend.dektop.core.stackMemory
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.assimp.Assimp.*
