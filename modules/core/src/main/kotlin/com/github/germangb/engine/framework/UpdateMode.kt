@@ -2,12 +2,12 @@ package com.github.germangb.engine.framework
 
 enum class UpdateMode {
     /**
-     * Update the children actor first (DFS)
+     * Depth-first traversal to update nodes
      */
     CHILDREN_FIRST,
 
     /**
-     * Update the root first (BFS)
+     * Breadth-first traversal to update nodes
      */
     ROOT_FIRST
 }
