@@ -29,7 +29,7 @@ fun glCheckError(message: String = "No message provided", action: () -> Unit) {
     }
 }
 
-/** Convert gl error to readable string */
+/** Convert gl error to isReadable string */
 internal fun Int.asGlError() = when (this) {
     GL_NO_ERROR -> "GL_NO_ERROR"
     GL_INVALID_ENUM -> "GL_INVALID_ENUM"
@@ -41,7 +41,7 @@ internal fun Int.asGlError() = when (this) {
     else -> "INVALID_ERROR_CODE"
 }
 
-/** Convert fbo status to readable string */
+/** Convert fbo status to isReadable string */
 internal fun Int.asFramebufferStatus() = when (this) {
     GL_FRAMEBUFFER_COMPLETE -> "GL_FRAMEBUFFER_COMPLETE"
     GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT -> "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"

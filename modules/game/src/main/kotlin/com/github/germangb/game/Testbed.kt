@@ -36,6 +36,7 @@ class MyListener : AnimationListener {
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx.assets)
+    val resources = ctx.files.getLocal(".")
 
     init {
         assetManager.preloadAudio("music.ogg")
@@ -268,6 +269,14 @@ class Testbed(val ctx: Context) : Application {
         }
 
         animation?.play(true)
+
+        // test filed
+        println("file = ${resources.path}, dir = ${resources.isDirectory}")
+        val children = resources.children
+        children.forEach {
+            if (it.isDirectory) println("child (dir) = ${it.path}")
+            println("    child = ${it.path}")
+        }
     }
 
     override fun update() {
