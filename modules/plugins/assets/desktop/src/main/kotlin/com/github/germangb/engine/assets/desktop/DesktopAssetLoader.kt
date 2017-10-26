@@ -6,6 +6,7 @@ import com.github.germangb.engine.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.audio.VorbisSTBStreamAudio
 import com.github.germangb.engine.backend.dektop.core.LWJGLContext
 import com.github.germangb.engine.backend.dektop.core.stackMemory
+import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.assimp.Assimp.*
@@ -19,17 +20,17 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
     /**
      * Load texture file
      */
-    override fun loadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture? {
+    override fun loadTexture(file: FileHandle, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture? {
         var texture: Texture? = null
 
         stackMemory {
             val width = mallocInt(1)
             val height = mallocInt(1)
             val channels = mallocInt(1)
-            val data = stbi_load(path, width, height, channels, format.channels)
+            val data = stbi_load(file.path, width, height, channels, format.channels)
 
             if (data == null) {
-                System.err.println("${stbi_failure_reason()} ($path)")
+                System.err.println("${stbi_failure_reason()} (${file.path})")
             } else {
                 texture = backend.graphics.createTexture(data, width[0], height[0], format, min, mag)
             }
@@ -41,14 +42,14 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
     /**
      * Load mesh
      */
-    override fun loadMesh(path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh? {
+    override fun loadMesh(file: FileHandle, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh? {
         val flags = aiProcess_Triangulate or
                 aiProcess_GenUVCoords or
                 aiProcess_GenNormals or
                 aiProcess_LimitBoneWeights or
                 aiProcess_FlipUVs
 
-        val scene = aiImportFile(path, flags) ?: return null
+        val scene = aiImportFile(file.path, flags) ?: return null
         val aimesh = AIMesh.create(scene.mMeshes()[0])
         val mesh = aiMeshToGL(aimesh, attributes, usage, backend.graphics)
         aiFreeScene(scene)
@@ -58,7 +59,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
     /**
      * Load stream of audio
      */
-    override fun loadAudio(path: String, stream: Boolean): Audio? {
+    override fun loadAudio(file: FileHandle, stream: Boolean): Audio? {
         var sound: Audio? = null
 
         stackMemory {
@@ -66,7 +67,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
             if (stream) {
                 val error = mallocInt(1)
 
-                val handle = stb_vorbis_open_filename(path, error, null)
+                val handle = stb_vorbis_open_filename(file.path, error, null)
                 if (handle == NULL) {
                     // TODO error
                 } else {
@@ -83,7 +84,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
             } else {
                 val channels = mallocInt(1)
                 val sampling = mallocInt(1)
-                val samples = stb_vorbis_decode_filename(path, channels, sampling)
+                val samples = stb_vorbis_decode_filename(file.path, channels, sampling)
 
                 if (samples == null) {
                     //TODO error

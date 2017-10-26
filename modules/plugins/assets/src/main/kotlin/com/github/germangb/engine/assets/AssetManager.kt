@@ -1,6 +1,7 @@
 package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
+import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.utils.Destroyable
 
@@ -11,17 +12,17 @@ interface AssetManager : Destroyable {
     /**
      * Tell the resource manager to load a texture
      */
-    fun preloadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
+    fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
 
     /**
      * Tell the resource manager to load a mesh
      */
-    fun preloadMesh(path: String, usage: MeshUsage, vararg attributes: VertexAttribute)
+    fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, vararg attributes: VertexAttribute)
 
     /**
      * Load audio file
      */
-    fun preloadAudio(path: String, stream: Boolean = true)
+    fun preloadAudio(file: FileHandle, path: String, stream: Boolean = true)
 
     /**
      * Check if resource is loaded

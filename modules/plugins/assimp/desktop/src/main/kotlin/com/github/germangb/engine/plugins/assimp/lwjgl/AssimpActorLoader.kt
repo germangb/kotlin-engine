@@ -7,6 +7,7 @@ import com.github.germangb.engine.animation.ScaleKey
 import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.core.Context
+import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.*
@@ -29,8 +30,8 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 /**
  * Load animation data
  */
-fun loadAIAnimation(path: String): AnimationData? {
-    val scene = aiImportFile(path, aiProcessPreset_TargetRealtime_Fast) ?: return null
+fun loadAIAnimation(file: FileHandle): AnimationData? {
+    val scene = aiImportFile(file.path, aiProcessPreset_TargetRealtime_Fast) ?: return null
     val anim = AIAnimation.create(scene.mAnimations()[0])
 
     val fps = anim.mTicksPerSecond()
@@ -71,14 +72,14 @@ fun loadAIAnimation(path: String): AnimationData? {
 /**
  * Load actor
  */
-fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() -> Unit)? {
+fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, backend: Context): (Actor.() -> Unit)? {
     val flags = aiProcess_Triangulate or
             aiProcess_GenUVCoords or
             aiProcess_GenSmoothNormals or
             aiProcess_LimitBoneWeights or
             aiProcess_FlipUVs
 
-    val scene = aiImportFile(path, flags) ?: return null
+    val scene = aiImportFile(file.path, flags) ?: return null
 
     // get bones
     val bones = mutableMapOf<String, Pair<Int, Matrix4c>>()
@@ -100,7 +101,7 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
         val aimesh = AIMesh.create(scene.mMeshes()[it])
         val attrs = arrayOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
         val mesh = aiMeshToGL(aimesh, attrs, backend.graphics, bones)
-        val meshPath = "$path/mesh_$it"
+        val meshPath = "${file.path}/mesh_$it"
         manager.delegateMesh(mesh, meshPath)
         mesh to aimesh.mNumBones()
         //MeshAsset(manager, meshPath, attrs) to aimesh.mNumBones()
@@ -110,7 +111,8 @@ fun loadActor(path: String, manager: AssetManager, backend: Context): (Actor.() 
     val materials = List(scene.mNumMeshes()) {
         val mat = DiffuseMaterial()
         //mat.wireframe = true
-        backend.assets.loadTexture("hellknight.png", RGBA8, LINEAR, LINEAR)?.let {
+        val file = ctx.files.getLocal("hellknight.png")
+        backend.assets.loadTexture(file, RGBA8, LINEAR, LINEAR)?.let {
             manager.delegateTexture(it, "hellknight.png?$it")
             mat.diffuse = it
         }

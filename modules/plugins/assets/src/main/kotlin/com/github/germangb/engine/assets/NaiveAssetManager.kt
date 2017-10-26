@@ -2,8 +2,10 @@ package com.github.germangb.engine.assets
 
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.core.Context
+import com.github.germangb.engine.files.FileHandle
 
-class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
+class NaiveAssetManager(private val ctx: Context) : AssetManager {
     private val textures = mutableMapOf<String, Texture?>()
     private val meshes = mutableMapOf<String, Mesh?>()
     private val audios = mutableMapOf<String, Audio?>()
@@ -25,21 +27,21 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
         audios.forEach { (path, asset) -> println("$path [$asset]") }
     }
 
-    override fun preloadTexture(path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter) {
+    override fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter) {
         if (textures[path] == null) {
-            textures[path] = loader.loadTexture(path, format, min, mag)
+            textures[path] = ctx.assets.loadTexture(file, format, min, mag)
         }
     }
 
-    override fun preloadMesh(path: String, usage: MeshUsage, vararg attributes: VertexAttribute) {
+    override fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, vararg attributes: VertexAttribute) {
         if (meshes[path] == null) {
-            meshes[path] = loader.loadMesh(path, usage, *attributes)
+            meshes[path] = ctx.assets.loadMesh(file, usage, *attributes)
         }
     }
 
-    override fun preloadAudio(path: String, stream: Boolean) {
+    override fun preloadAudio(file: FileHandle, path: String, stream: Boolean) {
         if (audios[path] == null) {
-            audios[path] = loader.loadAudio(path, stream)
+            audios[path] = ctx.assets.loadAudio(file, stream)
         }
     }
 
@@ -48,8 +50,9 @@ class NaiveAssetManager(private val loader: AssetLoader) : AssetManager {
     override fun getMesh(path: String) = meshes[path]
 
     override fun getAudio(path: String) = audios[path] ?: let {
-        val loaded = loader.loadAudio(path)
-        loader.loadAudio(path)?.let { audios[path] = it }
+        val file = ctx.files.getLocal(path)
+        val loaded = ctx.assets.loadAudio(file)
+        ctx.assets.loadAudio(file).let { audios[path] = it }
         loaded
     }
 

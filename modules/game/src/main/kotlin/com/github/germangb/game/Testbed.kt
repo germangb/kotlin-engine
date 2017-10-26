@@ -2,7 +2,6 @@ package com.github.germangb.game
 
 import com.github.germangb.engine.animation.*
 import com.github.germangb.engine.assets.NaiveAssetManager
-import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
@@ -24,6 +23,7 @@ import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
+import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
@@ -35,13 +35,14 @@ class MyListener : AnimationListener {
 }
 
 class Testbed(val ctx: Context) : Application {
-    val assetManager = NaiveAssetManager(ctx.assets)
+    val assetManager = NaiveAssetManager(ctx)
     val resources = ctx.files.getLocal(".")
 
     init {
-        assetManager.preloadAudio("music.ogg")
-        assetManager.preloadAudio("click.ogg", stream = false)
-        assetManager.preloadMesh("cube.blend", MeshUsage.STATIC, POSITION, NORMAL, UV)
+        assetManager.preloadAudio(ctx.files.getLocal("music.ogg"), "music")
+        assetManager.preloadAudio(ctx.files.getLocal("click.ogg"), "click", stream = false)
+        assetManager.preloadMesh(ctx.files.getLocal("cube.blend"), "cube_mesh", MeshUsage.STATIC, POSITION, NORMAL, UV)
+        assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
     }
 
     val animationManager = SimpleAnimationManager()
@@ -151,119 +152,118 @@ class Testbed(val ctx: Context) : Application {
     val root = Actor()
     val animation by lazy {
         // load assimp scene with skinned mesh
-        val build = ctx.assimp.loadActor("hellknight.md5mesh", assetManager)
-        var actor: Actor? = null
+        val file = ctx.files.getLocal("hellknight.md5mesh")
+        val build = ctx.assimp.loadActor(file, assetManager)
 
-        build?.let {
-            actor = root.addChild {
+        // create scene
+        val actor = build?.let {
+            root.addChild {
                 it()
                 transform.local.scale(0.025f)
             }
         }
 
-        ctx.assimp.loadAnimations("idle2.md5anim")?.let { (frames, fps, timeline) ->
+        val animFile = ctx.files.getLocal("idle2.md5anim")
+        ctx.assimp.loadAnimations(animFile)?.let { (frames, fps, timeline) ->
             val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
             val anim = animationManager.createAnimation(sampled)
-            anim.listener = MyListener()
+            //anim.listener = MyListener()
             anim
         }
     }
     val world = ctx.bullet.createWorld(Vector3(0f, -9.8f, 0f))
-    val cube = assetManager.getMesh("cube.blend")
-    val music = assetManager.getAudio("music.ogg")
-    val click = assetManager.getAudio("click.ogg")
+    val cube = assetManager.getMesh("cube_mesh")
+    val music = assetManager.getAudio("music")
+    val click = assetManager.getAudio("click")
     var debug = true
 
     override fun init() {
         val floor = world.createBox(Vector3(16f, 0.02f, 16f))
         world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
 
-        assetManager.preloadTexture("cube.png", RGB8, NEAREST, NEAREST)
 
-        assetManager.getTexture("cube.png")?.let { tex ->
-            root.addChild {
-                val mat = DiffuseMaterial()
-                mat.diffuse = tex
-                addMeshInstancer(cube!!, mat)
+        root.addChild {
+            val mat = DiffuseMaterial()
+            mat.diffuse = assetManager.getTexture("cube_texture") ?: DummyTexture
+            addMeshInstancer(cube!!, mat)
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(-4f, 12f, 2f)
-                    transform.local.rotateX(2f)
-                    transform.local.rotateZ(0.3f)
-                    val compShape = world.createCompound()
-                    compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
-                    val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(-4f, 12f, 2f)
+                transform.local.rotateX(2f)
+                transform.local.rotateZ(0.3f)
+                val compShape = world.createCompound()
+                compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
+            }
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(-4f, 8f, 2f)
-                    transform.local.rotateX(2f)
-                    transform.local.rotateZ(0.3f)
-                    val compShape = world.createCompound()
-                    compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
-                    val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(-4f, 8f, 2f)
+                transform.local.rotateX(2f)
+                transform.local.rotateZ(0.3f)
+                val compShape = world.createCompound()
+                compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
+            }
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(-4f, 4f, 2f)
-                    transform.local.rotateX(2f)
-                    transform.local.rotateZ(0.3f)
-                    val boxShape = world.createBox(Vector3(1f))
-                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(-4f, 4f, 2f)
+                transform.local.rotateX(2f)
+                transform.local.rotateZ(0.3f)
+                val boxShape = world.createBox(Vector3(1f))
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
+            }
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(0f, 4f, 4f)
-                    transform.local.rotateX(0.8f)
-                    transform.local.rotateZ(0.3f)
-                    val boxShape = world.createBox(Vector3(1f))
-                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(0f, 4f, 4f)
+                transform.local.rotateX(0.8f)
+                transform.local.rotateZ(0.3f)
+                val boxShape = world.createBox(Vector3(1f))
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
+            }
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(0f, 4f, -4f)
-                    transform.local.rotateX(0.8f)
-                    transform.local.rotateZ(0.3f)
-                    val boxShape = world.createBox(Vector3(1f))
-                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(0f, 4f, -4f)
+                transform.local.rotateX(0.8f)
+                transform.local.rotateZ(0.3f)
+                val boxShape = world.createBox(Vector3(1f))
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
+            }
 
-                addChild {
-                    transformMode = ABSOLUTE
-                    transform.local.translate(0f, 8f, -4f)
-                    transform.local.rotateX(0.8f)
-                    transform.local.rotateZ(0.3f)
-                    val boxShape = world.createBox(Vector3(1f))
-                    val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
-                    addMeshInstance()
-                    addUpdate {
-                        body.transform.get(transform.local)
-                    }
+            addChild {
+                transformMode = ABSOLUTE
+                transform.local.translate(0f, 8f, -4f)
+                transform.local.rotateX(0.8f)
+                transform.local.rotateZ(0.3f)
+                val boxShape = world.createBox(Vector3(1f))
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                addMeshInstance()
+                addUpdate {
+                    body.transform.get(transform.local)
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.github.germangb.engine.core.Plugin
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GLUtil
 import kotlin.system.exitProcess
 
 class LWJGLRuntime(width: Int, height: Int) {
@@ -37,6 +38,11 @@ class LWJGLRuntime(width: Int, height: Int) {
         glfwMakeContextCurrent(window)
 
         GL.createCapabilities()
+        //debug
+        val debug = System.getProperty("com.github.germangb.engine.debug", "false")
+        if (debug.toBoolean()) {
+            GLUtil.setupDebugMessageCallback()
+        }
 
         System.err.println("GL_RENDERER=${glGetString(GL_RENDERER)}")
         System.err.println("GL_VERSION=${glGetString(GL_VERSION)}")

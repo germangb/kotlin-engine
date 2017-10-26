@@ -5,16 +5,18 @@ import com.github.germangb.engine.graphics.Texture
 
 class DiffuseMaterial : Material() {
     /**
-     * Diffuse map
+     * Diffuse property key
      */
-    private var idiffuse: Texture = DummyTexture
+    private companion object {
+        val DIFFUSE_TEXTURE_KEY = "diffuse_texture"
+    }
 
     /**
      * Diffuse color texture
      */
     var diffuse: Texture
-        get() = idiffuse
+        get() = textures[DIFFUSE_TEXTURE_KEY] ?: DummyTexture
         set(value) {
-            idiffuse = value
+            this[DIFFUSE_TEXTURE_KEY] = value
         }
 }

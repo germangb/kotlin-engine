@@ -2,6 +2,7 @@ package com.github.germangb.engine.plugins.assimp
 
 import com.github.germangb.engine.animation.AnimationTimeline
 import com.github.germangb.engine.assets.AssetManager
+import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.framework.Actor
 
 /**
@@ -22,10 +23,10 @@ interface AssimpLoader {
     /**
      * Load scene blueprint using Assimp
      */
-    fun loadActor(path: String, manager: AssetManager): (Actor.() -> Unit)?
+    fun loadActor(file: FileHandle, manager: AssetManager): (Actor.() -> Unit)?
 
     /**
      * Load animation data with Assimp
      */
-    fun loadAnimations(path: String): AnimationData?
+    fun loadAnimations(file: FileHandle): AnimationData?
 }
