@@ -29,6 +29,9 @@ class SampledAnimationController(private val root: Actor,
         }
     }
 
+    /**
+     * Update actor transformations
+     */
     private fun updateTransforms(frameTime: Float) {
         val modFrameTime = minOf(frameTime, frames.toFloat())
         timeline.forEach { node, timeline ->
@@ -39,6 +42,7 @@ class SampledAnimationController(private val root: Actor,
         }
     }
 
+    /** Seek animation timeline */
     override fun seek(time: Float) {
         updateTransforms(time * fps)
     }

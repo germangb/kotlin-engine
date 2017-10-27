@@ -1,16 +1,18 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.backend.dektop.core.glCheckError
-import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.graphics.Instancer
 import com.github.germangb.engine.graphics.Uniforms
 import com.github.germangb.engine.math.Matrix4
-import org.lwjgl.system.jemalloc.JEmalloc
-import org.lwjgl.opengl.GL11.*
+import com.github.germangb.engine.utils.Destroyable
+import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
-import org.lwjgl.opengl.GL20.*
+import org.lwjgl.opengl.GL20.glDrawBuffers
+import org.lwjgl.opengl.GL20.glUseProgram
 import org.lwjgl.opengl.GL30.*
-import org.lwjgl.opengl.GL31.*
+import org.lwjgl.opengl.GL31.glDrawElementsInstanced
+import org.lwjgl.system.jemalloc.JEmalloc.je_free
+import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 
 class GLInstancer : Instancer, Destroyable {
     override val transform = Matrix4()
@@ -20,11 +22,11 @@ class GLInstancer : Instancer, Destroyable {
     }
 
     /** Buffer size */
-    private val data = JEmalloc.je_malloc(64 * 4 * MAX_INSTANCES).asFloatBuffer()
+    private val data = je_malloc(64 * 4 * MAX_INSTANCES).asFloatBuffer()
     private var count = 0
     val buffer = glGenBuffers()
 
-    private val uniformData = JEmalloc.je_malloc(10000).asFloatBuffer()
+    private val uniformData = je_malloc(10000).asFloatBuffer()
 
     lateinit var shaderProgram: GLShaderProgram
     lateinit var activeMesh: GLMesh
@@ -40,8 +42,8 @@ class GLInstancer : Instancer, Destroyable {
     override fun destroy() {
         data.clear()
         uniformData.clear()
-        JEmalloc.je_free(data)
-        JEmalloc.je_free(uniformData)
+        je_free(data)
+        je_free(uniformData)
 
         glCheckError("Error in GLInstancer.free() while deleting vertex buffer") {
             glDeleteBuffers(buffer)
@@ -66,7 +68,6 @@ class GLInstancer : Instancer, Destroyable {
 
             // bind framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, fbo.id)
-            //glViewport(0, 0, fbo.width, fbo.height)
 
             if (fbo.drawBuffers.isNotEmpty()) {
                 glDrawBuffers(fbo.drawBuffers)
@@ -74,15 +75,12 @@ class GLInstancer : Instancer, Destroyable {
         }
     }
 
-    fun flush() {
+    override fun flush() {
         if (count <= 0) return
-        // upload instances
-        //println(data)
         data.flip()
         glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
-        data.clear()
-
         glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, GL_UNSIGNED_INT, 0L, count)
+        data.clear()
         count = 0
     }
 
@@ -98,9 +96,9 @@ class GLInstancer : Instancer, Destroyable {
     }
 
     override fun instance() {
-        if (count+1 > MAX_INSTANCES) flush()
+        if (count + 1 > MAX_INSTANCES) flush()
         count++
-        transform.get(data).position(16*count)
+        transform.get(data).position(16 * count)
     }
 
     override fun uniforms(action: Uniforms.() -> Unit) {

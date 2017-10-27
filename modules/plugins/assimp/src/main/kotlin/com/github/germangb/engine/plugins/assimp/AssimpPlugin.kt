@@ -14,8 +14,7 @@ interface AssimpPlugin : Plugin, AssimpLoader
  * For when Assimp plugin is not installed
  */
 object UninstalledAssimpPlugin : AssimpLoader {
-    override fun loadActor(file: FileHandle, manager: AssetManager) = TODO("Assimp is not installed")
-    override fun loadAnimations(file: FileHandle) = TODO("Assimp is not installed")
+    override fun loadScene(file: FileHandle, manager: AssetManager, flags: Int) = TODO("Assimp is not installed")
 }
 
 /**

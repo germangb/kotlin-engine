@@ -4,29 +4,36 @@ import com.github.germangb.engine.animation.AnimationTimeline
 import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.framework.Actor
-
-/**
- * Timeline for each (named) bone
- */
-typealias AnimationTimelineData = Map<String, AnimationTimeline>
+import com.github.germangb.engine.graphics.Mesh
 
 /**
  * Loaded animation data
  */
-data class AnimationData(val frames: Int, val fps: Int, val timeline: AnimationTimelineData)
+data class AnimationData(val frames: Int, val fps: Int, val timeline: Map<String, AnimationTimeline>)
 
+/**
+ * Assimp scene data
+ */
+data class AssimpSceneData(val meshes: List<Mesh>, val animations: List<AnimationData>, val actor: Actor.() -> Unit)
+
+/** Load meshes */
+val MESHES = 0x1
+
+/** Load animations */
+val ANIMATIONS = 0x2
+
+/** Load scene */
+val SCENE = 0x3
+
+/** Loads everything */
+val ALL = MESHES or ANIMATIONS or SCENE
 
 /**
  * Assimp API
  */
 interface AssimpLoader {
     /**
-     * Load scene blueprint using Assimp
+     * Load assimp scene
      */
-    fun loadActor(file: FileHandle, manager: AssetManager): (Actor.() -> Unit)?
-
-    /**
-     * Load animation data with Assimp
-     */
-    fun loadAnimations(file: FileHandle): AnimationData?
+    fun loadScene(file: FileHandle, manager: AssetManager, flags: Int = ALL): AssimpSceneData?
 }

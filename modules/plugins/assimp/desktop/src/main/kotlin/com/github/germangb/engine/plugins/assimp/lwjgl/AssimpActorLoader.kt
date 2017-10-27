@@ -21,7 +21,7 @@ import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
 import com.github.germangb.engine.math.Vector3
-import com.github.germangb.engine.plugins.assimp.AnimationData
+import com.github.germangb.engine.plugins.assimp.*
 import org.lwjgl.assimp.*
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
@@ -30,9 +30,9 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 /**
  * Load animation data
  */
-fun loadAIAnimation(file: FileHandle): AnimationData? {
-    val scene = aiImportFile(file.path, aiProcessPreset_TargetRealtime_Fast) ?: return null
-    val anim = AIAnimation.create(scene.mAnimations()[0])
+fun loadAIAnimation(anim: AIAnimation): AnimationData {
+//    val scene = aiImportFile(file.path, aiProcessPreset_TargetRealtime_Fast) ?: return null
+//    val anim = AIAnimation.create(scene.mAnimations()[0])
 
     val fps = anim.mTicksPerSecond()
     val duration = anim.mDuration().toInt()
@@ -65,27 +65,29 @@ fun loadAIAnimation(file: FileHandle): AnimationData? {
                 timelines[node] = AnimationTimeline(rot, pos, sca)
             }
 
-    aiFreeScene(scene)
+    //aiFreeScene(scene)
     return AnimationData(duration, fps.toInt(), timelines)
 }
 
 /**
  * Load actor
  */
-fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, backend: Context): (Actor.() -> Unit)? {
-    val flags = aiProcess_Triangulate or
+fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int): AssimpSceneData? {
+    val aiFlags = aiProcess_Triangulate or
             aiProcess_GenUVCoords or
             aiProcess_GenSmoothNormals or
             aiProcess_LimitBoneWeights or
             aiProcess_FlipUVs
 
-    val scene = aiImportFile(file.path, flags) ?: return null
+    val scene = aiImportFile(file.path, aiFlags) ?: return null
 
-    // get bones
+    // Load bones
+
     val bones = mutableMapOf<String, Pair<Int, Matrix4c>>()
     (0 until scene.mNumMeshes())
             .map { AIMesh.create(scene.mMeshes()[it]) }
             .forEach { mesh ->
+                println("${file.path} ${mesh.mNumFaces()}")
                 (0 until mesh.mNumBones())
                         .map { AIBone.create(mesh.mBones()[it]) }
                         .forEach {
@@ -94,36 +96,60 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, backend: Co
                         }
             }
 
-    //println(bones.size)
+    // Load animations
 
-    // get meshes
-    val meshes = List(scene.mNumMeshes()) {
-        val aimesh = AIMesh.create(scene.mMeshes()[it])
-        val attrs = arrayOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
-        val mesh = aiMeshToGL(aimesh, attrs, backend.graphics, bones)
-        val meshPath = "${file.path}/mesh_$it"
-        manager.delegateMesh(mesh, meshPath)
-        mesh to aimesh.mNumBones()
-        //MeshAsset(manager, meshPath, attrs) to aimesh.mNumBones()
-    }
-
-    // gen materials
-    val materials = List(scene.mNumMeshes()) {
-        val mat = DiffuseMaterial()
-        //mat.wireframe = true
-        val file = ctx.files.getLocal("hellknight.png")
-        backend.assets.loadTexture(file, RGBA8, LINEAR, LINEAR)?.let {
-            manager.delegateTexture(it, "hellknight.png?$it")
-            mat.diffuse = it
+    val numAnims = scene.mNumAnimations()
+    val animations = if (flags and ANIMATIONS != 0) {
+        List(numAnims) {
+            val anim = AIAnimation.create(scene.mAnimations()[it])
+            loadAIAnimation(anim)
         }
-        mat
+    } else {
+        emptyList()
     }
 
-    // build hierarchy
-    val node = GCNode(scene.mRootNode())
-    val blueprint = node.convert(manager, meshes, materials, bones)
+    // Load meshes
+
+    val meshes = if (flags and MESHES != 0) {
+        List(scene.mNumMeshes()) {
+            val aimesh = AIMesh.create(scene.mMeshes()[it])
+            val attrs = arrayOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
+            val mesh = aiMeshToGL(aimesh, attrs, ctx.graphics, bones)
+            val meshPath = "${file.path}/mesh_$it"
+            manager.delegateMesh(mesh, meshPath)
+            mesh to aimesh.mNumBones()
+        }
+    } else {
+        emptyList()
+    }
+
+    // Load materials
+
+    // Build node blueprint
+    val blueprint = if (flags and SCENE != 0) {
+
+        // load materials
+        val materials = List(scene.mNumMeshes()) {
+            val mat = DiffuseMaterial()
+            val textureFile = ctx.files.getLocal("hellknight.png")
+            ctx.assets.loadTexture(textureFile, RGBA8, LINEAR, LINEAR)?.let {
+                manager.delegateTexture(it, "hellknight.png?$it")
+                mat.diffuse = it
+            }
+            mat
+        }
+
+        // load nodes
+        val node = GCNode(scene.mRootNode())
+        node.convert(manager, meshes, materials, bones)
+    } else {
+        {}
+    }
+
+    // free data
     aiFreeScene(scene)
-    return blueprint
+
+    return AssimpSceneData(meshes.map { it.first }, animations, blueprint)
 }
 
 /**

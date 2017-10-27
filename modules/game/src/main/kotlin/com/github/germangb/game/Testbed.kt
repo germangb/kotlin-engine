@@ -1,6 +1,8 @@
 package com.github.germangb.game
 
-import com.github.germangb.engine.animation.*
+import com.github.germangb.engine.animation.AnimationState
+import com.github.germangb.engine.animation.SampledAnimationController
+import com.github.germangb.engine.animation.SimpleAnimationManager
 import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
@@ -21,18 +23,13 @@ import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.bullet
+import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
-
-class MyListener : AnimationListener {
-    override fun onLoop(animation: Animation<*>) {
-        println("loop $animation (${animation.controller.duration})")
-    }
-}
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -153,7 +150,7 @@ class Testbed(val ctx: Context) : Application {
     val animation by lazy {
         // load assimp scene with skinned mesh
         val file = ctx.files.getLocal("hellknight.md5mesh")
-        val build = ctx.assimp.loadActor(file, assetManager)
+        val build = ctx.assimp.loadScene(file, assetManager)?.actor
 
         // create scene
         val actor = build?.let {
@@ -163,11 +160,13 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
+        //println("animations")
+
         val animFile = ctx.files.getLocal("idle2.md5anim")
-        ctx.assimp.loadAnimations(animFile)?.let { (frames, fps, timeline) ->
-            val sampled = SampledAnimationController(actor!!, frames - 1, fps, timeline)
+        ctx.assimp.loadScene(animFile, assetManager, ANIMATIONS)?.let { (_, anims, _) ->
+            val ai = anims[0]
+            val sampled = SampledAnimationController(actor ?: root, ai.frames - 1, ai.fps, ai.timeline)
             val anim = animationManager.createAnimation(sampled)
-            //anim.listener = MyListener()
             anim
         }
     }
