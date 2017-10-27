@@ -15,7 +15,7 @@ class AnimationTimeline(private val rotation: List<RotationKey>,
         val auxQuat = Quaternion()
     }
     /**
-     * Applies transform to a matrix given a normalized duration
+     * Applies transform bind a matrix given a normalized duration
      */
     fun applyTransform(time: Float, out: Matrix4, interpolate: Boolean) {
         val from = time.toInt() % rotation.size

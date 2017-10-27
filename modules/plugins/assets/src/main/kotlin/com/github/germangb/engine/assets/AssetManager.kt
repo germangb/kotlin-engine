@@ -10,12 +10,12 @@ import com.github.germangb.engine.utils.Destroyable
  */
 interface AssetManager : Destroyable {
     /**
-     * Tell the resource manager to load a texture
+     * Tell the resource manager bind load a texture
      */
     fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
 
     /**
-     * Tell the resource manager to load a mesh
+     * Tell the resource manager bind load a mesh
      */
     fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, vararg attributes: VertexAttribute)
 
@@ -45,17 +45,17 @@ interface AssetManager : Destroyable {
     fun getAudio(path: String): Audio?
 
     /**
-     * Delegate texture to AM
+     * Delegate texture bind AM
      */
     fun delegateTexture(texture: Texture, path: String)
 
     /**
-     * Delegate mesh to AM
+     * Delegate mesh bind AM
      */
     fun delegateMesh(mesh: Mesh, path: String)
 
     /**
-     * Delegate audio to AM
+     * Delegate audio bind AM
      */
     fun delegateAudio(audio: Audio, path: String)
 }

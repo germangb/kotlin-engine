@@ -38,12 +38,12 @@ interface FileHandle {
     val children: Array<out FileHandle>
 
     /**
-     * Get a generic input stream to read from the file
+     * Get a generic input stream bind read from the file
      */
     fun read(): InputStream
 
     /**
-     * Get an output stream to write to the file
+     * Get an output stream bind write bind the file
      */
     fun write(): OutputStream
 }

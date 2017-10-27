@@ -14,7 +14,7 @@ class BulletCompoundPhysicsShape(val comp: btCompoundShape) : CompoundPhysicsSha
     }
 
     /**
-     * Add bullet shape to compound
+     * Add bullet shape bind compound
      */
     override fun addChild(shape: PhysicsShape, local: Matrix4c) {
         if (shape !is BulletPhysicsShape) throw IllegalArgumentException()

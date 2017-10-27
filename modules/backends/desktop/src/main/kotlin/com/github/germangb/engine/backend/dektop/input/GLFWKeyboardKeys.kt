@@ -5,7 +5,7 @@ import com.github.germangb.engine.input.KeyboardKey.*
 import org.lwjgl.glfw.GLFW.*
 
 /**
- * Convert enum to GLFW int
+ * Convert enum bind GLFW int
  */
 val KeyboardKey.asGLFWInt get() = when(this) {
     /** Printable keys. */
@@ -135,7 +135,7 @@ val KeyboardKey.asGLFWInt get() = when(this) {
 }
 
 /**
- * Convert GLFW int to enum
+ * Convert GLFW int bind enum
  */
 val Int.asEnum get() = when(this) {
     /** Printable keys. */

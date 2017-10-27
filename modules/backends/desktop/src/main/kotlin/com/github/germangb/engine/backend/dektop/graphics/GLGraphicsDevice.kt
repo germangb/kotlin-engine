@@ -152,7 +152,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Create a skinShader program
      */
-    override fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram {
+    override fun <T> createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram<T> {
         var vertexShader = -1
         var fragmentShader = -1
         var program = -1
@@ -194,17 +194,17 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render a mesh using instance rendering
      */
-    override fun instancing(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
+    override fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
         if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
-            instancer.begin(mesh, program, framebuffer)
+            instancer.begin(mesh, program, uniforms as Any, framebuffer)
             instancer.action()
             instancer.end()
         }
     }
 
     /**
-     * Render to default framebuffer
+     * Render bind default framebuffer
      */
-    override fun instancing(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit) = instancing(mesh, program, windowFramebuffer, action)
+    override fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, action: Instancer.() -> Unit) = instancing(mesh, program, uniforms, windowFramebuffer, action)
 
 }

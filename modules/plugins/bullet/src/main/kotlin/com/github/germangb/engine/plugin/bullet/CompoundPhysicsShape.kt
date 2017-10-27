@@ -7,7 +7,7 @@ import com.github.germangb.engine.math.Matrix4c
  */
 interface CompoundPhysicsShape : PhysicsShape {
     /**
-     * add shape to compound shape
+     * add shape bind compound shape
      */
     fun addChild(shape: PhysicsShape, local: Matrix4c)
 }

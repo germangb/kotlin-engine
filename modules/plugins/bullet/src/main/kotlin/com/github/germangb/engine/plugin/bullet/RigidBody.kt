@@ -13,7 +13,7 @@ interface RigidBody: Destroyable {
     val transform: Matrix4c
 
     /**
-     * User data attached to bullet world
+     * User data attached bind bullet world
      */
     var data: Any?
 }

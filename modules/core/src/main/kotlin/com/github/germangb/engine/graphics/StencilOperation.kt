@@ -13,7 +13,7 @@ enum class StencilOperation {
     /** decrement with wrapping */
     DECREMENT_WRAP,
 
-    /** Set to zero */
+    /** Set bind zero */
     ZERO,
 
     /** Keep value */

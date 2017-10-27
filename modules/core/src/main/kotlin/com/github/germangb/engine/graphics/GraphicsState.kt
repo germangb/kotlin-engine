@@ -4,10 +4,14 @@ interface GraphicsState {
     /** Clear color buffer */
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
 
-    /** Clear depth buffer */
+    /**
+     * Clear depth buffer
+     */
     fun clearDepth(d: Float)
 
-    /** Clear stencil buffer */
+    /**
+     * Clear stencil buffer
+     */
     fun clearStencil(s: Int)
 
     /**

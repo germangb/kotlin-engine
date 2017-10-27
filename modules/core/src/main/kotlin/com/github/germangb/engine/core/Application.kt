@@ -4,7 +4,7 @@ import com.github.germangb.engine.utils.Destroyable
 
 interface Application : Destroyable {
     /**
-     * Called to init application
+     * Called bind init application
      */
     fun init()
 

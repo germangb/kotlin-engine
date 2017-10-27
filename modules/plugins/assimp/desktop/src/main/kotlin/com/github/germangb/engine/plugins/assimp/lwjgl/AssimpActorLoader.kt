@@ -153,7 +153,7 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
 }
 
 /**
- * Convert aiMesh to engine mesh
+ * Convert aiMesh bind engine mesh
  */
 fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
     // mesh attributes
@@ -268,7 +268,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
 }
 
 /**
- * Convert aiNode to a kotlin node
+ * Convert aiNode bind a kotlin node
  */
 class GCNode(val aiNode: AINode) {
     /** Child nodes */
@@ -289,7 +289,7 @@ class GCNode(val aiNode: AINode) {
     val name = aiNode.mName().dataString()
 
     /**
-     * Convert hierarchy to blueprint
+     * Convert hierarchy bind blueprint
      */
     fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Material>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
@@ -333,7 +333,7 @@ class GCNode(val aiNode: AINode) {
     }
 }
 
-/** AI matrix to joml */
+/** AI matrix bind joml */
 private fun Matrix4.set(ai: AIMatrix4x4): Matrix4 {
     m00(ai.a1()); m01(ai.b1()); m02(ai.c1()); m03(ai.d1())
     m10(ai.a2()); m11(ai.b2()); m12(ai.c2()); m13(ai.d2())

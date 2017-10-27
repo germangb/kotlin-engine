@@ -84,7 +84,7 @@ val MeshPrimitive.glEnum
     }
 
 /**
- * Test function to GLEnum
+ * Test function bind GLEnum
  */
 val TestFunction.glEnum
     get() = when (this) {
@@ -98,7 +98,7 @@ val TestFunction.glEnum
     }
 
 /**
- * Convert texel format to GLEnum
+ * Convert texel format bind GLEnum
  */
 val TexelFormat.glEnum
     get() = when (this) {
@@ -124,7 +124,7 @@ val TexelFormat.glEnum
     }
 
 /**
- * Convert texel format to GLEnum
+ * Convert texel format bind GLEnum
  */
 val TexelFormat.dataFormat
     get() = when (this) {

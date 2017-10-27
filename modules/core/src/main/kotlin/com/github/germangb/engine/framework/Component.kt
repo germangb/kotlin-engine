@@ -4,7 +4,7 @@ abstract class Component {
     internal lateinit var iactor: Actor
 
     /**
-     * Flag to tell if component has been init
+     * Flag bind tell if component has been init
      */
     internal var init = false
 
@@ -14,7 +14,7 @@ abstract class Component {
     val actor get() = iactor
 
     /**
-     * Called when the actor is added to the framework
+     * Called when the actor is added bind the framework
      */
     open fun init() = Unit
 

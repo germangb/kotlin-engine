@@ -5,7 +5,7 @@ import com.github.germangb.engine.math.Matrix4c
 
 class Transform {
     /**
-     * Transform relative to parent
+     * Transform relative bind parent
      */
     val local = Matrix4()
 

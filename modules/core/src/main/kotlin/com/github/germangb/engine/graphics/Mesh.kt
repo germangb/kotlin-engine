@@ -18,7 +18,7 @@ interface Mesh : Destroyable {
     val primitive: MeshPrimitive
 
     /**
-     * Number of indices to be rendered
+     * Number of indices bind be rendered
      */
     var indices: Int
 

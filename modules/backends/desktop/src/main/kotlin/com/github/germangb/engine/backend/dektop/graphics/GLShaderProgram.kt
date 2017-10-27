@@ -6,8 +6,10 @@ import org.lwjgl.opengl.GL20.*
 /**
  * OpenGL shader program
  */
-class GLShaderProgram(val program: Int) : ShaderProgram {
-
+class GLShaderProgram<T>(val program: Int) : ShaderProgram<T> {
+    /**
+     * Destroy shader program
+     */
     override fun destroy() {
         glDeleteProgram(program)
     }

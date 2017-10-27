@@ -113,7 +113,7 @@ class ALAudioDevice : AudioDevice, Destroyable {
                 alBufferData(buffer, format, samples, sampling)
                 REGISTER_AUDIO(ALSampledAudio(this, buffer))
             } else {
-                //TODO fallback to 16bit
+                //TODO fallback bind 16bit
                 DummyAudio
             }
 

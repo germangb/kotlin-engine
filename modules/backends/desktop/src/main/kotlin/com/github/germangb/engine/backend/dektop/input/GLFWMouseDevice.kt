@@ -17,12 +17,12 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
     var iy = 0
 
     /**
-     * Convert enum to GLFW constant
+     * Convert enum bind GLFW constant
      */
     val MouseButton.GLFWInt get() = GLFW_MOUSE_BUTTON_1 + ordinal
 
     /**
-     * Convert int to enum
+     * Convert int bind enum
      */
     val Int.asEnum get() = MouseButton.values()[this - GLFW_MOUSE_BUTTON_1]
 

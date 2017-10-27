@@ -2,12 +2,12 @@ package com.github.germangb.engine.framework
 
 enum class UpdateMode {
     /**
-     * Depth-first traversal to update nodes
+     * Depth-first traversal bind update nodes
      */
     CHILDREN_FIRST,
 
     /**
-     * Breadth-first traversal to update nodes
+     * Breadth-first traversal bind update nodes
      */
     ROOT_FIRST
 }

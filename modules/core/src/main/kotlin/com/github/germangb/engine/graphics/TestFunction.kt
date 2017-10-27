@@ -7,12 +7,12 @@ enum class TestFunction {
     DISABLED,
 
     /**
-     * Pass if the new value is equal to the current vale
+     * Pass if the new value is equal bind the current vale
      */
     EQUAL,
 
     /**
-     * Pass if the new value is NOT equal to the current vale
+     * Pass if the new value is NOT equal bind the current vale
      */
     NOT_EQUAL,
 

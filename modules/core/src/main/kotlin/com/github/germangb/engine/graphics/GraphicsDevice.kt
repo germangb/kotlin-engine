@@ -39,15 +39,15 @@ interface GraphicsDevice {
     /**
      * Create a shader program
      */
-    fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
+    fun <T> createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram<T>
 
     /**
      * Perform a instancing call
      */
-    fun instancing(mesh: Mesh, program: ShaderProgram, framebuffer: Framebuffer, action: Instancer.() -> Unit)
+    fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, framebuffer: Framebuffer, action: Instancer.() -> Unit)
 
     /**
      * Perform a instancing call in the default framebuffer
      */
-    fun instancing(mesh: Mesh, program: ShaderProgram, action: Instancer.() -> Unit)
+    fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, action: Instancer.() -> Unit)
 }

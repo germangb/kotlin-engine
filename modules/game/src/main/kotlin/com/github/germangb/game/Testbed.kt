@@ -11,8 +11,7 @@ import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
-import com.github.germangb.engine.graphics.CullMode
-import com.github.germangb.engine.graphics.MeshUsage
+import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
@@ -22,6 +21,7 @@ import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Vector3
+import com.github.germangb.engine.math.Vector4
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -30,6 +30,9 @@ import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
+
+class SkinUniforms(@Uniform("u_texture") val texture: Texture, @Uniform("u_projection") val proj: Matrix4c, @Uniform("u_view") val view: Matrix4c, @Uniform("u_skin") val skin: Array<Matrix4c>)
+class StaticUniforms(@Uniform("u_texture") val texture: Texture, @Uniform("u_projection") val proj: Matrix4c, @Uniform("u_view") val view: Matrix4c)
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -42,8 +45,9 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
     }
 
-    val animationManager = SimpleAnimationManager()
     val skin = Array<Matrix4c>(110) { Matrix4() }
+
+    val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
         @Language("GLSL")
         val vert = """#version 450 core
@@ -72,7 +76,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(0, 0, 0, 1);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram<SkinUniforms>(vert, frag)
     }
     val skinShader = let {
         @Language("GLSL")
@@ -112,7 +116,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram<SkinUniforms>(vert, frag)
     }
     val staticShader = let {
         @Language("GLSL")
@@ -144,7 +148,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram<StaticUniforms>(vert, frag)
     }
     val root = Actor()
     val animation by lazy {
@@ -343,7 +347,7 @@ class Testbed(val ctx: Context) : Application {
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.25f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
 
         val stack = Stack<Actor>()
 
@@ -365,16 +369,12 @@ class Testbed(val ctx: Context) : Application {
             val actor = stack.pop()
             actor.getComponent<MeshInstancerComponent>()?.let { inst ->
                 ctx.graphics.state.cullMode(CullMode.BACK_FACES)
-                ctx.graphics.instancing(inst.mesh, staticShader) {
-                    uniforms {
-                        proj bindsTo "u_projection"
-                        view bindsTo "u_view"
 
-                        val mat = inst.material
-                        if (mat is DiffuseMaterial) {
-                            mat.diffuse bindsTo "u_texture"
-                        }
-                    }
+                // create uniforms
+                val mat = inst.material
+                val uniforms = StaticUniforms((mat as? DiffuseMaterial)?.diffuse ?: DummyTexture, proj, view)
+
+                ctx.graphics.instancing(inst.mesh, staticShader, uniforms) {
                     inst.actor.children
                             .mapNotNull { it.getComponent<MeshInstanceComponent>() }
                             .forEach {
@@ -386,13 +386,10 @@ class Testbed(val ctx: Context) : Application {
             actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
                 ctx.graphics.state.cullMode(CullMode.FRONT_FACES)
 
-                ctx.graphics.instancing(inst.mesh, outlineSkinShader) {
-                    uniforms {
-                        skin bindsTo "u_skin"
-                        proj bindsTo "u_projection"
-                        view bindsTo "u_view"
-                    }
+                val mat = inst.material
+                val skinUniforms = SkinUniforms((mat as? DiffuseMaterial)?.diffuse ?: DummyTexture, proj, view, skin)
 
+                ctx.graphics.instancing(inst.mesh, outlineSkinShader, skinUniforms) {
                     actor.children
                             .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
                             .forEach { instance() }
@@ -400,23 +397,15 @@ class Testbed(val ctx: Context) : Application {
 
                 ctx.graphics.state.cullMode(CullMode.BACK_FACES)
 
-                ctx.graphics.instancing(inst.mesh, skinShader) {
-                    uniforms {
-                        skin bindsTo "u_skin"
-                        proj bindsTo "u_projection"
-                        view bindsTo "u_view"
-
-                        val mat = inst.material
-                        if (mat is DiffuseMaterial) {
-                            mat.diffuse bindsTo "u_texture"
-                        }
-                    }
-
+                ctx.graphics.instancing(inst.mesh, skinShader, skinUniforms) {
                     actor.children
                             .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
                             .forEach {
+                                ctx.graphics.state.renderMode(RenderMode.SOLID)
                                 instance()
                             }
+
+                    ctx.graphics.state.renderMode(RenderMode.SOLID)
                 }
             }
 

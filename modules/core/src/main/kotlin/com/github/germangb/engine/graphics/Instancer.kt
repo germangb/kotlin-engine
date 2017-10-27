@@ -12,7 +12,7 @@ interface Instancer {
     val transform: Matrix4
 
     /**
-     * Add an instance to the instancing call
+     * Add an instance bind the instancing call
      */
     fun instance()
 
@@ -21,8 +21,8 @@ interface Instancer {
      */
     fun flush()
 
-    /**
-     * Upload uniforms
-     */
-    fun uniforms(action: Uniforms.() -> Unit)
+//    /**
+//     * Upload uniforms
+//     */
+//    fun uniforms(action: Uniforms.() -> Unit)
 }

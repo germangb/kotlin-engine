@@ -11,7 +11,7 @@ import com.github.germangb.engine.graphics.Mesh
 class MeshInstancerComponent(val mesh: Mesh, val material: Material) : Component()
 
 /**
- * Adds a mesh instancer to the actor
+ * Adds a mesh instancer bind the actor
  */
 fun Actor.addMeshInstancer(mesh: Mesh, material: Material) {
     addComponent(MeshInstancerComponent(mesh, material))

@@ -8,7 +8,7 @@ import java.io.File
  */
 class DesktopFiles : Files {
     /**
-     * Get reference to local file
+     * Get reference bind local file
      */
     override fun getLocal(path: String) = DesktopFileHandle(File(path))
 }

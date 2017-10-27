@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  */
 class Actor {
     /**
-     * String name given to this actor
+     * String name given bind this actor
      */
     var name: String = toString()
 
@@ -59,7 +59,7 @@ class Actor {
     val components: List<Component> get() = icomponents
 
     /**
-     * Adds a component to the actor
+     * Adds a component bind the actor
      */
     fun addComponent(comp: Component) {
         try {

@@ -10,6 +10,6 @@ import com.github.germangb.engine.math.Matrix4c
 class JointComponent(val id: Int, val offset: Matrix4c) : Component()
 
 /**
- * Adds a joint component to the actor
+ * Adds a joint component bind the actor
  */
 fun Actor.addJoint(id: Int, offset: Matrix4c) = addComponent(JointComponent(id, offset))

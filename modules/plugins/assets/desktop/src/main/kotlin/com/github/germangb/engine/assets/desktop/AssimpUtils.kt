@@ -9,7 +9,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 
 /**
- * Convert aiMesh to engine mesh
+ * Convert aiMesh bind engine mesh
  */
 fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, usage: MeshUsage, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
     // mesh attributes
