@@ -100,7 +100,7 @@ class GLInstancer : Instancer, Destroyable {
         if (count <= 0) return
         data.flip()
         glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
-        glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, GL_UNSIGNED_INT, 0L, count)
+        glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, count)
         data.clear()
         count = 0
     }

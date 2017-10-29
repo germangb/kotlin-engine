@@ -30,7 +30,6 @@ import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
-import java.nio.FloatBuffer
 import java.text.NumberFormat
 import java.util.*
 
@@ -46,7 +45,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val skin = Array(110) { Matrix4() }
-    val skinData = ctx.buffers.create(110 * 16 * 4).asFloatBuffer().asMatrix4Buffer()
+    val skinData = ctx.buffers.create(110 * 16 * 4).asMatrix4Buffer()
 
     val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
@@ -408,8 +407,7 @@ class Testbed(val ctx: Context) : Application {
                         "u_projection" to proj,
                         "u_view" to view,
                         "u_texture" to texture,
-                        "u_skin" to skinData
-                )
+                        "u_skin" to skinData)
 
                 ctx.graphics.instancing(inst.mesh, outlineSkinShader, uniforms) {
                     actor.children
@@ -436,7 +434,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun destroy() {
-        ctx.buffers.free(skinData.container as FloatBuffer)
+        ctx.buffers.free(skinData.container)
         skinShader.destroy()
         outlineSkinShader.destroy()
         assetManager.destroy()

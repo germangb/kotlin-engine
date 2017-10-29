@@ -114,10 +114,19 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
         return GLFramebuffer(this, fbo, width, height, textures)
     }
 
+    /** Create mesh using GL_UNSIGNED_BYTE indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+
+    /** Create mesh using GL_UNSIGNED_SHORT indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+
+    /** Create mesh using GL_UNSIGNED_INT indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+
     /**
      * Create a mesh
      */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh {
+    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -134,7 +143,11 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
         glCheckError("Error in createMesh while creating vbo") {
             ibo = glGenBuffers()
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, usage.glEnum)
+            when (indexData) {
+                is ByteBuffer -> glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, usage.glEnum)
+                is IntBuffer -> glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, usage.glEnum)
+                is ShortBuffer -> glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData, usage.glEnum)
+            }
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
         }
 
@@ -169,8 +182,14 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             glBindBuffer(GL_ARRAY_BUFFER, 0)
         }
 
+        val indexType = when(indexData) {
+            is ByteBuffer -> GL_UNSIGNED_BYTE
+            is ShortBuffer -> GL_UNSIGNED_SHORT
+            is IntBuffer -> GL_UNSIGNED_INT
+            else -> throw IllegalArgumentException("Invalid index type")
+        }
 
-        return GLMesh(this, vbo, ibo, vao, indexData.capacity() / 4, primitive, attributes)
+        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes)
     }
 
     /**

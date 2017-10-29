@@ -31,14 +31,14 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, usage: Mesh
     val vertexDataSize = vertexSize * positions.capacity() * 4L
     val indexDataSize = 3 * faces.capacity() * 4L
     val vertexData = je_malloc(vertexDataSize)
-    val indexData = je_malloc(indexDataSize)
+    val indexData = je_malloc(indexDataSize).asIntBuffer()
 
     // index data
     (0 until faces.capacity()).map { faces[it] }.forEach {
         val ind = it.mIndices()
-        indexData.putInt(ind[0])
-        indexData.putInt(ind[1])
-        indexData.putInt(ind[2])
+        indexData.put(ind[0])
+        indexData.put(ind[1])
+        indexData.put(ind[2])
     }
 
     val hasSkin = JOINT_IDS in attributes

@@ -14,6 +14,7 @@ class GLMesh(val gfx: GLGraphicsDevice,
              val vbo: Int,
              val ibo: Int,
              val vao: Int,
+             val indexType: Int,
              override var indices: Int,
              override val primitive: MeshPrimitive,
              override val attributes: Array<out VertexAttribute>) : Mesh {

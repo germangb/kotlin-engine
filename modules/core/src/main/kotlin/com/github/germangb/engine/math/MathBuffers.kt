@@ -16,12 +16,12 @@ fun Matrix3c.get(buffer: Matrix3Buffer) = get(buffer.container)
 /**
  * Create matrix buffer from FloatBuffer
  */
-fun FloatBuffer.asMatrix4Buffer() = Matrix4Buffer(this)
+fun ByteBuffer.asMatrix4Buffer() = Matrix4Buffer(this.asFloatBuffer())
 
 /**
  * Create matrix buffer from FloatBuffer
  */
-fun FloatBuffer.asMatrix3Buffer() = Matrix3Buffer(this)
+fun ByteBuffer.asMatrix3Buffer() = Matrix3Buffer(this.asFloatBuffer())
 
 /**
  * Free math buffer

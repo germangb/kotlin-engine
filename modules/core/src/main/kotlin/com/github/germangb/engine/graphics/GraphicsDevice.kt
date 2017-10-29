@@ -75,9 +75,19 @@ interface GraphicsDevice {
     fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh
 
     /**
+     * Create a mesh
+     */
+    fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh
+
+    /**
+     * Create a mesh
+     */
+    fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh
+
+    /**
      * Create a shader program
      */
-    fun  createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
+    fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
      * Perform a instancing call
