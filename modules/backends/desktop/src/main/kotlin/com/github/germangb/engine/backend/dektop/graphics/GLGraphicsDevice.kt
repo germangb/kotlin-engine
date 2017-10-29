@@ -39,7 +39,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     override val shaderPrograms: List<ShaderProgram> get() = ishaders
     override val framebuffers: List<Framebuffer> get() = ifbos
 
-    fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
+    private fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
         var id: Int = -1
 
         glCheckError("Error in createTexture()") {
@@ -59,12 +59,16 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
         return GLTexture(this, id, width, height)
     }
 
-    /**
-     * Create OpenGL texture
-     */
+    /** Create OpenGL texture using GL_UNSIGNED_BYTE */
     override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+
+    /** Create OpenGL texture using GL_UNSIGNED_SHORT */
     override fun createTexture(data: ShortBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+
+    /** Create OpenGL texture using GL_FLOAT */
     override fun createTexture(data: FloatBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+
+    /** Create OpenGL texture using GL_UNSIGNED_INT */
     override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
 
     /**
