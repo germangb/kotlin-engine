@@ -5,7 +5,6 @@ import com.github.germangb.engine.graphics.Instancer
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.math.*
 import com.github.germangb.engine.utils.Destroyable
-import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.glDrawBuffers
 import org.lwjgl.opengl.GL20.glUseProgram
@@ -13,7 +12,6 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
-import java.nio.FloatBuffer
 
 class GLInstancer : Instancer, Destroyable {
     override val transform = Matrix4()

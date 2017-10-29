@@ -204,7 +204,14 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
                 vertexData.putFloat(uvs[i].y())
             }
             else -> {
-                (0 until size).forEach { vertexData.putFloat(0f) }
+                (0 until size).forEach {
+                    when (type) {
+                        VertexAttributeType.FLOAT -> vertexData.putFloat(0f)
+                        VertexAttributeType.INT -> vertexData.putInt(0)
+                        VertexAttributeType.SHORT -> vertexData.putShort(0)
+                        VertexAttributeType.BYTE -> vertexData.put(0)
+                    }
+                }
             }
         }
     }
@@ -234,19 +241,19 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
                                 when {
                                     vertexData.getFloat(offset + 12 * 4) == 0.0f -> {
                                         vertexData.putFloat(offset + 12 * 4, weight)
-                                        vertexData.putFloat(offset + 8 * 4, boneId.toFloat())
+                                        vertexData.putInt(offset + 8 * 4, boneId)
                                     }
                                     vertexData.getFloat(offset + 13 * 4) == 0.0f -> {
                                         vertexData.putFloat(offset + 13 * 4, weight)
-                                        vertexData.putFloat(offset + 9 * 4, boneId.toFloat())
+                                        vertexData.putInt(offset + 9 * 4, boneId)
                                     }
                                     vertexData.getFloat(offset + 14 * 4) == 0.0f -> {
                                         vertexData.putFloat(offset + 14 * 4, weight)
-                                        vertexData.putFloat(offset + 10 * 4, boneId.toFloat())
+                                        vertexData.putInt(offset + 10 * 4, boneId)
                                     }
                                     vertexData.getFloat(offset + 15 * 4) == 0.0f -> {
                                         vertexData.putFloat(offset + 15 * 4, weight)
-                                        vertexData.putFloat(offset + 11 * 4, boneId.toFloat())
+                                        vertexData.putInt(offset + 11 * 4, boneId)
                                     }
                                     else -> throw Exception("Ran out of joint slots!")
                                 }

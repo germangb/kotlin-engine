@@ -115,18 +115,18 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     }
 
     /** Create mesh using GL_UNSIGNED_BYTE indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
 
     /** Create mesh using GL_UNSIGNED_SHORT indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
 
     /** Create mesh using GL_UNSIGNED_INT indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, *attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
 
     /**
      * Create a mesh
      */
-    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh {
+    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
