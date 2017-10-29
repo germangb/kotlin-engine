@@ -27,6 +27,7 @@ interface DebugUtils {
  * Fallback
  */
 object UninstalledDebugUtils : DebugUtils {
+    private fun TODO(msg: String) = Unit
     override fun add(build: StringBuilder.() -> Unit) = TODO("DebugUtils is uninstalled")
     override fun add(str: CharSequence) = TODO("DebugUtils is uninstalled")
 }

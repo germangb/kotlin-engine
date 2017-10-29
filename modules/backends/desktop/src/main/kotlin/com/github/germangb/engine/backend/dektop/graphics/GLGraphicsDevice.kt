@@ -227,7 +227,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             else -> throw IllegalArgumentException("Invalid index type")
         }
 
-        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes, instanceAttributes ?: emptyArray())
+        return GLMesh(this, vbo, ibo, vao, indexType, indexData.remaining(), primitive, attributes, instanceAttributes ?: emptyArray())
     }
 
     /**

@@ -4,6 +4,7 @@ import com.github.germangb.engine.animation.AnimationState
 import com.github.germangb.engine.animation.SampledAnimationController
 import com.github.germangb.engine.animation.SimpleAnimationManager
 import com.github.germangb.engine.assets.NaiveAssetManager
+import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
@@ -13,9 +14,11 @@ import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.InstanceAttribute.*
+import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
+import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
@@ -124,24 +127,30 @@ class Testbed(val ctx: Context) : Application {
             //layout(location = 4) in vec2 a_uv_offset;
             out vec2 v_uv;
             out vec3 v_normal;
+            out vec3 v_position;
             uniform mat4 u_projection;
             uniform mat4 u_view;
             void main () {
-                gl_Position = u_projection * u_view * a_instance * vec4(a_position, 1.0);
+                vec4 viewPos = u_view * a_instance * vec4(a_position, 1.0);
+                gl_Position = u_projection * viewPos;
                 v_normal = normalize((a_instance * vec4(a_normal, 0.0)).xyz);
                 v_uv = a_uv;// + a_uv_offset;
+                v_position = viewPos.xyz;
             }
         """.trimMargin()
         @Language("GLSL")
         val frag = """#version 450 core
             in vec2 v_uv;
             in vec3 v_normal;
+            in vec3 v_position;
             out vec4 frag_color;
             uniform sampler2D u_texture;
             void main() {
                 float light = clamp(dot(v_normal, normalize(vec3(1, 0, 2))), 0.0, 1.0);
                 vec4 color = texture(u_texture, v_uv);
                 color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
+                // fog
+                color.rgb = mix(color.rgb, vec3(0.2), clamp(abs(v_position.z) / 32 - 0.1, 0, 0.8));
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
@@ -157,11 +166,9 @@ class Testbed(val ctx: Context) : Application {
         val actor = build?.let {
             root.addChild {
                 it()
-                transform.local.scale(0.025f)
+                transform.local.scale(0.05f)
             }
         }
-
-        //println("animations")
 
         val animFile = ctx.files.getLocal("idle2.md5anim")
         ctx.assimp.loadScene(animFile, assetManager, ANIMATIONS)?.let { (_, anims, _) ->
@@ -177,14 +184,44 @@ class Testbed(val ctx: Context) : Application {
     val click = assetManager.getAudio("click")
     var debug = true
 
+    val floorTexture = ctx.assets.loadTexture(ctx.files.getLocal("dirt.jpg"), RGB8, LINEAR, LINEAR)
+    val floorMesh = let {
+        val vertex = ctx.buffers.create(1000)
+        val index = ctx.buffers.create(1000).asIntBuffer()
+        val s = 32f
+        vertex.putFloat(-s).putFloat(0f).putFloat(-s)
+        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
+        vertex.putFloat(0f).putFloat(0f)
+
+        vertex.putFloat(+s).putFloat(0f).putFloat(-s)
+        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
+        vertex.putFloat(1f).putFloat(0f)
+
+        vertex.putFloat(-s).putFloat(0f).putFloat(+s)
+        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
+        vertex.putFloat(0f).putFloat(1f)
+
+        vertex.putFloat(+s).putFloat(0f).putFloat(+s)
+        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
+        vertex.putFloat(1f).putFloat(1f).flip()
+        index.put(intArrayOf(0, 1, 2, 3)).flip()
+        val mesh = ctx.graphics.createMesh(vertex, index, MeshPrimitive.TRIANGLE_STRIP, MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
+        vertex.clear()
+        index.clear()
+        ctx.buffers.free(vertex)
+        ctx.buffers.free(index)
+        mesh
+    }
+
     override fun init() {
         val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
         world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
 
         root.addChild {
             val mat = DiffuseMaterial()
-            mat.diffuse = assetManager.getTexture("cube_texture") ?: DummyTexture
-            addMeshInstancer(cube!!, mat)
+            addMeshInstancer(cube!!, mapOf(
+                    "diffuse" to (assetManager.getTexture("cube_texture") ?: DummyTexture)
+            ))
 
             addChild {
                 transformMode = ABSOLUTE
@@ -270,12 +307,12 @@ class Testbed(val ctx: Context) : Application {
         animation?.play(true)
 
         // test filed
-        println("file = ${resources.path}, dir = ${resources.isDirectory}")
-        val children = resources.children
-        children.forEach {
-            if (it.isDirectory) println("child (dir) = ${it.path}")
-            println("    child = ${it.path}")
-        }
+//        println("file = ${resources.path}, dir = ${resources.isDirectory}")
+//        val children = resources.children
+//        children.forEach {
+//            if (it.isDirectory) println("child (dir) = ${it.path}")
+//            println("    child = ${it.path}")
+//        }
     }
 
     override fun update() {
@@ -290,7 +327,7 @@ class Testbed(val ctx: Context) : Application {
                 appendln("> # meshes = ${ctx.graphics.meshes.size}")
                 appendln("> # shaders = ${ctx.graphics.shaderPrograms.size}")
                 appendln("> # framebuffers = ${ctx.graphics.framebuffers.size}")
-                appendln("-".repeat(92))
+                appendln("-".repeat(16))
             }
 
             ctx.debug.add {
@@ -300,7 +337,7 @@ class Testbed(val ctx: Context) : Application {
                     appendln("> # $index state = ${audio.state}, gain = ${audio.gain}")
                 }
 
-                appendln("-".repeat(80))
+                appendln("-".repeat(16))
                 appendln("> # animations = ${animationManager.animations.size}")
                 animationManager.animations.forEachIndexed { index, anim ->
                     val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
@@ -309,7 +346,7 @@ class Testbed(val ctx: Context) : Application {
             }
 
             ctx.debug.add {
-                appendln("-".repeat(80))
+                appendln("-".repeat(16))
                 appendln("> # Rigid bodies = ${world.bodies.size ?: 0}")
                 world.bodies.forEach {
                     val pos = it.transform.getTranslation(Vector3())
@@ -348,10 +385,20 @@ class Testbed(val ctx: Context) : Application {
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1f), Vector3(0f, 1.5f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.5f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
+
+        instanceData.clear()
+        Matrix4().get(instanceData).position(16*4)
+        instanceData.flip()
+
+        ctx.graphics.state.cullMode(CullMode.DISABLED)
+        ctx.graphics.renderInstances(floorMesh, staticShader, mapOf(
+                "u_projection" to proj,
+                "u_view" to view,
+                "u_texture" to (floorTexture ?: DummyTexture)
+        ), instanceData)
 
         val stack = Stack<Actor>()
-
         stack.add(root)
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
@@ -380,11 +427,10 @@ class Testbed(val ctx: Context) : Application {
 
                 // create uniforms
                 val mat = inst.material
-                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
                 val uniforms = mapOf(
                         "u_projection" to proj,
                         "u_view" to view,
-                        "u_texture" to texture)
+                        "u_texture" to (mat["diffuse"] ?: DummyTexture))
 
                 // build instancing buffer data
                 instanceData.clear()
@@ -404,7 +450,7 @@ class Testbed(val ctx: Context) : Application {
                 ctx.graphics.state.cullMode(CullMode.FRONT)
 
                 val mat = mesh.material
-                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
+                val texture = mat["diffuse"] ?: DummyTexture
                 val uniforms = mapOf(
                         "u_projection" to proj,
                         "u_view" to view,

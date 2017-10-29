@@ -9,24 +9,24 @@ import com.github.germangb.engine.graphics.Mesh
 /**
  * Skinned mesh renderer component
  */
-class SkinnedMeshComponent(val root: Actor, val mesh: Mesh, val material: Material): Component()
+class SkinnedMeshComponent(val root: Actor, val mesh: Mesh, val material: Map<String, Any>): Component()
 
 /**
  * Instancer component
  */
-class SkinnedMeshInstancerComponent(val root: Actor, val mesh: Mesh, val material: Material) : Component()
+class SkinnedMeshInstancerComponent(val root: Actor, val mesh: Mesh, val material: Map<String, Any>) : Component()
 
 /**
  * Adds a skinned component bind the scene
  */
-fun Actor.addSkinnedMeshInstancer(root: Actor, mesh: Mesh, material: Material) {
+fun Actor.addSkinnedMeshInstancer(root: Actor, mesh: Mesh, material: Map<String, Any>) {
     addComponent(SkinnedMeshInstancerComponent(root, mesh, material))
 }
 
 /**
  * Adds a skinned mesh component
  */
-fun Actor.addSkinnedMesh(root: Actor, mesh: Mesh, material: Material) {
+fun Actor.addSkinnedMesh(root: Actor, mesh: Mesh, material: Map<String, Any>) {
     addComponent(SkinnedMeshComponent(root, mesh, material))
 }
 

@@ -77,6 +77,7 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
     val aiFlags = aiProcess_Triangulate or
             aiProcess_GenUVCoords or
             aiProcess_GenSmoothNormals or
+            //aiProcess_GenNormals or
             aiProcess_LimitBoneWeights or
             aiProcess_FlipUVs
 
@@ -88,7 +89,7 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
     (0 until scene.mNumMeshes())
             .map { AIMesh.create(scene.mMeshes()[it]) }
             .forEach { mesh ->
-                println("${file.path} ${mesh.mNumFaces()}")
+                //println("${file.path} ${mesh.mNumFaces()}")
                 (0 until mesh.mNumBones())
                         .map { AIBone.create(mesh.mBones()[it]) }
                         .forEach {
@@ -131,11 +132,11 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
 
         // load materials
         val materials = List(scene.mNumMeshes()) {
-            val mat = DiffuseMaterial()
+            val mat = mutableMapOf<String, Any>()
             val textureFile = ctx.files.getLocal("hellknight.png")
             ctx.assets.loadTexture(textureFile, RGBA8, LINEAR, LINEAR)?.let {
                 manager.delegateTexture(it, "hellknight.png?$it")
-                mat.diffuse = it
+                mat["diffuse"] = it
             }
             mat
         }
@@ -299,7 +300,7 @@ class GCNode(val aiNode: AINode) {
     /**
      * Convert hierarchy bind blueprint
      */
-    fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Material>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
+    fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Map<String, Any>>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
         transform.local.set(this@GCNode.transform)
         name = this@GCNode.name
@@ -329,6 +330,7 @@ class GCNode(val aiNode: AINode) {
 //                        addMeshInstance()
 //                    }
                 } else {
+                    //TODO fix materials
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
                     addSkinnedMesh(armRoot, meshes[it].first, materials[it])
