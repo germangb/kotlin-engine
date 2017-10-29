@@ -324,17 +324,17 @@ class GCNode(val aiNode: AINode) {
                 if (meshes[it].second == 0) {
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
-                    addMeshInstancer(meshes[it].first, materials[it])
-                    addChild {
-                        addMeshInstance()
-                    }
+                    addMesh(meshes[it].first, materials[it])
+//                    addChild {
+//                        addMeshInstance()
+//                    }
                 } else {
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
-                    addSkinnedMeshInstancer(armRoot, meshes[it].first, materials[it])
-                    addChild {
-                        addSkinnedMeshInstance(AAB())
-                    }
+                    addSkinnedMesh(armRoot, meshes[it].first, materials[it])
+//                    addChild {
+//                        addSkinnedMeshInstance(AAB())
+//                    }
                 }
             }
         }

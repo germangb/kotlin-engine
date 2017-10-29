@@ -18,7 +18,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Instancing draw call builder
      */
-    private val instancer = GLInstancer()
+    private val instancer = GLRenderer()
     private val windowFramebuffer = GLFramebuffer(this, 0, width, height, emptyList())
 
     override fun destroy() {

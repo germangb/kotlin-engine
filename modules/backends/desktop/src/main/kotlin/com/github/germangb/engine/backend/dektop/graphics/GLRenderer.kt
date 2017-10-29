@@ -14,9 +14,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.nio.ByteBuffer
 
-class GLInstancer : Destroyable {
-    //override val transform = Matrix4()
-
+class GLRenderer : Destroyable {
     companion object {
         val INSTANCE_BUFFER_SIZE = 64 * 4 * 1024L
     }
@@ -30,7 +28,7 @@ class GLInstancer : Destroyable {
     lateinit var activeMesh: GLMesh
 
     init {
-        glCheckError("Error in GLInstancer.init while creating vertex buffer") {
+        glCheckError("Error in GLRenderer.init while creating vertex buffer") {
             val data = je_malloc(INSTANCE_BUFFER_SIZE).asFloatBuffer()
             glBindBuffer(GL_ARRAY_BUFFER, buffer)
             glBufferData(GL_ARRAY_BUFFER, data, GL_STREAM_DRAW)
@@ -42,7 +40,7 @@ class GLInstancer : Destroyable {
     }
 
     override fun destroy() {
-        glCheckError("Error in GLInstancer.free() while deleting vertex buffer") {
+        glCheckError("Error in GLRenderer.free() while deleting vertex buffer") {
             glDeleteBuffers(buffer)
         }
     }
@@ -60,7 +58,7 @@ class GLInstancer : Destroyable {
     }
 
     fun setupInstancing(uniformData: Map<String, Any>, fbo: GLFramebuffer) {
-        glCheckError("Error in GLInstancer.begin()") {
+        glCheckError("Error in GLRenderer.begin()") {
             glUseProgram(shaderProgram.program)
             glBindVertexArray(activeMesh.vao)
             glBindBuffer(GL_ARRAY_BUFFER, activeMesh.vbo)
@@ -107,7 +105,7 @@ class GLInstancer : Destroyable {
 
     fun endInstancing() {
         //renderInstances()
-        glCheckError("Error in GLInstancer.end()") {
+        glCheckError("Error in GLRenderer.end()") {
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
             glUseProgram(0)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)

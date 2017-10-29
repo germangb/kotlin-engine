@@ -53,7 +53,6 @@ class Testbed(val ctx: Context) : Application {
             layout(location = 1) in vec3 a_normal;
             layout(location = 3) in ivec4 a_bones;
             layout(location = 4) in vec4 a_weights;
-            layout(location = 5) in mat4 a_instance;
             uniform mat4 u_projection;
             uniform mat4 u_view;
             uniform mat4 u_skin[110];
@@ -63,7 +62,7 @@ class Testbed(val ctx: Context) : Application {
                                         u_skin[a_bones.z] * a_weights.z +
                                         u_skin[a_bones.w] * a_weights.w;
 
-                gl_Position = u_projection * u_view * a_instance * u_skin_transform * vec4(a_position + a_normal, 1.0);
+                gl_Position = u_projection * u_view * u_skin_transform * vec4(a_position + a_normal, 1.0);
             }
         """.trimMargin()
         @Language("GLSL")
@@ -84,7 +83,6 @@ class Testbed(val ctx: Context) : Application {
             layout(location = 2) in vec2 a_uv;
             layout(location = 3) in ivec4 a_bones;
             layout(location = 4) in vec4 a_weights;
-            layout(location = 5) in mat4 a_instance;
             out vec2 v_uv;
             out vec3 v_normal;
             uniform mat4 u_projection;
@@ -95,7 +93,7 @@ class Testbed(val ctx: Context) : Application {
                                         u_skin[a_bones.y] * a_weights.y +
                                         u_skin[a_bones.z] * a_weights.z +
                                         u_skin[a_bones.w] * a_weights.w;
-                mat4 model = a_instance * u_skin_transform;
+                mat4 model = u_skin_transform;
                 gl_Position = u_projection * u_view * model * vec4(a_position, 1.0);
                 v_normal = normalize((model * vec4(a_normal, 0.0)).xyz);
                 v_uv = a_uv;
@@ -402,36 +400,23 @@ class Testbed(val ctx: Context) : Application {
                 ctx.graphics.renderInstances(inst.mesh, staticShader, uniforms, instanceData)
             }
 
-//            actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
-//                ctx.graphics.state.cullMode(CullMode.FRONT)
-//
-//                val mat = inst.material
-//                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
-//                val uniforms = mapOf(
-//                        "u_projection" to proj,
-//                        "u_view" to view,
-//                        "u_texture" to texture,
-//                        "u_skin" to skinData)
-//
-//                ctx.graphics.instancing(inst.mesh, outlineSkinShader, uniforms) {
-//                    actor.children
-//                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-//                            .forEach { instance() }
-//                }
-//
-//                ctx.graphics.state.cullMode(CullMode.BACK)
-//
-//                ctx.graphics.instancing(inst.mesh, skinShader, uniforms) {
-//                    actor.children
-//                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-//                            .forEach {
-//                                ctx.graphics.state.polygonMode(DrawMode.SOLID)
-//                                instance()
-//                            }
-//
-//                    ctx.graphics.state.polygonMode(DrawMode.SOLID)
-//                }
-//            }
+            actor.getComponent<SkinnedMeshComponent>()?.let { mesh ->
+                ctx.graphics.state.cullMode(CullMode.FRONT)
+
+                val mat = mesh.material
+                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
+                val uniforms = mapOf(
+                        "u_projection" to proj,
+                        "u_view" to view,
+                        "u_texture" to texture,
+                        "u_skin" to skinData)
+
+                ctx.graphics.state.cullMode(CullMode.BACK)
+                ctx.graphics.render(mesh.mesh, skinShader, uniforms)
+
+                ctx.graphics.state.cullMode(CullMode.FRONT)
+                ctx.graphics.render(mesh.mesh, outlineSkinShader, uniforms)
+            }
 
             actor.children.forEach { stack.push(it) }
         }

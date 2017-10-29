@@ -7,15 +7,27 @@ import com.github.germangb.engine.framework.materials.Material
 import com.github.germangb.engine.graphics.Mesh
 
 /**
+ * Skinned mesh renderer component
+ */
+class SkinnedMeshComponent(val root: Actor, val mesh: Mesh, val material: Material): Component()
+
+/**
  * Instancer component
  */
-class SkinnedMeshInstancerComponent(var root: Actor, val mesh: Mesh, val material: Material) : Component()
+class SkinnedMeshInstancerComponent(val root: Actor, val mesh: Mesh, val material: Material) : Component()
 
 /**
  * Adds a skinned component bind the scene
- * */
+ */
 fun Actor.addSkinnedMeshInstancer(root: Actor, mesh: Mesh, material: Material) {
     addComponent(SkinnedMeshInstancerComponent(root, mesh, material))
+}
+
+/**
+ * Adds a skinned mesh component
+ */
+fun Actor.addSkinnedMesh(root: Actor, mesh: Mesh, material: Material) {
+    addComponent(SkinnedMeshComponent(root, mesh, material))
 }
 
 /**
