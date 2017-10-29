@@ -91,5 +91,8 @@ enum class TexelFormat(val channels: Int) {
      */
     DEPTH24(1),
 
+    /**
+     * Depth & stencil
+     */
     DEPTH24_STENCIL8(2)
 }

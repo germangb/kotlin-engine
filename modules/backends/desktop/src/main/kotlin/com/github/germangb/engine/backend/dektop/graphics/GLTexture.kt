@@ -4,9 +4,14 @@ import com.github.germangb.engine.graphics.Texture
 import java.nio.ByteBuffer
 import org.lwjgl.opengl.GL11.*
 
-class GLTexture(val id: Int, override val width: Int, override val height: Int) : Texture {
+class GLTexture(val gfx: GLGraphicsDevice, val id: Int, override val width: Int, override val height: Int) : Texture {
+    init {
+        gfx.itextures.add(this)
+    }
+
     override fun destroy() {
         glDeleteTextures(id)
+        gfx.itextures.remove(this)
     }
 
     override fun setPixels(data: ByteBuffer, x: Int, y: Int, width: Int, height: Int) {

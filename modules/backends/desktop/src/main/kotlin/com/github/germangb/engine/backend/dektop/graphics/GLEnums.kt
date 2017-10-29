@@ -16,33 +16,37 @@ import org.lwjgl.opengl.GL30.*
 /**
  * Render mode
  */
-val RenderMode.glEnum get() = when(this) {
-    RenderMode.WIREFRAME -> GL_LINE
-    RenderMode.SOLID -> GL_FILL
-}
+val DrawMode.glEnum
+    get() = when (this) {
+        DrawMode.WIREFRAME -> GL_LINE
+        DrawMode.SOLID -> GL_FILL
+    }
 
 /**
  * Stencil op GLEnum
  */
-val StencilOperation.glEnum get() = when(this) {
-    StencilOperation.KEEP -> GL_KEEP
-    StencilOperation.NEGATE -> GL_INVERT
-    StencilOperation.REPLACE -> GL_REPLACE
-    StencilOperation.INCREMENT -> GL_INCR
-    StencilOperation.INCREMENT_WRAP -> GL_INCR_WRAP
-    StencilOperation.DECREMENT -> GL_DECR
-    StencilOperation.DECREMENT_WRAP -> GL_DECR_WRAP
-    StencilOperation.ZERO -> GL_ZERO
-}
+val StencilOperation.glEnum
+    get() = when (this) {
+        StencilOperation.KEEP -> GL_KEEP
+        StencilOperation.NEGATE -> GL_INVERT
+        StencilOperation.REPLACE -> GL_REPLACE
+        StencilOperation.INCREMENT -> GL_INCR
+        StencilOperation.INCREMENT_WRAP -> GL_INCR_WRAP
+        StencilOperation.DECREMENT -> GL_DECR
+        StencilOperation.DECREMENT_WRAP -> GL_DECR_WRAP
+        StencilOperation.ZERO -> GL_ZERO
+    }
 
 /**
  * Culling mode
  */
-val CullMode.glEnum get() = when(this) {
-    CullMode.DISABLED -> -1
-    CullMode.BACK_FACES -> GL_BACK
-    CullMode.FRONT_FACES -> GL_FRONT
-}
+val CullMode.glEnum
+    get() = when (this) {
+        CullMode.DISABLED -> -1
+        CullMode.BACK -> GL_BACK
+        CullMode.FRONT -> GL_FRONT
+        CullMode.FRONT_AND_BACK -> GL_FRONT_AND_BACK
+    }
 
 /** Attribute type */
 val VertexAttributeType.glEnum

@@ -1,9 +1,11 @@
 package com.github.germangb.engine.graphics
 
+import com.github.germangb.engine.utils.Destroyable
+
 /**
  * Framebuffer stuff
  */
-interface Framebuffer {
+interface Framebuffer: Destroyable {
     /**
      * Framebuffer width
      */

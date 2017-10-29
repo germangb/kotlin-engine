@@ -6,12 +6,16 @@ import org.lwjgl.opengl.GL20.*
 /**
  * OpenGL shader program
  */
-class GLShaderProgram<T>(val program: Int) : ShaderProgram<T> {
+class GLShaderProgram(val gfx: GLGraphicsDevice, val program: Int) : ShaderProgram {
+    init {
+        gfx.ishaders.add(this)
+    }
     /**
      * Destroy shader program
      */
     override fun destroy() {
         glDeleteProgram(program)
+        gfx.ishaders.remove(this)
     }
 
     /** Uniform locations */

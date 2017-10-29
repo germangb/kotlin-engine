@@ -11,7 +11,9 @@ import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
-import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.graphics.CullMode
+import com.github.germangb.engine.graphics.DrawMode
+import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
@@ -19,20 +21,18 @@ import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.Matrix4
-import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Vector3
-import com.github.germangb.engine.math.Vector4
+import com.github.germangb.engine.math.asMatrix4Buffer
+import com.github.germangb.engine.math.get
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
+import java.nio.FloatBuffer
 import java.text.NumberFormat
 import java.util.*
-
-class SkinUniforms(@Uniform("u_texture") val texture: Texture, @Uniform("u_projection") val proj: Matrix4c, @Uniform("u_view") val view: Matrix4c, @Uniform("u_skin") val skin: Array<Matrix4c>)
-class StaticUniforms(@Uniform("u_texture") val texture: Texture, @Uniform("u_projection") val proj: Matrix4c, @Uniform("u_view") val view: Matrix4c)
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -45,7 +45,8 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
     }
 
-    val skin = Array<Matrix4c>(110) { Matrix4() }
+    val skin = Array(110) { Matrix4() }
+    val skinData = ctx.buffers.create(110 * 16 * 4).asFloatBuffer().asMatrix4Buffer()
 
     val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
@@ -76,7 +77,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(0, 0, 0, 1);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram<SkinUniforms>(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     val skinShader = let {
         @Language("GLSL")
@@ -116,7 +117,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram<SkinUniforms>(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     val staticShader = let {
         @Language("GLSL")
@@ -148,7 +149,7 @@ class Testbed(val ctx: Context) : Application {
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
-        ctx.graphics.createShaderProgram<StaticUniforms>(vert, frag)
+        ctx.graphics.createShaderProgram(vert, frag)
     }
     val root = Actor()
     val animation by lazy {
@@ -181,9 +182,8 @@ class Testbed(val ctx: Context) : Application {
     var debug = true
 
     override fun init() {
-        val floor = world.createBox(Vector3(16f, 0.02f, 16f))
+        val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
         world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
-
 
         root.addChild {
             val mat = DiffuseMaterial()
@@ -195,8 +195,8 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(-4f, 12f, 2f)
                 transform.local.rotateX(2f)
                 transform.local.rotateZ(0.3f)
-                val compShape = world.createCompound()
-                compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                val compShape = ctx.bullet.createCompound()
+                compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
                 val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -209,8 +209,8 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(-4f, 8f, 2f)
                 transform.local.rotateX(2f)
                 transform.local.rotateZ(0.3f)
-                val compShape = world.createCompound()
-                compShape.addChild(world.createBox(Vector3(1f)), Matrix4())
+                val compShape = ctx.bullet.createCompound()
+                compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
                 val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -223,7 +223,7 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(-4f, 4f, 2f)
                 transform.local.rotateX(2f)
                 transform.local.rotateZ(0.3f)
-                val boxShape = world.createBox(Vector3(1f))
+                val boxShape = ctx.bullet.createBox(Vector3(1f))
                 val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -236,7 +236,7 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(0f, 4f, 4f)
                 transform.local.rotateX(0.8f)
                 transform.local.rotateZ(0.3f)
-                val boxShape = world.createBox(Vector3(1f))
+                val boxShape = ctx.bullet.createBox(Vector3(1f))
                 val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -249,7 +249,7 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(0f, 4f, -4f)
                 transform.local.rotateX(0.8f)
                 transform.local.rotateZ(0.3f)
-                val boxShape = world.createBox(Vector3(1f))
+                val boxShape = ctx.bullet.createBox(Vector3(1f))
                 val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -262,7 +262,7 @@ class Testbed(val ctx: Context) : Application {
                 transform.local.translate(0f, 8f, -4f)
                 transform.local.rotateX(0.8f)
                 transform.local.rotateZ(0.3f)
-                val boxShape = world.createBox(Vector3(1f))
+                val boxShape = ctx.bullet.createBox(Vector3(1f))
                 val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
                 addMeshInstance()
                 addUpdate {
@@ -289,23 +289,30 @@ class Testbed(val ctx: Context) : Application {
         }
         if (debug) {
             //ctx.debug?.add("HELLO WORLD!!")
+            ctx.debug.add {
+                appendln("> # textures = ${ctx.graphics.textures.size}")
+                appendln("> # meshes = ${ctx.graphics.meshes.size}")
+                appendln("> # shaders = ${ctx.graphics.shaderPrograms.size}")
+                appendln("> # framebuffers = ${ctx.graphics.framebuffers.size}")
+                appendln("-".repeat(92))
+            }
 
-            ctx.debug?.add {
+            ctx.debug.add {
                 val src = ctx.audio.sources
-                appendln("> # Audio sources = ${src.size}, gain = ${ctx.audio.gain}")
+                appendln("> # audio sources = ${src.size}, gain = ${ctx.audio.gain}")
                 src.forEachIndexed { index, audio ->
                     appendln("> # $index state = ${audio.state}, gain = ${audio.gain}")
                 }
 
                 appendln("-".repeat(80))
-                appendln("> # Animations = ${animationManager.animations.size}")
+                appendln("> # animations = ${animationManager.animations.size}")
                 animationManager.animations.forEachIndexed { index, anim ->
                     val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
                     appendln("> # $index [state = ${animation?.state}, timer = $time]")
                 }
             }
 
-            ctx.debug?.add {
+            ctx.debug.add {
                 appendln("-".repeat(80))
                 appendln("> # Rigid bodies = ${world.bodies.size ?: 0}")
                 world.bodies.forEach {
@@ -335,12 +342,10 @@ class Testbed(val ctx: Context) : Application {
             else animation?.pause()
         }
 
-        with(ctx.graphics.state) {
-            clearColor(0.2f, 0.2f, 0.2f, 1f)
-            clearColorBuffer()
-            clearDepthBuffer()
-            depthTest(LESS)
-        }
+        ctx.graphics.state.clearColor(0.2f, 0.2f, 0.2f, 1f)
+        ctx.graphics.state.clearColorBuffer()
+        ctx.graphics.state.clearDepthBuffer()
+        ctx.graphics.state.depthTest(LESS)
 
         val offX = ctx.input.mouse.x - ctx.graphics.width / 2f
         val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
@@ -355,7 +360,7 @@ class Testbed(val ctx: Context) : Application {
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
             actor.getComponent<JointComponent>()?.let {
-                (skin[it.id] as Matrix4)
+                skin[it.id]
                         .set(it.actor.transform.world)
                         .mul(it.offset)
             }
@@ -364,15 +369,26 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
+        skinData.clear()
+        skin.forEachIndexed { i, mat4 ->
+            mat4.get(skinData)
+            skinData.position(i + 1)
+        }
+        skinData.flip()
+
         stack.add(root)
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
             actor.getComponent<MeshInstancerComponent>()?.let { inst ->
-                ctx.graphics.state.cullMode(CullMode.BACK_FACES)
+                ctx.graphics.state.cullMode(CullMode.BACK)
 
                 // create uniforms
                 val mat = inst.material
-                val uniforms = StaticUniforms((mat as? DiffuseMaterial)?.diffuse ?: DummyTexture, proj, view)
+                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
+                val uniforms = mapOf(
+                        "u_projection" to proj,
+                        "u_view" to view,
+                        "u_texture" to texture)
 
                 ctx.graphics.instancing(inst.mesh, staticShader, uniforms) {
                     inst.actor.children
@@ -384,28 +400,34 @@ class Testbed(val ctx: Context) : Application {
                 }
             }
             actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
-                ctx.graphics.state.cullMode(CullMode.FRONT_FACES)
+                ctx.graphics.state.cullMode(CullMode.FRONT)
 
                 val mat = inst.material
-                val skinUniforms = SkinUniforms((mat as? DiffuseMaterial)?.diffuse ?: DummyTexture, proj, view, skin)
+                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
+                val uniforms = mapOf(
+                        "u_projection" to proj,
+                        "u_view" to view,
+                        "u_texture" to texture,
+                        "u_skin" to skinData
+                )
 
-                ctx.graphics.instancing(inst.mesh, outlineSkinShader, skinUniforms) {
+                ctx.graphics.instancing(inst.mesh, outlineSkinShader, uniforms) {
                     actor.children
                             .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
                             .forEach { instance() }
                 }
 
-                ctx.graphics.state.cullMode(CullMode.BACK_FACES)
+                ctx.graphics.state.cullMode(CullMode.BACK)
 
-                ctx.graphics.instancing(inst.mesh, skinShader, skinUniforms) {
+                ctx.graphics.instancing(inst.mesh, skinShader, uniforms) {
                     actor.children
                             .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
                             .forEach {
-                                ctx.graphics.state.renderMode(RenderMode.SOLID)
+                                ctx.graphics.state.polygonMode(DrawMode.SOLID)
                                 instance()
                             }
 
-                    ctx.graphics.state.renderMode(RenderMode.SOLID)
+                    ctx.graphics.state.polygonMode(DrawMode.SOLID)
                 }
             }
 
@@ -414,6 +436,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun destroy() {
+        ctx.buffers.free(skinData.container as FloatBuffer)
         skinShader.destroy()
         outlineSkinShader.destroy()
         assetManager.destroy()

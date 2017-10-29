@@ -11,7 +11,7 @@ class LWJGLBufferManager : BufferManager {
     /**
      * Heap allocated buffers
      */
-    override fun malloc(size: Long) = JEmalloc.je_malloc(size)
+    override fun create(size: Long) = JEmalloc.je_malloc(size)
 
     /**
      * Free buffers

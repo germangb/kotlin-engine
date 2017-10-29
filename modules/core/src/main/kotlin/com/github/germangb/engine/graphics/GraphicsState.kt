@@ -1,7 +1,9 @@
 package com.github.germangb.engine.graphics
 
 interface GraphicsState {
-    /** Clear color buffer */
+    /**
+     * Clear color buffer
+     */
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
 
     /**
@@ -17,7 +19,7 @@ interface GraphicsState {
     /**
      * Render mode
      */
-    fun renderMode(mode: RenderMode)
+    fun polygonMode(mode: DrawMode)
 
     /**
      * Set line width

@@ -10,17 +10,22 @@ import java.nio.ByteBuffer
 /**
  * OpenGL mesh
  */
-class GLMesh(val vbo: Int,
+class GLMesh(val gfx: GLGraphicsDevice,
+             val vbo: Int,
              val ibo: Int,
              val vao: Int,
              override var indices: Int,
              override val primitive: MeshPrimitive,
              override val attributes: Array<out VertexAttribute>) : Mesh {
+    init {
+        gfx.imeshes.add(this)
+    }
 
     override fun destroy() {
         glDeleteBuffers(vbo)
         glDeleteBuffers(ibo)
         glDeleteVertexArrays(vao)
+        gfx.imeshes.remove(this)
     }
 
     /**

@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GLUtil
+import org.lwjgl.system.MemoryUtil.NULL
 import kotlin.system.exitProcess
 
 class LWJGLRuntime(width: Int, height: Int) {
@@ -34,7 +35,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
         //glfwWindowHint(GLFW_SAMPLES, 4)
-        window = glfwCreateWindow(width, height, "OpenGL", 0L, 0L)
+        window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL)
         glfwMakeContextCurrent(window)
 
         GL.createCapabilities()

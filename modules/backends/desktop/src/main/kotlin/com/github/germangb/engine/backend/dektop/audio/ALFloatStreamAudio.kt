@@ -8,7 +8,7 @@ import org.lwjgl.openal.EXTFloat32.AL_FORMAT_STEREO_FLOAT32
 /**
  * provide Float32 audio streaming
  */
-class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: FloatAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, stereo, streamer) {
+class ALFloatStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, val streamer: FloatAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, streamer) {
     /**
      * AL format
      */

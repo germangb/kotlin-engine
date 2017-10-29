@@ -6,7 +6,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * provide 16bit signed audio streaming
  */
-open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, stereo, streamer) {
+open class ALShortStreamAudio(audio: ALAudioDevice, bufferSize: Int, sampling: Int, stereo: Boolean, private val streamer: ShortAudioDecoder) : ALGenericStreamAudio(audio, bufferSize, sampling, streamer) {
     /**
      * AL format
      */

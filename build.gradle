@@ -33,6 +33,6 @@ allprojects {
 
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib"
-        compile "org.jetbrains.kotlin:kotlin-reflect"
+        //compile "org.jetbrains.kotlin:kotlin-reflect"
     }
 }

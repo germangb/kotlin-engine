@@ -24,6 +24,14 @@ interface DebugUtils {
 }
 
 /**
+ * Fallback
+ */
+object UninstalledDebugUtils : DebugUtils {
+    override fun add(build: StringBuilder.() -> Unit) = TODO("DebugUtils is uninstalled")
+    override fun add(str: CharSequence) = TODO("DebugUtils is uninstalled")
+}
+
+/**
  * Get debug plugin
  */
-val Context.debug get() = getPlugin(DebugPlugin::class) as? DebugUtils
+val Context.debug get() = (getPlugin(DebugPlugin::class) as? DebugUtils) ?: UninstalledDebugUtils

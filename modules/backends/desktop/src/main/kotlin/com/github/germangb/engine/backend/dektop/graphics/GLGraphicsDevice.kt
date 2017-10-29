@@ -1,14 +1,14 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.backend.dektop.core.glCheckError
-import com.github.germangb.engine.utils.Destroyable
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL33.glVertexAttribDivisor
-import java.nio.ByteBuffer
+import java.nio.*
 
 /**
  * Lwjgl OpenGL graphics implementation
@@ -18,7 +18,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
      * Instancing draw call builder
      */
     private val instancer = GLInstancer()
-    private val windowFramebuffer = GLFramebuffer(0, width, height, emptyList())
+    private val windowFramebuffer = GLFramebuffer(this, 0, width, height, emptyList())
 
     override fun destroy() {
         instancer.destroy()
@@ -29,10 +29,17 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
      */
     override val state = GLGraphicsState()
 
-    /**
-     * Create OpenGL texture
-     */
-    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
+    val itextures = mutableListOf<Texture>()
+    val imeshes = mutableListOf<Mesh>()
+    val ishaders = mutableListOf<ShaderProgram>()
+    val ifbos = mutableListOf<Framebuffer>()
+
+    override val textures: List<Texture> get() = itextures
+    override val meshes: List<Mesh> get() = imeshes
+    override val shaderPrograms: List<ShaderProgram> get() = ishaders
+    override val framebuffers: List<Framebuffer> get() = ifbos
+
+    fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
         var id: Int = -1
 
         glCheckError("Error in createTexture()") {
@@ -41,11 +48,24 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             glBindTexture(GL_TEXTURE_2D, id)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum)
-            glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
+            when (data) {
+                is ByteBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
+                is FloatBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_FLOAT, data)
+                is ShortBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_SHORT, data)
+                is IntBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT, data)
+            }
             glBindTexture(GL_TEXTURE_2D, 0)
         }
-        return GLTexture(id, width, height)
+        return GLTexture(this, id, width, height)
     }
+
+    /**
+     * Create OpenGL texture
+     */
+    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: ShortBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: FloatBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
 
     /**
      * Check if format is depth
@@ -58,7 +78,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     override fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer {
         // create textures
         var fbo = -1
-        val textures = targets.map { createTexture(null, width, height, it, min, mag) }
+        val textures = targets.map { createTexture(null as ByteBuffer?, width, height, it, min, mag) }
 
         glCheckError("Error in createFramebuffer()") {
             fbo = glGenFramebuffers()
@@ -87,7 +107,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
         }
-        return GLFramebuffer(fbo, width, height, textures)
+        return GLFramebuffer(this, fbo, width, height, textures)
     }
 
     /**
@@ -146,13 +166,13 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
         }
 
 
-        return GLMesh(vbo, ibo, vao, indexData.capacity() / 4, primitive, attributes)
+        return GLMesh(this, vbo, ibo, vao, indexData.capacity() / 4, primitive, attributes)
     }
 
     /**
      * Create a skinShader program
      */
-    override fun <T> createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram<T> {
+    override fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram {
         var vertexShader = -1
         var fragmentShader = -1
         var program = -1
@@ -188,15 +208,15 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             glDeleteShader(fragmentShader)
         }
 
-        return GLShaderProgram(program)
+        return GLShaderProgram(this, program)
     }
 
     /**
      * Render a mesh using instance rendering
      */
-    override fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
+    override fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
         if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
-            instancer.begin(mesh, program, uniforms as Any, framebuffer)
+            instancer.begin(mesh, program, uniforms, framebuffer)
             instancer.action()
             instancer.end()
         }
@@ -205,6 +225,6 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render bind default framebuffer
      */
-    override fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, action: Instancer.() -> Unit) = instancing(mesh, program, uniforms, windowFramebuffer, action)
+    override fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, action: Instancer.() -> Unit) = instancing(mesh, program, uniforms, windowFramebuffer, action)
 
 }

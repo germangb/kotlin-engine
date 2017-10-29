@@ -3,9 +3,7 @@ package com.github.germangb.engine.backend.dektop.graphics
 import com.github.germangb.engine.backend.dektop.core.glCheckError
 import com.github.germangb.engine.graphics.Instancer
 import com.github.germangb.engine.graphics.Texture
-import com.github.germangb.engine.graphics.Uniform
-import com.github.germangb.engine.math.Matrix4
-import com.github.germangb.engine.math.Matrix4c
+import com.github.germangb.engine.math.*
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
 import org.lwjgl.opengl.GL15.*
@@ -15,7 +13,7 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
-import kotlin.reflect.full.memberProperties
+import java.nio.FloatBuffer
 
 class GLInstancer : Instancer, Destroyable {
     override val transform = Matrix4()
@@ -30,8 +28,9 @@ class GLInstancer : Instancer, Destroyable {
     val buffer = glGenBuffers()
 
     private val uniformData = je_malloc(10000).asFloatBuffer()
+    private val uniforms = GLUniforms(uniformData)
 
-    lateinit var shaderProgram: GLShaderProgram<*>
+    lateinit var shaderProgram: GLShaderProgram
     lateinit var activeMesh: GLMesh
 
     init {
@@ -56,11 +55,12 @@ class GLInstancer : Instancer, Destroyable {
     /**
      * Begin draw call
      */
-    fun <T> begin(mesh: GLMesh, program: GLShaderProgram<T>, uniforms: Any, fbo: GLFramebuffer) {
+    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer) {
         count = 0
         shaderProgram = program
         activeMesh = mesh
         transform.identity()
+        uniforms.setup(program)
 
         glCheckError("Error in GLInstancer.begin()") {
             glUseProgram(program.program)
@@ -69,22 +69,21 @@ class GLInstancer : Instancer, Destroyable {
             glBindBuffer(GL_ARRAY_BUFFER, buffer)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo)
 
-            // set shader uniforms
-            val uniformSetter = GLUniforms(program, uniformData)
-            uniforms::class.memberProperties.mapNotNull { prop ->
-                prop.annotations.find { it is Uniform }?.let {
-                    Pair(it as Uniform, prop)
-                }
-            }.forEach { (ann, prop) ->
-                val value = prop.getter.call(uniforms)
-                //println("${ann.name} = $value")
-                when(value) {
-                    is Matrix4c -> uniformSetter.uniform(ann.name, value)
-                    is Texture -> uniformSetter.uniform(ann.name, value)
-                    is Array<*> -> {
-                        @Suppress("UNCHECKED_CAST")
-                        if (value.isNotEmpty() && value[0] is Matrix4c) uniformSetter.uniform(ann.name, value as Array<Matrix4c>)
-                    }
+            uniformData.forEach { unif, value ->
+                when (value) {
+                    is Float -> uniforms.uniform(unif, value)
+                    is Int -> uniforms.uniform(unif, value)
+                    is Vector2c -> uniforms.uniform(unif, value)
+                    is Vector3c -> uniforms.uniform(unif, value)
+                    is Vector4c -> uniforms.uniform(unif, value)
+                    is Vector2ic -> uniforms.uniform(unif, value)
+                    is Vector3ic -> uniforms.uniform(unif, value)
+                    is Vector4ic -> uniforms.uniform(unif, value)
+                    is Matrix4c -> uniforms.uniform(unif, value)
+                    is Matrix3c -> uniforms.uniform(unif, value)
+                    is Texture -> uniforms.uniform(unif, value)
+                    is Matrix4Buffer -> uniforms.uniform(unif, value)
+                    is Matrix3Buffer -> uniforms.uniform(unif, value)
                 }
             }
 
@@ -122,8 +121,4 @@ class GLInstancer : Instancer, Destroyable {
         count++
         transform.get(data).position(16 * count)
     }
-
-//    override fun uniforms(action: Uniforms.() -> Unit) {
-//        GLUniforms(shaderProgram, uniformData).action()
-//    }
 }

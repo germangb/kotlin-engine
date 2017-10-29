@@ -7,7 +7,7 @@ import org.lwjgl.openal.AL10.*
 /**
  * Generic audio streaming
  */
-abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, stereo: Boolean, val decoder: GenericAudioDecoder<*>) : ALAudio(audio) {
+abstract class ALGenericStreamAudio(val audio: ALAudioDevice, val bufferSize: Int, val sampling: Int, val decoder: GenericAudioDecoder<*>) : ALAudio(audio) {
     /**
      * Audio state
      */

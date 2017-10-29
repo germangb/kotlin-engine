@@ -20,9 +20,4 @@ interface Instancer {
      * Flush draw batch
      */
     fun flush()
-
-//    /**
-//     * Upload uniforms
-//     */
-//    fun uniforms(action: Uniforms.() -> Unit)
 }

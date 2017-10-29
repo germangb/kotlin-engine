@@ -9,7 +9,7 @@ interface BufferManager {
     /**
      * Heap allocated buffer
      */
-    fun malloc(size: Long): ByteBuffer
+    fun create(size: Long): ByteBuffer
 
     /**
      * Free allocated buffer

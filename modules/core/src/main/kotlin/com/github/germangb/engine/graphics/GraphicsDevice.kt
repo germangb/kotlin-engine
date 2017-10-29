@@ -1,6 +1,9 @@
 package com.github.germangb.engine.graphics
 
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
+import java.nio.ShortBuffer
 
 /**
  * Low level graphics API
@@ -22,9 +25,44 @@ interface GraphicsDevice {
     val state: GraphicsState
 
     /**
-     * Create a texture
+     * Get active textures
+     */
+    val textures: List<Texture>
+
+    /**
+     * Get active meshes
+     */
+    val meshes: List<Mesh>
+
+    /**
+     * Get active shaderPrograms
+     */
+    val shaderPrograms: List<ShaderProgram>
+
+    /**
+     * Get active framebuffers
+     */
+    val framebuffers: List<Framebuffer>
+
+    /**
+     * Create a texture from 8bit components
      */
     fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
+
+    /**
+     * Create a texture from 16bit components
+     */
+    fun createTexture(data: ShortBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
+
+    /**
+     * Create a texture from float32 components
+     */
+    fun createTexture(data: FloatBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
+
+    /**
+     * Create a texture from 32bit components
+     */
+    fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
 
     /**
      * Create a framebuffer
@@ -39,15 +77,15 @@ interface GraphicsDevice {
     /**
      * Create a shader program
      */
-    fun <T> createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram<T>
+    fun  createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
      * Perform a instancing call
      */
-    fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, framebuffer: Framebuffer, action: Instancer.() -> Unit)
+    fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, action: Instancer.() -> Unit)
 
     /**
      * Perform a instancing call in the default framebuffer
      */
-    fun <T> instancing(mesh: Mesh, program: ShaderProgram<T>, uniforms: T, action: Instancer.() -> Unit)
+    fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, action: Instancer.() -> Unit)
 }

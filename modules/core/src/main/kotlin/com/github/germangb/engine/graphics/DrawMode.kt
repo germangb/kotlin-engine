@@ -1,6 +1,6 @@
 package com.github.germangb.engine.graphics
 
-enum class RenderMode {
+enum class DrawMode {
     /**
      * Render solid
      */

@@ -9,10 +9,15 @@ enum class CullMode {
     /**
      * Cull back faces
      */
-    BACK_FACES,
+    BACK,
 
     /**
      * Cull front faces
      */
-    FRONT_FACES
+    FRONT,
+
+    /**
+     * Cull front-back faces
+     */
+    FRONT_AND_BACK
 }

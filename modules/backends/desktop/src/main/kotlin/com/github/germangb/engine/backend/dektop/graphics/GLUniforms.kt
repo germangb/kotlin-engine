@@ -7,10 +7,13 @@ import com.github.germangb.engine.math.*
 import org.lwjgl.opengl.GL20.*
 import java.nio.FloatBuffer
 
-class GLUniforms(val program: GLShaderProgram<*>, val uniformData: FloatBuffer) {
-    /**
-     * Get uniform location
-     */
+class GLUniforms(val uniformData: FloatBuffer) {
+    lateinit var program: GLShaderProgram
+
+    fun setup(prog: GLShaderProgram) {
+        program = prog
+    }
+
     fun getUniform(name: String): Int {
         program.uniforms[name]?.let {
             return it
@@ -21,14 +24,14 @@ class GLUniforms(val program: GLShaderProgram<*>, val uniformData: FloatBuffer) 
         }
     }
 
-    fun Int.bind(name: String) {
+    fun uniform(name: String, value: Int) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform1i(unif, this)
+        if (unif >= 0) glUniform1i(unif, value)
     }
 
-    fun Float.bind(name: String) {
+    fun uniform(name: String, value: Float) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform1f(unif, this)
+        if (unif >= 0) glUniform1f(unif, value)
     }
 
     fun uniform(name: String, value: Texture) {
@@ -38,19 +41,34 @@ class GLUniforms(val program: GLShaderProgram<*>, val uniformData: FloatBuffer) 
         }
     }
 
-    fun Vector2c.bind(name: String) {
+    fun uniform(name: String, value: Vector2c) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform2f(unif, x(), y())
+        if (unif >= 0) glUniform2f(unif, value.x(), value.y())
     }
 
-    fun Vector3c.bind(name: String) {
+    fun uniform(name: String, value: Vector2ic) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform3f(unif, x(), y(), z())
+        if (unif >= 0) glUniform2i(unif, value.x(), value.y())
     }
 
-    fun Vector4c.bind(name: String) {
+    fun uniform(name: String, value: Vector3c) {
         val unif = getUniform(name)
-        if (unif >= 0) glUniform4f(unif, x(), y(), z(), w())
+        if (unif >= 0) glUniform3f(unif, value.x(), value.y(), value.z())
+    }
+
+    fun uniform(name: String, value: Vector3ic) {
+        val unif = getUniform(name)
+        if (unif >= 0) glUniform3i(unif, value.x(), value.y(), value.z())
+    }
+
+    fun uniform(name: String, value: Vector4c) {
+        val unif = getUniform(name)
+        if (unif >= 0) glUniform4f(unif, value.x(), value.y(), value.z(), value.w())
+    }
+
+    fun uniform(name: String, value: Vector4ic) {
+        val unif = getUniform(name)
+        if (unif >= 0) glUniform4i(unif, value.x(), value.y(), value.z(), value.w())
     }
 
     fun uniform(name: String, value: Matrix4c) {
@@ -63,15 +81,23 @@ class GLUniforms(val program: GLShaderProgram<*>, val uniformData: FloatBuffer) 
         }
     }
 
-    fun uniform(name: String, value: Array<Matrix4c>) {
+    fun uniform(name: String, value: Matrix3c) {
         val unif = getUniform(name)
         if (unif >= 0) {
-            uniformData.clear()
-            value.forEachIndexed { index, matrix4fc ->
-                matrix4fc.get(uniformData).position(16 * (index + 1))
+            stackMemory {
+                val data = value.get(mallocFloat(9))
+                glUniformMatrix4fv(unif, false, data)
             }
-            uniformData.flip()
-            glUniformMatrix4fv(unif, false, uniformData)
         }
+    }
+
+    fun uniform(name: String, value: Matrix4Buffer) {
+        val unif = getUniform(name)
+        glUniformMatrix4fv(unif, false, value.container)
+    }
+
+    fun uniform(name: String, value: Matrix3Buffer) {
+        val unif = getUniform(name)
+        glUniformMatrix4fv(unif, false, value.container)
     }
 }

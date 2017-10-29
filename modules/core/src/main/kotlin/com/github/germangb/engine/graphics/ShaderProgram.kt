@@ -11,4 +11,4 @@ annotation class Uniform(val name: String)
 /**
  * Shader program
  */
-interface ShaderProgram<T> : Destroyable
+interface ShaderProgram : Destroyable
