@@ -12,8 +12,6 @@ import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
-import com.github.germangb.engine.graphics.DrawMode
-import com.github.germangb.engine.graphics.InstanceAttribute
 import com.github.germangb.engine.graphics.InstanceAttribute.*
 import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction.LESS
@@ -400,8 +398,8 @@ class Testbed(val ctx: Context) : Application {
                         }
                 instanceData.flip()
 
-                // render instanced meshes
-                ctx.graphics.render(inst.mesh, staticShader, uniforms, instanceData)
+                // renderInstances instanced meshes
+                ctx.graphics.renderInstances(inst.mesh, staticShader, uniforms, instanceData)
             }
 
 //            actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->

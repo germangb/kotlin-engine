@@ -85,17 +85,42 @@ interface GraphicsDevice {
     fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>): Mesh
 
     /**
+     * Create a mesh
+     */
+    fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh
+
+    /**
+     * Create a mesh
+     */
+    fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh
+
+    /**
+     * Create a mesh
+     */
+    fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh
+
+    /**
      * Create a shader program
      */
     fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
-     * Perform a instancing call
+     * Perform instancing draw call
      */
-    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer)
+    fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer)
 
     /**
-     * Perform a instancing call in the default framebuffer
+     * Perform draw call
      */
-    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer)
+    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer)
+
+    /**
+     * Perform instancing call to the default framebuffer
+     */
+    fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer)
+
+    /**
+     * Perform draw call to the default framebuffer
+     */
+    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>)
 }

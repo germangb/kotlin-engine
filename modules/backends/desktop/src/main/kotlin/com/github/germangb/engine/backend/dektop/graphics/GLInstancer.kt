@@ -4,6 +4,7 @@ import com.github.germangb.engine.backend.dektop.core.glCheckError
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.math.*
 import com.github.germangb.engine.utils.Destroyable
+import org.lwjgl.opengl.GL11.glDrawElements
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.glDrawBuffers
 import org.lwjgl.opengl.GL20.glUseProgram
@@ -49,7 +50,7 @@ class GLInstancer : Destroyable {
     /**
      * Begin draw call
      */
-    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer, data: ByteBuffer) {
+    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer, data: ByteBuffer?) {
         shaderProgram = program
         activeMesh = mesh
         uniforms.setup(program)
@@ -93,10 +94,14 @@ class GLInstancer : Destroyable {
         }
     }
 
-    fun renderInstances(data: ByteBuffer) {
+    fun renderInstances(data: ByteBuffer?) {
         glCheckError {
-            glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
-            glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, data.remaining() / activeMesh.instanceStride)
+            if (data == null) {
+                glDrawElements(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L)
+            } else {
+                glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
+                glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, data.remaining() / activeMesh.instanceStride)
+            }
         }
     }
 

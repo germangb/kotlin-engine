@@ -14,6 +14,7 @@ import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.framework.materials.Material
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.VertexAttribute.*
@@ -264,7 +265,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
     // create mesh
     indexData.flip()
     vertexData.flip()
-    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, MeshUsage.STATIC, attributes, emptyArray())
+    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, MeshUsage.STATIC, attributes)
 
     // free resources
     vertexData.clear()

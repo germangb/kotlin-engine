@@ -16,3 +16,13 @@ class MeshInstancerComponent(val mesh: Mesh, val material: Material) : Component
 fun Actor.addMeshInstancer(mesh: Mesh, material: Material) {
     addComponent(MeshInstancerComponent(mesh, material))
 }
+
+/**
+ * When parented bind a MeshInstancerComponent, renders an instance of the mesh
+ */
+class MeshInstanceComponent : Component()
+
+/**
+ * Adds a mesh instance bind the actor
+ */
+fun Actor.addMeshInstance() = addComponent(MeshInstanceComponent())

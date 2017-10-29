@@ -124,10 +124,19 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /** Create mesh using GL_UNSIGNED_INT indices */
     override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, instanceAttributes)
 
+    /** Create mesh using GL_UNSIGNED_BYTE indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, null)
+
+    /** Create mesh using GL_UNSIGNED_SHORT indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, null)
+
+    /** Create mesh using GL_UNSIGNED_INT indices */
+    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, null)
+
     /**
      * Create a mesh
      */
-    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>): Mesh {
+    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>?): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -169,36 +178,38 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
                 offset += attribute.size * attribute.type.bytes
             }
 
-            // compute instance buffer stride
-            val instanceStride = let {
-                var count = 0
-                instanceAttributes.forEach { count += it.size * it.type.bytes }
-                count
-            }
+            if (instanceAttributes != null) {
+                // compute instance buffer stride
+                val instanceStride = let {
+                    var count = 0
+                    instanceAttributes.forEach { count += it.size * it.type.bytes }
+                    count
+                }
 
-            // per-instance attributes
-            glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
+                // per-instance attributes
+                glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
 
-            var instanceOffset = 0L
-            var instanceAttribute = attributes.size
-            instanceAttributes.forEach {
-                when (it) {
-                    TRANSFORM -> {
-                        // matrices are a special case...
-                        (0 until 4).forEach {
-                            val attrId = instanceAttribute + it
-                            glEnableVertexAttribArray(attrId)
-                            glVertexAttribPointer(attrId, 4, GL_FLOAT, false, instanceStride, instanceOffset)
-                            glVertexAttribDivisor(attrId, 1)
-                            instanceOffset += 4 * 4L
+                var instanceOffset = 0L
+                var instanceAttribute = attributes.size
+                instanceAttributes.forEach {
+                    when (it) {
+                        TRANSFORM -> {
+                            // matrices are a special case...
+                            (0 until 4).forEach {
+                                val attrId = instanceAttribute + it
+                                glEnableVertexAttribArray(attrId)
+                                glVertexAttribPointer(attrId, 4, GL_FLOAT, false, instanceStride, instanceOffset)
+                                glVertexAttribDivisor(attrId, 1)
+                                instanceOffset += 4 * 4L
+                            }
+                            instanceAttribute += 4
                         }
-                        instanceAttribute += 4
-                    }
-                    else -> {
-                        glEnableVertexAttribArray(instanceAttribute)
-                        glVertexAttribPointer(instanceAttribute, it.size, GL_FLOAT, false, instanceStride, instanceOffset)
-                        instanceAttribute++
-                        instanceOffset += it.size * it.type.bytes
+                        else -> {
+                            glEnableVertexAttribArray(instanceAttribute)
+                            glVertexAttribPointer(instanceAttribute, it.size, GL_FLOAT, false, instanceStride, instanceOffset)
+                            instanceAttribute++
+                            instanceOffset += it.size * it.type.bytes
+                        }
                     }
                 }
             }
@@ -216,7 +227,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             else -> throw IllegalArgumentException("Invalid index type")
         }
 
-        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes, instanceAttributes)
+        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes, instanceAttributes ?: emptyArray())
     }
 
     /**
@@ -264,15 +275,28 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render a mesh using instance rendering
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer) {
+    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer) {
         if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
             instancer.begin(mesh, program, uniforms, framebuffer, instanceData)
         }
     }
 
     /**
-     * Render bind default framebuffer
+     * Render a mesh
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) = render(mesh, program, uniforms, windowFramebuffer, instanceData)
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer) {
+        if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
+            instancer.begin(mesh, program, uniforms, framebuffer, null)
+        }
+    }
 
+    /**
+     * Render to default framebuffer
+     */
+    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) = renderInstances(mesh, program, uniforms, windowFramebuffer, instanceData)
+
+    /**
+     * Render to default framebuffer
+     */
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>) = render(mesh, program, uniforms, windowFramebuffer)
 }
