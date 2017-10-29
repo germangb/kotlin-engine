@@ -1,5 +1,6 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
+import com.github.germangb.engine.graphics.InstanceAttribute
 import com.github.germangb.engine.graphics.Mesh
 import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.VertexAttribute
@@ -17,7 +18,8 @@ class GLMesh(val gfx: GLGraphicsDevice,
              val indexType: Int,
              override var indices: Int,
              override val primitive: MeshPrimitive,
-             override val attributes: Array<out VertexAttribute>) : Mesh {
+             override val attributes: Array<out VertexAttribute>,
+             override val instanceAttributes: Array<out InstanceAttribute>) : Mesh {
     init {
         gfx.imeshes.add(this)
     }
@@ -32,12 +34,17 @@ class GLMesh(val gfx: GLGraphicsDevice,
     /**
      * Buffer stride
      */
-    val stride: Int
+    val stride = let {
+        var count = 0
+        attributes.forEach { count += it.size * it.type.bytes }
+        count
+    }
 
-    init {
-        var istride = 0
-        attributes.forEach { istride += it.size }
-        stride = istride
+    /** Instance buffer stride */
+    val instanceStride = let {
+        var count = 0
+        instanceAttributes.forEach { count += it.size * it.type.bytes }
+        count
     }
 
     /**

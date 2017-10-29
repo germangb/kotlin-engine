@@ -2,6 +2,7 @@ package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.backend.dektop.core.glCheckError
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.graphics.InstanceAttribute.*
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
@@ -115,18 +116,18 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     }
 
     /** Create mesh using GL_UNSIGNED_BYTE indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: ByteBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, instanceAttributes)
 
     /** Create mesh using GL_UNSIGNED_SHORT indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: ShortBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, instanceAttributes)
 
     /** Create mesh using GL_UNSIGNED_INT indices */
-    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, vararg attributes: VertexAttribute) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes)
+    override fun createMesh(vertexData: ByteBuffer, indexData: IntBuffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) = createMesh(vertexData, indexData as Buffer, primitive, usage, attributes, instanceAttributes)
 
     /**
      * Create a mesh
      */
-    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh {
+    private fun createMesh(vertexData: ByteBuffer, indexData: Buffer, primitive: MeshPrimitive, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>): Mesh {
         var vbo = -1
         var ibo = -1
         var vao = -1
@@ -168,12 +169,38 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
                 offset += attribute.size * attribute.type.bytes
             }
 
+            // compute instance buffer stride
+            val instanceStride = let {
+                var count = 0
+                instanceAttributes.forEach { count += it.size * it.type.bytes }
+                count
+            }
+
             // per-instance attributes
             glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
-            (0 until 4).forEach {
-                glEnableVertexAttribArray(attributes.size + it)
-                glVertexAttribPointer(attributes.size + it, 4, GL_FLOAT, false, 16 * 4, (4 * it) * 4L)
-                glVertexAttribDivisor(attributes.size + it, 1)
+
+            var instanceOffset = 0L
+            var instanceAttribute = attributes.size
+            instanceAttributes.forEach {
+                when (it) {
+                    TRANSFORM -> {
+                        // matrices are a special case...
+                        (0 until 4).forEach {
+                            val attrId = instanceAttribute + it
+                            glEnableVertexAttribArray(attrId)
+                            glVertexAttribPointer(attrId, 4, GL_FLOAT, false, instanceStride, instanceOffset)
+                            glVertexAttribDivisor(attrId, 1)
+                            instanceOffset += 4 * 4L
+                        }
+                        instanceAttribute += 4
+                    }
+                    else -> {
+                        glEnableVertexAttribArray(instanceAttribute)
+                        glVertexAttribPointer(instanceAttribute, it.size, GL_FLOAT, false, instanceStride, instanceOffset)
+                        instanceAttribute++
+                        instanceOffset += it.size * it.type.bytes
+                    }
+                }
             }
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo)
@@ -182,14 +209,14 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
             glBindBuffer(GL_ARRAY_BUFFER, 0)
         }
 
-        val indexType = when(indexData) {
+        val indexType = when (indexData) {
             is ByteBuffer -> GL_UNSIGNED_BYTE
             is ShortBuffer -> GL_UNSIGNED_SHORT
             is IntBuffer -> GL_UNSIGNED_INT
             else -> throw IllegalArgumentException("Invalid index type")
         }
 
-        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes)
+        return GLMesh(this, vbo, ibo, vao, indexType, indexData.capacity(), primitive, attributes, instanceAttributes)
     }
 
     /**
@@ -237,17 +264,15 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render a mesh using instance rendering
      */
-    override fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, action: Instancer.() -> Unit) {
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer) {
         if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
-            instancer.begin(mesh, program, uniforms, framebuffer)
-            instancer.action()
-            instancer.end()
+            instancer.begin(mesh, program, uniforms, framebuffer, instanceData)
         }
     }
 
     /**
      * Render bind default framebuffer
      */
-    override fun instancing(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, action: Instancer.() -> Unit) = instancing(mesh, program, uniforms, windowFramebuffer, action)
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) = render(mesh, program, uniforms, windowFramebuffer, instanceData)
 
 }

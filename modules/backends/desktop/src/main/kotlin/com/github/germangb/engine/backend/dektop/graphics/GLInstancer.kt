@@ -1,7 +1,6 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.backend.dektop.core.glCheckError
-import com.github.germangb.engine.graphics.Instancer
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.math.*
 import com.github.germangb.engine.utils.Destroyable
@@ -12,39 +11,36 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
+import java.nio.ByteBuffer
 
-class GLInstancer : Instancer, Destroyable {
-    override val transform = Matrix4()
+class GLInstancer : Destroyable {
+    //override val transform = Matrix4()
 
     companion object {
-        val MAX_INSTANCES = 1024L
+        val INSTANCE_BUFFER_SIZE = 64 * 4 * 1024L
     }
 
     /** Buffer size */
-    private val data = je_malloc(64 * 4 * MAX_INSTANCES).asFloatBuffer()
-    private var count = 0
     val buffer = glGenBuffers()
 
-    private val uniformData = je_malloc(10000).asFloatBuffer()
-    private val uniforms = GLUniforms(uniformData)
+    val uniforms = GLUniforms()
 
     lateinit var shaderProgram: GLShaderProgram
     lateinit var activeMesh: GLMesh
 
     init {
         glCheckError("Error in GLInstancer.init while creating vertex buffer") {
+            val data = je_malloc(INSTANCE_BUFFER_SIZE).asFloatBuffer()
             glBindBuffer(GL_ARRAY_BUFFER, buffer)
             glBufferData(GL_ARRAY_BUFFER, data, GL_STREAM_DRAW)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+            data.clear()
+            je_free(data)
         }
     }
 
     override fun destroy() {
-        data.clear()
-        uniformData.clear()
-        je_free(data)
-        je_free(uniformData)
-
         glCheckError("Error in GLInstancer.free() while deleting vertex buffer") {
             glDeleteBuffers(buffer)
         }
@@ -53,19 +49,22 @@ class GLInstancer : Instancer, Destroyable {
     /**
      * Begin draw call
      */
-    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer) {
-        count = 0
+    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer, data: ByteBuffer) {
         shaderProgram = program
         activeMesh = mesh
-        transform.identity()
         uniforms.setup(program)
+        setupInstancing(uniformData, fbo)
+        renderInstances(data)
+        endInstancing()
+    }
 
+    fun setupInstancing(uniformData: Map<String, Any>, fbo: GLFramebuffer) {
         glCheckError("Error in GLInstancer.begin()") {
-            glUseProgram(program.program)
-            glBindVertexArray(mesh.vao)
-            glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo)
+            glUseProgram(shaderProgram.program)
+            glBindVertexArray(activeMesh.vao)
+            glBindBuffer(GL_ARRAY_BUFFER, activeMesh.vbo)
             glBindBuffer(GL_ARRAY_BUFFER, buffer)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, activeMesh.ibo)
 
             uniformData.forEach { unif, value ->
                 when (value) {
@@ -94,17 +93,15 @@ class GLInstancer : Instancer, Destroyable {
         }
     }
 
-    override fun flush() {
-        if (count <= 0) return
-        data.flip()
-        glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
-        glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, count)
-        data.clear()
-        count = 0
+    fun renderInstances(data: ByteBuffer) {
+        glCheckError {
+            glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
+            glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, data.remaining() / activeMesh.instanceStride)
+        }
     }
 
-    fun end() {
-        flush()
+    fun endInstancing() {
+        //renderInstances()
         glCheckError("Error in GLInstancer.end()") {
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
             glUseProgram(0)
@@ -112,11 +109,5 @@ class GLInstancer : Instancer, Destroyable {
             glBindBuffer(GL_ARRAY_BUFFER, 0)
             glBindVertexArray(0)
         }
-    }
-
-    override fun instance() {
-        if (count + 1 > MAX_INSTANCES) flush()
-        count++
-        transform.get(data).position(16 * count)
     }
 }

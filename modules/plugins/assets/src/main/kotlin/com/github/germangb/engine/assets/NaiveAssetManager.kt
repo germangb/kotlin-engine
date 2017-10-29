@@ -33,9 +33,9 @@ class NaiveAssetManager(private val ctx: Context) : AssetManager {
         }
     }
 
-    override fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, vararg attributes: VertexAttribute) {
+    override fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) {
         if (meshes[path] == null) {
-            meshes[path] = ctx.assets.loadMesh(file, usage, *attributes)
+            meshes[path] = ctx.assets.loadMesh(file, usage, attributes, instanceAttributes)
         }
     }
 

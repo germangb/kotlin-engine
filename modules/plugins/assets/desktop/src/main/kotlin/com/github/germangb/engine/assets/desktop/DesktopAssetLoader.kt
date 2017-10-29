@@ -42,7 +42,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
     /**
      * Load mesh
      */
-    override fun loadMesh(file: FileHandle, usage: MeshUsage, attributes: Array<out VertexAttribute>): Mesh? {
+    override fun loadMesh(file: FileHandle, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>): Mesh? {
         val flags = aiProcess_Triangulate or
                 aiProcess_GenUVCoords or
                 aiProcess_GenNormals or
@@ -51,7 +51,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
 
         val scene = aiImportFile(file.path, flags) ?: return null
         val aimesh = AIMesh.create(scene.mMeshes()[0])
-        val mesh = aiMeshToGL(aimesh, attributes, usage, backend.graphics)
+        val mesh = aiMeshToGL(aimesh, attributes, instanceAttributes, usage, backend.graphics)
         aiFreeScene(scene)
         return mesh
     }

@@ -7,7 +7,7 @@ import com.github.germangb.engine.math.*
 import org.lwjgl.opengl.GL20.*
 import java.nio.FloatBuffer
 
-class GLUniforms(val uniformData: FloatBuffer) {
+class GLUniforms {
     lateinit var program: GLShaderProgram
 
     fun setup(prog: GLShaderProgram) {

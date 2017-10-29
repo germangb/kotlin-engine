@@ -11,7 +11,7 @@ import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 /**
  * Convert aiMesh bind engine mesh
  */
-fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, usage: MeshUsage, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
+fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>, usage: MeshUsage, gfx: GraphicsDevice, boneIds: Map<String, Pair<Int, Matrix4c>> = emptyMap()): Mesh {
     // mesh attributes
     val positions = mesh.mVertices()
     val normals = mesh.mNormals()
@@ -113,7 +113,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, usage: Mesh
     // create mesh
     indexData.flip()
     vertexData.flip()
-    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, usage, *attributes)
+    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, usage, attributes, instanceAttributes)
 
     // free resources
     vertexData.clear()

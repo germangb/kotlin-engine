@@ -17,7 +17,7 @@ interface AssetManager : Destroyable {
     /**
      * Tell the resource manager bind load a mesh
      */
-    fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, vararg attributes: VertexAttribute)
+    fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>)
 
     /**
      * Load audio file

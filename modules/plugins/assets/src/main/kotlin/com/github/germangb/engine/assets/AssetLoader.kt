@@ -16,7 +16,7 @@ interface AssetLoader {
     /**
      * Load a mesh
      */
-    fun loadMesh(file: FileHandle, usage: MeshUsage, vararg attributes: VertexAttribute): Mesh?
+    fun loadMesh(file: FileHandle, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>): Mesh?
 
     /**
      * Load audio

@@ -264,7 +264,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
     // create mesh
     indexData.flip()
     vertexData.flip()
-    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, MeshUsage.STATIC, *attributes)
+    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, MeshUsage.STATIC, attributes, emptyArray())
 
     // free resources
     vertexData.clear()

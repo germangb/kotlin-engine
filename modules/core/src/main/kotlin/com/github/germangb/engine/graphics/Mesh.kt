@@ -13,6 +13,11 @@ interface Mesh : Destroyable {
     val attributes: Array<out VertexAttribute>
 
     /**
+     * Instance attributes
+     */
+    val instanceAttributes: Array<out InstanceAttribute>
+
+    /**
      * Mesh primitive
      */
     val primitive: MeshPrimitive

@@ -13,6 +13,8 @@ import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.DrawMode
+import com.github.germangb.engine.graphics.InstanceAttribute
+import com.github.germangb.engine.graphics.InstanceAttribute.*
 import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
@@ -20,10 +22,7 @@ import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
-import com.github.germangb.engine.math.Matrix4
-import com.github.germangb.engine.math.Vector3
-import com.github.germangb.engine.math.asMatrix4Buffer
-import com.github.germangb.engine.math.get
+import com.github.germangb.engine.math.*
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -40,12 +39,13 @@ class Testbed(val ctx: Context) : Application {
     init {
         assetManager.preloadAudio(ctx.files.getLocal("music.ogg"), "music")
         assetManager.preloadAudio(ctx.files.getLocal("click.ogg"), "click", stream = false)
-        assetManager.preloadMesh(ctx.files.getLocal("cube.blend"), "cube_mesh", MeshUsage.STATIC, POSITION, NORMAL, UV)
+        assetManager.preloadMesh(ctx.files.getLocal("cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
     }
 
     val skin = Array(110) { Matrix4() }
     val skinData = ctx.buffers.create(110 * 16 * 4).asMatrix4Buffer()
+    val instanceData = ctx.buffers.create(10000000)
 
     val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
@@ -125,7 +125,7 @@ class Testbed(val ctx: Context) : Application {
             layout(location = 1) in vec3 a_normal;
             layout(location = 2) in vec2 a_uv;
             layout(location = 3) in mat4 a_instance;
-            layout(location = 4) in vec2 a_uv_offset;
+            //layout(location = 4) in vec2 a_uv_offset;
             out vec2 v_uv;
             out vec3 v_normal;
             uniform mat4 u_projection;
@@ -133,7 +133,7 @@ class Testbed(val ctx: Context) : Application {
             void main () {
                 gl_Position = u_projection * u_view * a_instance * vec4(a_position, 1.0);
                 v_normal = normalize((a_instance * vec4(a_normal, 0.0)).xyz);
-                v_uv = a_uv + a_uv_offset;
+                v_uv = a_uv;// + a_uv_offset;
             }
         """.trimMargin()
         @Language("GLSL")
@@ -390,52 +390,58 @@ class Testbed(val ctx: Context) : Application {
                         "u_view" to view,
                         "u_texture" to texture)
 
-                ctx.graphics.instancing(inst.mesh, staticShader, uniforms) {
-                    inst.actor.children
-                            .mapNotNull { it.getComponent<MeshInstanceComponent>() }
-                            .forEach {
-                                transform.set(it.actor.transform.world)
-                                instance()
-                            }
-                }
+                // build instancing buffer data
+                instanceData.clear()
+                inst.actor.children
+                        .mapNotNull { it.getComponent<MeshInstanceComponent>() }
+                        .forEachIndexed { index, instance ->
+                            instance.actor.transform.world.get(instanceData)
+                            instanceData.position(16 * 4 * (index + 1))
+                        }
+                instanceData.flip()
+
+                // render instanced meshes
+                ctx.graphics.render(inst.mesh, staticShader, uniforms, instanceData)
             }
-            actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
-                ctx.graphics.state.cullMode(CullMode.FRONT)
 
-                val mat = inst.material
-                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
-                val uniforms = mapOf(
-                        "u_projection" to proj,
-                        "u_view" to view,
-                        "u_texture" to texture,
-                        "u_skin" to skinData)
-
-                ctx.graphics.instancing(inst.mesh, outlineSkinShader, uniforms) {
-                    actor.children
-                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-                            .forEach { instance() }
-                }
-
-                ctx.graphics.state.cullMode(CullMode.BACK)
-
-                ctx.graphics.instancing(inst.mesh, skinShader, uniforms) {
-                    actor.children
-                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
-                            .forEach {
-                                ctx.graphics.state.polygonMode(DrawMode.SOLID)
-                                instance()
-                            }
-
-                    ctx.graphics.state.polygonMode(DrawMode.SOLID)
-                }
-            }
+//            actor.getComponent<SkinnedMeshInstancerComponent>()?.let { inst ->
+//                ctx.graphics.state.cullMode(CullMode.FRONT)
+//
+//                val mat = inst.material
+//                val texture = (mat as? DiffuseMaterial)?.diffuse ?: DummyTexture
+//                val uniforms = mapOf(
+//                        "u_projection" to proj,
+//                        "u_view" to view,
+//                        "u_texture" to texture,
+//                        "u_skin" to skinData)
+//
+//                ctx.graphics.instancing(inst.mesh, outlineSkinShader, uniforms) {
+//                    actor.children
+//                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
+//                            .forEach { instance() }
+//                }
+//
+//                ctx.graphics.state.cullMode(CullMode.BACK)
+//
+//                ctx.graphics.instancing(inst.mesh, skinShader, uniforms) {
+//                    actor.children
+//                            .mapNotNull { it.getComponent<SkinnedMeshInstanceComponent>() }
+//                            .forEach {
+//                                ctx.graphics.state.polygonMode(DrawMode.SOLID)
+//                                instance()
+//                            }
+//
+//                    ctx.graphics.state.polygonMode(DrawMode.SOLID)
+//                }
+//            }
 
             actor.children.forEach { stack.push(it) }
         }
     }
 
     override fun destroy() {
-        ctx.buffers.free(skinData.container)
+        ctx.buffers.free(instanceData)
+        ctx.buffers.free(skinData)
         skinShader.destroy()
         outlineSkinShader.destroy()
         assetManager.destroy()
