@@ -3,4 +3,5 @@ dependencies {
     compile project(":modules:plugins:assimp")
     compile project(":modules:plugins:debug")
     compile project(":modules:plugins:assets")
+    compile project(":modules:plugins:heightfield")
 }

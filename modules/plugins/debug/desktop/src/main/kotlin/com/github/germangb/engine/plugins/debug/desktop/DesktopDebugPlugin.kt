@@ -5,8 +5,10 @@ import com.github.germangb.engine.plugins.debug.DebugPlugin
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NVGTextRow
 import org.lwjgl.nanovg.NanoVG.*
-import org.lwjgl.nanovg.NanoVGGL3.*
-import org.lwjgl.system.MemoryUtil.*
+import org.lwjgl.nanovg.NanoVGGL3.nvgCreate
+import org.lwjgl.nanovg.NanoVGGL3.nvgDelete
+import org.lwjgl.system.MemoryUtil.memAlloc
+import org.lwjgl.system.MemoryUtil.memFree
 import java.nio.ByteBuffer
 
 class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
@@ -65,8 +67,18 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         // background
         nvgBeginPath(nv)
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.2f))
+        nvgRect(nv, 0f, 0f, width.toFloat(), height.toFloat())
+        nvgFill(nv)
+
+        nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.25f))
-        nvgRect(nv, 0f, 0f, width.toFloat(), fontSize * numRows)
+        nvgRect(nv, 0f, 0f, width.toFloat(), numRows * fontSize)
+        nvgFill(nv)
+
+        nvgBeginPath(nv)
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.75f))
+        nvgRect(nv, 0f, numRows * fontSize, width.toFloat(), 4f)
         nvgFill(nv)
 
         // draw text and shit
@@ -78,14 +90,14 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         for (i in 0 until numRows) {
             val row = rows[i]
-            nnvgText(nv, 0f, fontSize*i+2, row.start(), row.end())
+            nnvgText(nv, 0f, fontSize * i + 2, row.start(), row.end())
         }
 
         nvgFontBlur(nv, 0f)
         nvgFillColor(nv, color.rgba(1f, 1f, 1f, 0.75f))
         for (i in 0 until numRows) {
             val row = rows[i]
-            nnvgText(nv, 0f, fontSize*i, row.start(), row.end())
+            nnvgText(nv, 0f, fontSize * i, row.start(), row.end())
         }
 
         nvgEndFrame(nv)

@@ -40,6 +40,18 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     override val shaderPrograms: List<ShaderProgram> get() = ishaders
     override val framebuffers: List<Framebuffer> get() = ifbos
 
+    override fun invoke(fbo: Framebuffer, action: GraphicsDevice.() -> Unit) {
+        if (fbo is GLFramebuffer) {
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo.id)
+            if (fbo.drawBuffers.isNotEmpty())
+                glDrawBuffers(fbo.drawBuffers)
+            action.invoke(this)
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        }
+    }
+
+    override fun invoke(action: GraphicsDevice.() -> Unit) = invoke(windowFramebuffer, action)
+
     private fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
         var id: Int = -1
 
@@ -80,7 +92,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Create OpenGL framebuffer
      */
-    override fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer {
+    override fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer {
         // create textures
         var fbo = -1
         val textures = targets.map { createTexture(null as ByteBuffer?, width, height, it, min, mag) }
@@ -275,28 +287,14 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
     /**
      * Render a mesh using instance rendering
      */
-    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer) {
-        if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
-            instancer.begin(mesh, program, uniforms, framebuffer, instanceData)
-        }
+    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) {
+        if (mesh is GLMesh && program is GLShaderProgram) instancer.begin(mesh, program, uniforms, instanceData)
     }
 
     /**
      * Render a mesh
      */
-    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer) {
-        if (mesh is GLMesh && program is GLShaderProgram && framebuffer is GLFramebuffer) {
-            instancer.begin(mesh, program, uniforms, framebuffer, null)
-        }
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>) {
+        if (mesh is GLMesh && program is GLShaderProgram) instancer.begin(mesh, program, uniforms, null)
     }
-
-    /**
-     * Render to default framebuffer
-     */
-    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) = renderInstances(mesh, program, uniforms, windowFramebuffer, instanceData)
-
-    /**
-     * Render to default framebuffer
-     */
-    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>) = render(mesh, program, uniforms, windowFramebuffer)
 }

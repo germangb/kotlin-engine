@@ -1,0 +1,13 @@
+dependencies {
+    compile project(":modules:plugins:heightfield")
+}
+
+dependencies {
+    compile "org.lwjgl:lwjgl:$lwjglVersion"
+    compile "org.lwjgl:lwjgl-stb:$lwjglVersion"
+}
+
+dependencies {
+    compile "org.lwjgl:lwjgl:$lwjglVersion"
+    runtime "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
+}

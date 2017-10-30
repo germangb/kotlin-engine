@@ -44,6 +44,12 @@ interface GraphicsDevice {
      */
     val framebuffers: List<Framebuffer>
 
+    /** Work with some framebuffer  */
+    operator fun invoke(fbo: Framebuffer, action: GraphicsDevice.() -> Unit)
+
+    /** Work with default framebuffer  */
+    operator fun invoke(action: GraphicsDevice.() -> Unit)
+
     /**
      * Create a texture from 8bit components
      */
@@ -67,7 +73,7 @@ interface GraphicsDevice {
     /**
      * Create a framebuffer
      */
-    fun createFramebuffer(width: Int, height: Int, targets: List<TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer
+    fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer
 
     /**
      * Create a mesh
@@ -105,22 +111,12 @@ interface GraphicsDevice {
     fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram
 
     /**
-     * Perform instancing draw call
-     */
-    fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer, instanceData: ByteBuffer)
-
-    /**
-     * Perform draw call
-     */
-    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, framebuffer: Framebuffer)
-
-    /**
-     * Perform instancing call to the default framebuffer
+     * Perform instancing call to the framebuffer
      */
     fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer)
 
     /**
-     * Perform draw call to the default framebuffer
+     * Perform draw call to the framebuffer
      */
     fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>)
 }

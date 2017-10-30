@@ -13,10 +13,12 @@ import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
-import com.github.germangb.engine.graphics.InstanceAttribute.*
+import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.MeshPrimitive
 import com.github.germangb.engine.graphics.MeshUsage
+import com.github.germangb.engine.graphics.TestFunction.DISABLED
 import com.github.germangb.engine.graphics.TestFunction.LESS
+import com.github.germangb.engine.graphics.TexelFormat.DEPTH24
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
@@ -42,6 +44,43 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadAudio(ctx.files.getLocal("click.ogg"), "click", stream = false)
         assetManager.preloadMesh(ctx.files.getLocal("cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
+    }
+
+    val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24), NEAREST, NEAREST)
+    val quad = let {
+        val vert = ctx.buffers.create(100)
+        val index = ctx.buffers.create(100).asIntBuffer()
+        vert.asFloatBuffer().put(floatArrayOf(-1f, -1f, +1f, -1f, -1f, +1f, +1f, +1f))
+        vert.position(8*4).flip()
+        index.put(intArrayOf(0, 1, 2, 3)).flip()
+        val mesh = ctx.graphics.createMesh(vert, index, MeshPrimitive.TRIANGLE_STRIP, MeshUsage.STATIC, arrayOf(POSITION2))
+        vert.clear()
+        index.clear()
+        ctx.buffers.free(vert)
+        ctx.buffers.free(index)
+        mesh
+    }
+    val composite = let {
+        @Language("GLSL")
+        val vert = """#version 450 core
+            layout(location = 0) in vec2 a_position;
+            out vec2 v_uv;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+                v_uv = a_position * 0.5 + 0.5;
+            }
+        """.trimMargin()
+        @Language("GLSL")
+        val frag = """#version 450 core
+            in vec2 v_uv;
+            out vec4 frag_color;
+            uniform sampler2D u_texture;
+            void main() {
+                vec3 color = texture2D(u_texture, v_uv).rgb;
+                frag_color = vec4(color * vec3(0.97, 0.95, 0.84), 1.0);
+            }
+        """.trimMargin()
+        ctx.graphics.createShaderProgram(vert, frag)
     }
 
     val skin = Array(110) { Matrix4() }
@@ -182,9 +221,9 @@ class Testbed(val ctx: Context) : Application {
     val cube = assetManager.getMesh("cube_mesh")
     val music = assetManager.getAudio("music")
     val click = assetManager.getAudio("click")
-    var debug = true
+    var debug = false
 
-    val floorTexture = ctx.assets.loadTexture(ctx.files.getLocal("dirt.jpg"), RGB8, LINEAR, LINEAR)
+    val floorTexture = ctx.assets.loadTexture(ctx.files.getLocal("dirt.jpg"), RGB8, NEAREST, NEAREST)
     val floorMesh = let {
         val vertex = ctx.buffers.create(1000)
         val index = ctx.buffers.create(1000).asIntBuffer()
@@ -211,6 +250,21 @@ class Testbed(val ctx: Context) : Application {
         ctx.buffers.free(vertex)
         ctx.buffers.free(index)
         mesh
+    }
+
+    override fun destroy() {
+        composite.destroy()
+        floorMesh.destroy()
+        floorTexture?.destroy()
+        fbo.destroy()
+        ctx.buffers.free(instanceData)
+        ctx.buffers.free(skinData)
+        skinShader.destroy()
+        outlineSkinShader.destroy()
+        assetManager.destroy()
+        staticShader.destroy()
+        cube?.destroy()
+        world.destroy()
     }
 
     override fun init() {
@@ -307,16 +361,20 @@ class Testbed(val ctx: Context) : Application {
         animation?.play(true)
 
         // test filed
-//        println("file = ${resources.path}, dir = ${resources.isDirectory}")
-//        val children = resources.children
-//        children.forEach {
-//            if (it.isDirectory) println("child (dir) = ${it.path}")
-//            println("    child = ${it.path}")
-//        }
+        println("file = ${resources.path}, dir = ${resources.isDirectory}")
+        val children = resources.children
+        children.forEach {
+            if (it.isDirectory) println("child (dir) = ${it.path}")
+            println("    child = ${it.path}")
+        }
+
+        ctx.input.keyboard.setListener {
+            //println(it.key)
+        }
     }
 
     override fun update() {
-        if (KEY_D.isJustPressed(ctx.input)) {
+        if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
             click?.play()
             debug = debug.not()
         }
@@ -347,7 +405,7 @@ class Testbed(val ctx: Context) : Application {
 
             ctx.debug.add {
                 appendln("-".repeat(16))
-                appendln("> # Rigid bodies = ${world.bodies.size ?: 0}")
+                appendln("> # Rigid bodies = ${world.bodies.size}")
                 world.bodies.forEach {
                     val pos = it.transform.getTranslation(Vector3())
                     appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
@@ -375,28 +433,33 @@ class Testbed(val ctx: Context) : Application {
             else animation?.pause()
         }
 
-        ctx.graphics.state.clearColor(0.2f, 0.2f, 0.2f, 1f)
-        ctx.graphics.state.clearColorBuffer()
-        ctx.graphics.state.clearDepthBuffer()
-        ctx.graphics.state.depthTest(LESS)
+        ctx.graphics(fbo) {
+            state.viewPort(0, 0, fbo.width, fbo.height)
+            state.depthTest(LESS)
+            state.clearColor(0.2f, 0.2f, 0.2f, 1f)
+            state.clearColorBuffer()
+            state.clearDepthBuffer()
+        }
 
         val offX = ctx.input.mouse.x - ctx.graphics.width / 2f
         val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.5f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
+        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
 
         instanceData.clear()
-        Matrix4().get(instanceData).position(16*4)
+        Matrix4().get(instanceData).position(16 * 4)
         instanceData.flip()
 
-        ctx.graphics.state.cullMode(CullMode.DISABLED)
-        ctx.graphics.renderInstances(floorMesh, staticShader, mapOf(
-                "u_projection" to proj,
-                "u_view" to view,
-                "u_texture" to (floorTexture ?: DummyTexture)
-        ), instanceData)
+        ctx.graphics(fbo) {
+            state.cullMode(CullMode.DISABLED)
+            renderInstances(floorMesh, staticShader, mapOf(
+                    "u_projection" to proj,
+                    "u_view" to view,
+                    "u_texture" to (floorTexture ?: DummyTexture)
+            ), instanceData)
+        }
 
         val stack = Stack<Actor>()
         stack.add(root)
@@ -442,8 +505,10 @@ class Testbed(val ctx: Context) : Application {
                         }
                 instanceData.flip()
 
-                // renderInstances instanced meshes
-                ctx.graphics.renderInstances(inst.mesh, staticShader, uniforms, instanceData)
+                ctx.graphics(fbo) {
+                    // renderInstances instanced meshes
+                    renderInstances(inst.mesh, staticShader, uniforms, instanceData)
+                }
             }
 
             actor.getComponent<SkinnedMeshComponent>()?.let { mesh ->
@@ -457,25 +522,25 @@ class Testbed(val ctx: Context) : Application {
                         "u_texture" to texture,
                         "u_skin" to skinData)
 
-                ctx.graphics.state.cullMode(CullMode.BACK)
-                ctx.graphics.render(mesh.mesh, skinShader, uniforms)
+                ctx.graphics(fbo) {
+                    state.cullMode(CullMode.BACK)
+                    render(mesh.mesh, skinShader, uniforms)
 
-                ctx.graphics.state.cullMode(CullMode.FRONT)
-                ctx.graphics.render(mesh.mesh, outlineSkinShader, uniforms)
+                    state.cullMode(CullMode.FRONT)
+                    render(mesh.mesh, outlineSkinShader, uniforms)
+                }
             }
 
             actor.children.forEach { stack.push(it) }
         }
+
+        ctx.graphics {
+            state.viewPort(0, 0, ctx.graphics.width, ctx.graphics.height)
+            state.clearColor(0f, 0f, 0f, 1f)
+            state.depthTest(DISABLED)
+            state.clearColorBuffer()
+            render(quad, composite, mapOf("u_texture" to fbo.targets[0]))
+        }
     }
 
-    override fun destroy() {
-        ctx.buffers.free(instanceData)
-        ctx.buffers.free(skinData)
-        skinShader.destroy()
-        outlineSkinShader.destroy()
-        assetManager.destroy()
-        staticShader.destroy()
-        cube?.destroy()
-        world.destroy()
-    }
 }

@@ -1,10 +1,12 @@
 dependencies {
     compile project(":modules:game")
     compile project(":modules:backends:desktop")
+}
 
-    // plugins
+dependencies {
     compile project(":modules:plugins:bullet:desktop")
     compile project(":modules:plugins:assimp:desktop")
     compile project(":modules:plugins:debug:desktop")
     compile project(":modules:plugins:assets:desktop")
+    compile project(":modules:plugins:heightfield:desktop")
 }

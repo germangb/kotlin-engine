@@ -6,7 +6,6 @@ import com.github.germangb.engine.math.*
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.glDrawElements
 import org.lwjgl.opengl.GL15.*
-import org.lwjgl.opengl.GL20.glDrawBuffers
 import org.lwjgl.opengl.GL20.glUseProgram
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
@@ -48,16 +47,16 @@ class GLRenderer : Destroyable {
     /**
      * Begin draw call
      */
-    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, fbo: GLFramebuffer, data: ByteBuffer?) {
+    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, data: ByteBuffer?) {
         shaderProgram = program
         activeMesh = mesh
         uniforms.setup(program)
-        setupInstancing(uniformData, fbo)
+        setupInstancing(uniformData)
         renderInstances(data)
         endInstancing()
     }
 
-    fun setupInstancing(uniformData: Map<String, Any>, fbo: GLFramebuffer) {
+    fun setupInstancing(uniformData: Map<String, Any>) {
         glCheckError("Error in GLRenderer.begin()") {
             glUseProgram(shaderProgram.program)
             glBindVertexArray(activeMesh.vao)
@@ -83,12 +82,6 @@ class GLRenderer : Destroyable {
                 }
             }
 
-            // bind framebuffer
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo.id)
-
-            if (fbo.drawBuffers.isNotEmpty()) {
-                glDrawBuffers(fbo.drawBuffers)
-            }
         }
     }
 
@@ -109,7 +102,7 @@ class GLRenderer : Destroyable {
     fun endInstancing() {
         //renderInstances()
         glCheckError("Error in GLRenderer.end()") {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            //glBindFramebuffer(GL_FRAMEBUFFER, 0)
             glUseProgram(0)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
