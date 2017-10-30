@@ -29,8 +29,6 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
         // load STB
         val data = stbi_load_16(file.path, x, y, c, desiredChannels) ?: return null
 
-        data.clear()
-
         // create texture
         val texture = if (createTexture) {
             val format = when (desiredChannels) {
@@ -50,6 +48,7 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
                 .asShortBuffer()
                 .put(data).flip() as ShortBuffer
 
+        data.clear()
         stbi_image_free(data)
 
         // convert to signed values (so that buffer can be used with bullet)
