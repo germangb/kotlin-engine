@@ -19,6 +19,10 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var fontSize = 16f
     val string = StringBuilder()
     val rows = NVGTextRow.create(128)
+    var show = false
+
+    var debugHeight = 0f
+    var offset = 0f
 
     override fun add(build: StringBuilder.() -> Unit) = string.build()
 
@@ -36,6 +40,10 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         font = nvgCreateFontMem(nv, "noto-mono", fontData, 0)
 
         memFree(fontData.clear())
+    }
+
+    override fun toggle() {
+        show = show.not()
     }
 
     fun resourceAsBuffer(path: String): ByteBuffer {
@@ -65,19 +73,27 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         val numRows = nvgTextBreakLines(nv, string, width.toFloat(), rows)
         string.setLength(0)
 
-        // background
-        nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.2f))
-        nvgRect(nv, 0f, 0f, width.toFloat(), height.toFloat())
-        nvgFill(nv)
+        // compute height
+        val vel = 32f
+        debugHeight = numRows * fontSize + 4
+        offset = if (show) {
+            minOf(offset+vel, debugHeight)
+        } else {
+            maxOf(0f, offset-vel)
+        }
+
+        if (offset == debugHeight) return
+
+        nvgResetTransform(nv)
+        nvgTranslate(nv, 0f, -offset)
 
         nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.25f))
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.3f))
         nvgRect(nv, 0f, 0f, width.toFloat(), numRows * fontSize)
         nvgFill(nv)
 
         nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.75f))
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         nvgRect(nv, 0f, numRows * fontSize, width.toFloat(), 4f)
         nvgFill(nv)
 

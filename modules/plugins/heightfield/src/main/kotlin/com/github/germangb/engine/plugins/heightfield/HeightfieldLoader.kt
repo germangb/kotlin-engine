@@ -1,17 +1,27 @@
 package com.github.germangb.engine.plugins.heightfield
 
+import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.graphics.Texture
+import com.github.germangb.engine.utils.Destroyable
 import java.nio.ShortBuffer
 
 /**
  * Heightfield data. Buffer within it are allocated using ctx.buffers and therefore they must
- * be freed when they are no longer needed.
+ * be freed when they are no longer needed. Destroying this object will destroy all the associated assets
+ * and memory contained on it.
  *
  * Just like in bullet physics, the world origin is assumed to be the center of the heightfield grid.
  */
-class HeightfieldData(val data: ShortBuffer, val channels: Int, val texture: Texture, val size: Int) {
-
+class HeightfieldData(private val ctx: Context, val data: ShortBuffer, val channels: Int, val texture: Texture, val size: Int) : Destroyable {
+    /**
+     * Free data
+     */
+    override fun destroy() {
+        data.clear()
+        ctx.buffers.free(data)
+        texture.destroy()
+    }
 }
 
 /**

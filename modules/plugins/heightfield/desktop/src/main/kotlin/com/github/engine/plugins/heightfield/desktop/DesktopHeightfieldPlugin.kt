@@ -32,9 +32,9 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
         // create texture
         val texture = if (createTexture) {
             val format = when (desiredChannels) {
-                1 -> TexelFormat.R16F
-                2 -> TexelFormat.RG16F
-                else -> TexelFormat.RGB16F
+                1 -> TexelFormat.R16
+                2 -> TexelFormat.RG16
+                else -> TexelFormat.RGB16
             }
 
             // create texture
@@ -53,6 +53,6 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
 
         // convert to signed values (so that buffer can be used with bullet)
         for (i in 0 until buffer.remaining()) buffer.put(i, buffer[i].toSigned().toShort())
-        return HeightfieldData(buffer, desiredChannels, texture, x[0])
+        return HeightfieldData(ctx, buffer, desiredChannels, texture, x[0])
     }
 }
