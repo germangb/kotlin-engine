@@ -346,9 +346,13 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun init() {
-        println(hmap)
-        val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
-        world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
+        if (hmap == null) {
+            val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
+            world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
+        } else {
+            val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, 0f, -10f, 10f)
+            world.createBody(height, false, 0f, 0.5f, 0f, Matrix4())
+        }
 
         root.addChild {
             val mat = DiffuseMaterial()
@@ -488,6 +492,8 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun update() {
+        if (KEY_UP.isJustPressed(ctx.input)) ctx.debug.fontSize += 1f
+        if (KEY_DOWN.isJustPressed(ctx.input)) ctx.debug.fontSize -= 1f
         if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
             ctx.debug.toggle()
             click?.play()
