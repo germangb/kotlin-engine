@@ -34,14 +34,13 @@ import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
-import kotlin.concurrent.thread
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
     val resources = ctx.files.getLocal(".")
 
     init {
-        assetManager.preloadAudio(ctx.files.getLocal("audio/music.ogg"), "music")
+        assetManager.preloadAudio(ctx.files.getLocal("audio/birds.ogg"), "music")
         assetManager.preloadAudio(ctx.files.getLocal("audio/click.ogg"), "click", stream = false)
         assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)

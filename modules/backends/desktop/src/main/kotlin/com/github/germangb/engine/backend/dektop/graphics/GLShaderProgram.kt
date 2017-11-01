@@ -6,7 +6,10 @@ import org.lwjgl.opengl.GL20.*
 /**
  * OpenGL shader program
  */
-class GLShaderProgram(val gfx: GLGraphicsDevice, val program: Int) : ShaderProgram {
+class GLShaderProgram(val gfx: GLGraphicsDevice,
+                      val program: Int,
+                      override val vertex: String,
+                      override val fragment: String) : ShaderProgram {
     init {
         gfx.ishaders.add(this)
     }

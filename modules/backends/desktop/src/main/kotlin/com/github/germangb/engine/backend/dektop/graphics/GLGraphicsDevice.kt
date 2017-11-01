@@ -308,7 +308,7 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
             glDeleteShader(fragmentShader)
         }
 
-        return GLShaderProgram(this, program)
+        return GLShaderProgram(this, program, vertexSource, fragmentSource)
     }
 
     /**
