@@ -9,7 +9,9 @@ import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.components.*
+import com.github.germangb.engine.framework.components.addJoint
+import com.github.germangb.engine.framework.components.addMesh
+import com.github.germangb.engine.framework.components.addSkinnedMesh
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
@@ -298,7 +300,7 @@ class GCNode(val aiNode: AINode) {
      */
     fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Map<String, Any>>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
-        transform.local.set(this@GCNode.transform)
+        localTransform.set(this@GCNode.transform)
         name = this@GCNode.name
 
         // add joint component

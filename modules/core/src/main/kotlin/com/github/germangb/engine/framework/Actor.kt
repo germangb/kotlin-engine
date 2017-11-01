@@ -1,38 +1,32 @@
 package com.github.germangb.engine.framework
 
+import com.github.germangb.engine.math.Matrix4
+import com.github.germangb.engine.math.Matrix4c
 import kotlin.reflect.KClass
 
 /**
  * Actors contain position information and a list of components
  */
 class Actor {
-    /**
-     * String name given bind this actor
-     */
+    /** String name given bind this actor */
     var name: String = toString()
 
     /** Actor parent */
     private var iparent: Actor? = null
-
     /** Root scene */
     private var iroot: Actor = this
-
-    /**
-     * Parent actor
-     */
+    /** Parent actor */
     val parent get() = iparent
-
     /** Root actor */
     val root get() = iroot
+    /** Local transformation */
+    val localTransform = Matrix4()
 
-    /**
-     * World & local transform
-     */
-    val transform = Transform()
+    /** World transformation (inmutable) */
+    val worldTransform: Matrix4c get() = iworldTransform
+    private val iworldTransform = Matrix4()
 
-    /**
-     * Transformation mode
-     */
+    /** Transformation mode */
     var transformMode = TransformMode.RELATIVE
 
     /**
@@ -48,14 +42,9 @@ class Actor {
         }
     }
 
-    /**
-     * Attached components
-     */
+    /** Attached components */
     private val icomponents = mutableListOf<Component>()
-
-    /**
-     * Attached components
-     */
+    /** Attached components */
     val components: List<Component> get() = icomponents
 
     /**
@@ -102,7 +91,7 @@ class Actor {
     /**
      * Update components of the actor and its descendants
      */
-    private fun updateComponents() {
+    fun updateComponents() {
         if (updateMode == UpdateMode.ROOT_FIRST) {
             updateInternalComponents()
             ichildren.forEach {
@@ -120,39 +109,33 @@ class Actor {
      * Update actors
      */
     fun update() {
-        computeTransforms()
+        updateTransforms()
         updateComponents()
     }
 
     /**
      * Update transformations
      */
-    private fun computeTransforms() {
+    fun updateTransforms() {
         if (this == root) {
-            transform.iworld.set(transform.local)
+            iworldTransform.set(localTransform)
         } else {
             if (transformMode == TransformMode.RELATIVE) {
-                transform.iworld.set(iparent!!.transform.iworld)
-                transform.iworld.mul(transform.local)
+                iworldTransform.set(iparent!!.iworldTransform)
+                iworldTransform.mul(localTransform)
             } else {
-                transform.iworld.set(transform.local)
+                iworldTransform.set(localTransform)
             }
         }
 
         ichildren.forEach {
-            it.computeTransforms()
+            it.updateTransforms()
         }
     }
 
-    /**
-     * Attached actors
-     */
-    private val ichildren = mutableListOf<Actor>()
-
-    /**
-     * Attached actors
-     */
+    /** Attached actors */
     val children: List<Actor> get() = ichildren
+    private val ichildren = mutableListOf<Actor>()
 
     /**
      * Adds a child

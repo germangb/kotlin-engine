@@ -1,7 +1,6 @@
 package com.github.germangb.engine.animation
 
 import com.github.germangb.engine.framework.Actor
-import com.github.germangb.engine.framework.Transform
 
 /**
  * This assumes the timelines are sorted by time
@@ -14,7 +13,7 @@ class SampledAnimationController(private val root: Actor,
     /**
      * Cached bone names
      */
-    private val bones = mutableMapOf<String, Transform>()
+    private val bones = mutableMapOf<String, Actor>()
 
     /**
      * Animation duration
@@ -24,7 +23,7 @@ class SampledAnimationController(private val root: Actor,
     init {
         timeline.forEach { node, _ ->
             root.find(node)?.let {
-                bones[node] = it.transform
+                bones[node] = it
             }
         }
     }
@@ -37,7 +36,7 @@ class SampledAnimationController(private val root: Actor,
         timeline.forEach { node, timeline ->
             bones[node]?.let {
                 val timeCompute = maxOf(minOf(modFrameTime, frames.toFloat()), 0f)
-                timeline.applyTransform(timeCompute, it.local.identity(), interpolate)
+                timeline.applyTransform(timeCompute, it.localTransform.identity(), interpolate)
             }
         }
     }

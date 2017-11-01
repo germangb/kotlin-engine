@@ -206,7 +206,7 @@ class Testbed(val ctx: Context) : Application {
         val actor = build?.let {
             root.addChild {
                 it()
-                transform.local.scale(0.05f)
+                localTransform.scale(0.05f)
             }
         }
 
@@ -336,81 +336,81 @@ class Testbed(val ctx: Context) : Application {
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(-4f, 12f, 2f)
-                transform.local.rotateX(2f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(-4f, 12f, 2f)
+                localTransform.rotateX(2f)
+                localTransform.rotateZ(0.3f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(-4f, 8f, 2f)
-                transform.local.rotateX(2f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(-4f, 8f, 2f)
+                localTransform.rotateX(2f)
+                localTransform.rotateZ(0.3f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(-4f, 4f, 2f)
-                transform.local.rotateX(2f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(-4f, 4f, 2f)
+                localTransform.rotateX(2f)
+                localTransform.rotateZ(0.3f)
                 val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(0f, 4f, 4f)
-                transform.local.rotateX(0.8f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(0f, 4f, 4f)
+                localTransform.rotateX(0.8f)
+                localTransform.rotateZ(0.3f)
                 val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(0f, 4f, -4f)
-                transform.local.rotateX(0.8f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(0f, 4f, -4f)
+                localTransform.rotateX(0.8f)
+                localTransform.rotateZ(0.3f)
                 val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
 
             addChild {
                 transformMode = ABSOLUTE
-                transform.local.translate(0f, 8f, -4f)
-                transform.local.rotateX(0.8f)
-                transform.local.rotateZ(0.3f)
+                localTransform.translate(0f, 8f, -4f)
+                localTransform.rotateX(0.8f)
+                localTransform.rotateZ(0.3f)
                 val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, transform.local)
+                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(transform.local)
+                    body.transform.get(localTransform)
                 }
             }
         }
@@ -477,8 +477,9 @@ class Testbed(val ctx: Context) : Application {
 
         world.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
-        root.update()
 
+        root.updateTransforms()
+        root.updateComponents()
         //println("animation(s) = ${animation.controller.time}")
 
         if (KEY_SPACE.isJustPressed(ctx.input)) {
@@ -551,7 +552,7 @@ class Testbed(val ctx: Context) : Application {
             val actor = stack.pop()
             actor.getComponent<JointComponent>()?.let {
                 skin[it.id]
-                        .set(it.actor.transform.world)
+                        .set(it.actor.worldTransform)
                         .mul(it.offset)
             }
             actor.children.forEach {
@@ -584,7 +585,7 @@ class Testbed(val ctx: Context) : Application {
                 inst.actor.children
                         .mapNotNull { it.getComponent<MeshInstanceComponent>() }
                         .forEachIndexed { index, instance ->
-                            instance.actor.transform.world.get(instanceData)
+                            instance.actor.worldTransform.get(instanceData)
                             instanceData.position(16 * 4 * (index + 1))
                         }
                 instanceData.flip()
