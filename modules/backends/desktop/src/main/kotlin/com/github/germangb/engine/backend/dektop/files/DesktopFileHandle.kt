@@ -3,6 +3,7 @@ package com.github.germangb.engine.backend.dektop.files
 import com.github.germangb.engine.files.FileHandle
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 /**
@@ -48,10 +49,18 @@ class DesktopFileHandle(private val file: File) : FileHandle {
     /**
      * Get a file input stream of the file
      */
-    override fun read() = FileInputStream(file)
+    override fun read() = try {
+        FileInputStream(file)
+    } catch (e: FileNotFoundException) {
+        null
+    }
 
     /**
      * Get file output stream
      */
-    override fun write() = FileOutputStream(file)
+    override fun write() = try {
+        FileOutputStream(file)
+    } catch (e: FileNotFoundException) {
+        null
+    }
 }

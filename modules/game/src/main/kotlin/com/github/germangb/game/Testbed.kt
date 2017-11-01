@@ -296,8 +296,8 @@ class Testbed(val ctx: Context) : Application {
     val hmapShader = let {
         val vertFile = ctx.files.getLocal("shaders/terrain.vert")
         val fragFile = ctx.files.getLocal("shaders/terrain.frag")
-        val vert = vertFile.read().bufferedReader().use { it.readText() }
-        val frag = fragFile.read().bufferedReader().use { it.readText() }
+        val vert = vertFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
+        val frag = fragFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
         ctx.graphics.createShaderProgram(vert, frag)
     }
 

@@ -243,31 +243,6 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
         return GLMesh(this, vbo, ibo, vao, indexType, indexData.remaining(), primitive, attributes, instanceAttributes ?: emptyArray())
     }
 
-    /** Match includes */
-    val INCLUDE_REGEX = Regex("^\\s*#include\\s*\"(.)*\"\\s*$")
-
-    /** preprocess file includes */
-    fun String.inlineIncludes(): String = buildString {
-        val lines = this@inlineIncludes.lines()
-
-        lines.forEach {
-            val trim = it.trim()
-            if (INCLUDE_REGEX.matches(trim)) {
-                // load file
-                val path = trim.substring(trim.indexOfFirst { it == '"' } + 1, trim.length - 1)
-                val file = files.getLocal(path)
-                val source = file.read().bufferedReader().use {
-                    it.readText()
-                }
-
-                // append preprocessed file
-                append(source.inlineIncludes())
-            } else {
-                appendln(it)
-            }
-        }
-    }
-
     /**
      * Create a skinShader program
      */
@@ -278,7 +253,7 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
 
         glCheckError("Error in createShaderProgram() while creating vertex skinShader") {
             vertexShader = glCreateShader(GL_VERTEX_SHADER)
-            glShaderSource(vertexShader, vertexSource.inlineIncludes())
+            glShaderSource(vertexShader, vertexSource.inlineIncludes(files))
             //println(fragmentSource.inlineIncludes())
             glCompileShader(vertexShader)
             val log = glGetShaderInfoLog(vertexShader)
@@ -289,7 +264,7 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
 
         glCheckError("Error in createShaderProgram() while creating fragment skinShader") {
             fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-            glShaderSource(fragmentShader, fragmentSource.inlineIncludes())
+            glShaderSource(fragmentShader, fragmentSource.inlineIncludes(files))
             glCompileShader(fragmentShader)
             val log = glGetShaderInfoLog(fragmentShader)
             if (log.isNotEmpty()) {

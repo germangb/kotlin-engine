@@ -40,10 +40,10 @@ interface FileHandle {
     /**
      * Get a generic input stream bind read from the file
      */
-    fun read(): InputStream
+    fun read(): InputStream?
 
     /**
      * Get an output stream bind write bind the file
      */
-    fun write(): OutputStream
+    fun write(): OutputStream?
 }
