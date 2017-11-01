@@ -16,7 +16,7 @@ import java.nio.ShortBuffer
  */
 class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
     /** Convert unsigned short to signed short */
-    private fun Short.toSigned() = if (this <= Short.MAX_VALUE) (this + Short.MIN_VALUE) else (this - Short.MIN_VALUE)
+    private fun Short.toSigned() = if (this >= 0) this + Short.MIN_VALUE else this - Short.MIN_VALUE
 
     /**
      * Fast native implementation
@@ -52,6 +52,7 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
         stbi_image_free(data)
 
         // convert to signed values (so that buffer can be used with bullet)
+        //println(buffer)
         for (i in 0 until buffer.remaining()) buffer.put(i, buffer[i].toSigned().toShort())
         return HeightfieldData(ctx, buffer, desiredChannels, texture, x[0])
     }
