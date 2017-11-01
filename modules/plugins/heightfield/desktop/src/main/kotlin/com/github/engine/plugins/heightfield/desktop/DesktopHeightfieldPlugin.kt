@@ -4,44 +4,40 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
-import com.github.germangb.engine.plugins.heightfield.HeightfieldData
-import com.github.germangb.engine.plugins.heightfield.HeightfieldPlugin
+import com.github.germangb.engine.plugins.heightfield.TerrainData
+import com.github.germangb.engine.plugins.heightfield.TerrainPlugin
 import com.github.germangb.engine.utils.DummyTexture
 import org.lwjgl.stb.STBImage.stbi_image_free
 import org.lwjgl.stb.STBImage.stbi_load_16
 import java.nio.ShortBuffer
 
+/** Convert unsigned short to signed short */
+private fun Short.toSigned() = if (this >= 0) this + Short.MIN_VALUE else this - Short.MIN_VALUE
+
+/** Convert unsigned byte to signed byte */
+private fun Byte.toSigned() = if (this >= 0) this + Byte.MIN_VALUE else this - Byte.MIN_VALUE
+
 /**
  * Desktop backend implementation
  */
-class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
-    /** Convert unsigned short to signed short */
-    private fun Short.toSigned() = if (this >= 0) this + Short.MIN_VALUE else this - Short.MIN_VALUE
+class DesktopHeightfieldPlugin(val ctx: Context) : TerrainPlugin {
+    private val x = IntArray(1)
+    private val y = IntArray(1)
+    private val ch = IntArray(1)
 
-    /**
-     * Fast native implementation
-     */
-    override fun load16(file: FileHandle, desiredChannels: Int, createTexture: Boolean): HeightfieldData? {
-        val x = IntArray(1)
-        val y = IntArray(1)
-        val c = IntArray(1)
+    override fun load8(file: FileHandle, desiredChannels: Int, createTexture: Boolean) = TODO("not implemented")
 
-        // load STB
-        val data = stbi_load_16(file.path, x, y, c, desiredChannels) ?: return null
+    override fun loadf(file: FileHandle, desiredChannels: Int, createTexture: Boolean) = TODO("not implemented")
 
-        // create texture
+    override fun load16(file: FileHandle, desiredChannels: Int, createTexture: Boolean): TerrainData<ShortBuffer>? {
+        val data = stbi_load_16(file.path, x, y, ch, desiredChannels) ?: return null
         val texture = if (createTexture) {
-            val format = when (desiredChannels) {
+            ctx.graphics.createTexture(data, x[0], y[0], when (desiredChannels) {
                 1 -> TexelFormat.R16
                 2 -> TexelFormat.RG16
                 else -> TexelFormat.RGB16
-            }
-
-            // create texture
-            ctx.graphics.createTexture(data, x[0], y[0], format, LINEAR, LINEAR)
-        } else {
-            DummyTexture
-        }
+            }, LINEAR, LINEAR)
+        } else DummyTexture
 
         // allocate 16bit buffer
         val buffer = ctx.buffers.create(data.remaining() * 2L)
@@ -52,8 +48,7 @@ class DesktopHeightfieldPlugin(val ctx: Context) : HeightfieldPlugin {
         stbi_image_free(data)
 
         // convert to signed values (so that buffer can be used with bullet)
-        //println(buffer)
         for (i in 0 until buffer.remaining()) buffer.put(i, buffer[i].toSigned().toShort())
-        return HeightfieldData(ctx, buffer, desiredChannels, texture, x[0])
+        return TerrainData(ctx, buffer, desiredChannels, texture, x[0])
     }
 }

@@ -11,14 +11,14 @@ import com.github.germangb.engine.plugins.assimp.lwjgl.DesktopAssimpPlugin
 import com.github.germangb.engine.plugins.bullet.gdx.DesktopBulletPlugin
 import com.github.germangb.engine.plugins.debug.DebugPlugin
 import com.github.germangb.engine.plugins.debug.desktop.DesktopDebugPlugin
-import com.github.germangb.engine.plugins.heightfield.HeightfieldPlugin
+import com.github.germangb.engine.plugins.heightfield.TerrainPlugin
 
 fun LWJGLContext.installPlugins() {
     install(AssimpPlugin::class, DesktopAssimpPlugin(this))
     install(DebugPlugin::class, DesktopDebugPlugin(this))
     install(BulletPlugin::class, DesktopBulletPlugin)
     install(AssetLoaderPlugin::class, DesktopAssetLoader(this))
-    install(HeightfieldPlugin::class, DesktopHeightfieldPlugin(this))
+    install(TerrainPlugin::class, DesktopHeightfieldPlugin(this))
 }
 
 fun main(args: Array<String>) {

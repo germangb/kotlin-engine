@@ -29,7 +29,7 @@ import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
-import com.github.germangb.engine.plugins.heightfield.heightfield
+import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
@@ -253,9 +253,10 @@ class Testbed(val ctx: Context) : Application {
         mesh
     }
 
+    val hmapHeight = 24f
     val hmap = let {
-        val file = ctx.files.getLocal("textures/heightfield.png")
-        ctx.heightfield.load16(file, 1, true)
+        val file = ctx.files.getLocal("data/terrain/height.png")
+        ctx.terrain.load16(file, 1, true)
     }
 
     val hmapMesh = let {
@@ -323,8 +324,8 @@ class Testbed(val ctx: Context) : Application {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
             world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
         } else {
-            val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, 16f / Short.MAX_VALUE, -10f, 10f)
-            world.createBody(height, false, 0f, 0.5f, 0f, Matrix4())
+            val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, hmapHeight / Short.MAX_VALUE, -10f, 10f)
+            world.createBody(height, false, 0f, 0.75f, 0f, Matrix4())
         }
 
         root.addChild {
@@ -531,6 +532,7 @@ class Testbed(val ctx: Context) : Application {
                     "u_proj" to proj,
                     "u_view" to view,
                     "u_size" to (hmap?.size?.toFloat() ?: 1f),
+                    "u_max_height" to hmapHeight,
                     "u_texture" to (floorTexture ?: DummyTexture),
                     "u_height" to (hmap?.texture ?: DummyTexture)
             ), instanceData)
