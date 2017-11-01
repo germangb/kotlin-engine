@@ -15,7 +15,7 @@ interface DebugUtils {
     /**
      * Font size
      */
-    var fontSize: Float
+    var fontSize: Int
 
     /**
      * Set debug text
@@ -37,9 +37,7 @@ interface DebugUtils {
  * Fallback
  */
 object UninstalledDebugUtils : DebugUtils {
-    override var fontSize: Float
-        get() = 0f
-        set(value) = Unit
+    override var fontSize = 0
     private fun TODO(msg: String) = Unit
     override fun add(build: StringBuilder.() -> Unit) = TODO("DebugUtils is uninstalled")
     override fun add(str: CharSequence) = TODO("DebugUtils is uninstalled")

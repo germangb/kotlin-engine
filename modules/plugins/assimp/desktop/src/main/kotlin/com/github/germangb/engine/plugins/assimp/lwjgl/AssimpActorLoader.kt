@@ -8,13 +8,9 @@ import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
-import com.github.germangb.engine.framework.AAB
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.*
-import com.github.germangb.engine.framework.materials.DiffuseMaterial
-import com.github.germangb.engine.framework.materials.Material
 import com.github.germangb.engine.graphics.*
-import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.VertexAttribute.*
@@ -133,7 +129,7 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
         // load materials
         val materials = List(scene.mNumMeshes()) {
             val mat = mutableMapOf<String, Any>()
-            val textureFile = ctx.files.getLocal("hellknight.png")
+            val textureFile = ctx.files.getLocal("textures/hellknight.png")
             ctx.assets.loadTexture(textureFile, RGBA8, LINEAR, LINEAR)?.let {
                 manager.delegateTexture(it, "hellknight.png?$it")
                 mat["diffuse"] = it

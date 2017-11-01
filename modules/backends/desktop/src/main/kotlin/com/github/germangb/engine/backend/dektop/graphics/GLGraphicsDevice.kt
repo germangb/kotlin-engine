@@ -1,8 +1,9 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.backend.dektop.core.glCheckError
+import com.github.germangb.engine.backend.dektop.files.DesktopFiles
 import com.github.germangb.engine.graphics.*
-import com.github.germangb.engine.graphics.InstanceAttribute.*
+import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
@@ -14,7 +15,7 @@ import java.nio.*
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class GLGraphicsDevice(override val width: Int, override val height: Int) : GraphicsDevice, Destroyable {
+class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, override val height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
@@ -242,6 +243,31 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
         return GLMesh(this, vbo, ibo, vao, indexType, indexData.remaining(), primitive, attributes, instanceAttributes ?: emptyArray())
     }
 
+    /** Match includes */
+    val INCLUDE_REGEX = Regex("^\\s*#include\\s*\"(.)*\"\\s*$")
+
+    /** preprocess file includes */
+    fun String.inlineIncludes(): String = buildString {
+        val lines = this@inlineIncludes.lines()
+
+        lines.forEach {
+            val trim = it.trim()
+            if (INCLUDE_REGEX.matches(trim)) {
+                // load file
+                val path = trim.substring(trim.indexOfFirst { it == '"' } + 1, trim.length - 1)
+                val file = files.getLocal(path)
+                val source = file.read().bufferedReader().use {
+                    it.readText()
+                }
+
+                // append preprocessed file
+                append(source.inlineIncludes())
+            } else {
+                appendln(it)
+            }
+        }
+    }
+
     /**
      * Create a skinShader program
      */
@@ -252,7 +278,8 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
 
         glCheckError("Error in createShaderProgram() while creating vertex skinShader") {
             vertexShader = glCreateShader(GL_VERTEX_SHADER)
-            glShaderSource(vertexShader, vertexSource)
+            glShaderSource(vertexShader, vertexSource.inlineIncludes())
+            //println(fragmentSource.inlineIncludes())
             glCompileShader(vertexShader)
             val log = glGetShaderInfoLog(vertexShader)
             if (log.isNotEmpty()) {
@@ -262,7 +289,7 @@ class GLGraphicsDevice(override val width: Int, override val height: Int) : Grap
 
         glCheckError("Error in createShaderProgram() while creating fragment skinShader") {
             fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-            glShaderSource(fragmentShader, fragmentSource)
+            glShaderSource(fragmentShader, fragmentSource.inlineIncludes())
             glCompileShader(fragmentShader)
             val log = glGetShaderInfoLog(fragmentShader)
             if (log.isNotEmpty()) {

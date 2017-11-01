@@ -4,7 +4,6 @@ import com.github.germangb.engine.animation.AnimationState
 import com.github.germangb.engine.animation.SampledAnimationController
 import com.github.germangb.engine.animation.SimpleAnimationManager
 import com.github.germangb.engine.assets.NaiveAssetManager
-import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
@@ -35,16 +34,18 @@ import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
     val resources = ctx.files.getLocal(".")
 
     init {
-        assetManager.preloadAudio(ctx.files.getLocal("music.ogg"), "music")
-        assetManager.preloadAudio(ctx.files.getLocal("click.ogg"), "click", stream = false)
-        assetManager.preloadMesh(ctx.files.getLocal("cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
-        assetManager.preloadTexture(ctx.files.getLocal("cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
+        assetManager.preloadAudio(ctx.files.getLocal("audio/music.ogg"), "music")
+        assetManager.preloadAudio(ctx.files.getLocal("audio/click.ogg"), "click", stream = false)
+        assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
+        assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
+        assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, NEAREST, NEAREST)
     }
 
     val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24), NEAREST, NEAREST)
@@ -199,7 +200,7 @@ class Testbed(val ctx: Context) : Application {
     val root = Actor()
     val animation by lazy {
         // load assimp scene with skinned mesh
-        val file = ctx.files.getLocal("hellknight.md5mesh")
+        val file = ctx.files.getLocal("meshes/hellknight.md5mesh")
         val build = ctx.assimp.loadScene(file, assetManager)?.actor
 
         // create scene
@@ -210,7 +211,7 @@ class Testbed(val ctx: Context) : Application {
             }
         }
 
-        val animFile = ctx.files.getLocal("idle2.md5anim")
+        val animFile = ctx.files.getLocal("meshes/idle2.md5anim")
         ctx.assimp.loadScene(animFile, assetManager, ANIMATIONS)?.let { (_, anims, _) ->
             val ai = anims[0]
             val sampled = SampledAnimationController(actor ?: root, ai.frames - 1, ai.fps, ai.timeline)
@@ -224,7 +225,7 @@ class Testbed(val ctx: Context) : Application {
     val click = assetManager.getAudio("click")
     var debug = false
 
-    val floorTexture = ctx.assets.loadTexture(ctx.files.getLocal("dirt.jpg"), RGB8, NEAREST, NEAREST)
+    val floorTexture = assetManager.getTexture("dirt_texture")
     val floorMesh = let {
         val vertex = ctx.buffers.create(1000)
         val index = ctx.buffers.create(1000).asIntBuffer()
@@ -254,7 +255,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmap = let {
-        val file = ctx.files.getLocal("heightfield.png")
+        val file = ctx.files.getLocal("textures/heightfield.png")
         ctx.heightfield.load16(file, 1, true)
     }
 
@@ -293,37 +294,10 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmapShader = let {
-        @Language("GLSL")
-        val vert = """#version 450 core
-            layout(location = 0) in vec2 a_position;
-            layout(location = 1) in mat4 a_transform;
-            out vec2 v_uv;
-            out vec3 v_position;
-            uniform mat4 u_view;
-            uniform mat4 u_proj;
-            uniform float u_size;
-            uniform sampler2D u_height;
-            void main() {
-                vec4 world = a_transform * vec4(a_position.x, 0.0, a_position.y, 1.0);
-                v_uv = world.xz / u_size + 0.5;
-                //world.y = texture(u_height, v_uv).r * 4;
-                vec4 view_pos = u_view * world;
-                v_position = view_pos.xyz;
-                gl_Position = u_proj * view_pos;
-            }
-        """.trimMargin()
-        @Language("GLSL")
-        val frag = """#version 450 core
-            in vec2 v_uv;
-            in vec3 v_position;
-            out vec4 frag_color;
-            uniform sampler2D u_texture;
-            void main() {
-                vec3 color = texture(u_texture, v_uv * 32).rgb;
-                color.rgb = mix(color.rgb, vec3(0.2), clamp(abs(v_position.z) / 32 - 0.1, 0, 0.8));
-                frag_color = vec4(color, 1.0);
-            }
-        """.trimMargin()
+        val vertFile = ctx.files.getLocal("shaders/terrain.vert")
+        val fragFile = ctx.files.getLocal("shaders/terrain.frag")
+        val vert = vertFile.read().bufferedReader().use { it.readText() }
+        val frag = fragFile.read().bufferedReader().use { it.readText() }
         ctx.graphics.createShaderProgram(vert, frag)
     }
 
@@ -350,7 +324,7 @@ class Testbed(val ctx: Context) : Application {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
             world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
         } else {
-            val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, 0.1f / Short.MAX_VALUE, -10f, 10f)
+            val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, 16f / Short.MAX_VALUE, -10f, 10f)
             world.createBody(height, false, 0f, 0.5f, 0f, Matrix4())
         }
 
@@ -492,8 +466,8 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun update() {
-        if (KEY_UP.isJustPressed(ctx.input)) ctx.debug.fontSize += 1f
-        if (KEY_DOWN.isJustPressed(ctx.input)) ctx.debug.fontSize -= 1f
+        if (KEY_UP.isJustPressed(ctx.input)) ctx.debug.fontSize++
+        if (KEY_DOWN.isJustPressed(ctx.input)) ctx.debug.fontSize--
         if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
             ctx.debug.toggle()
             click?.play()

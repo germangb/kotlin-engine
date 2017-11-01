@@ -52,7 +52,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         glGetError()
 
         files = DesktopFiles()
-        gfx = GLGraphicsDevice(width, height)
+        gfx = GLGraphicsDevice(files, width, height)
         audio = ALAudioDevice()
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window)

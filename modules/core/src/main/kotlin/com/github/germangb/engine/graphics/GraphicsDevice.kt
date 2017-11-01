@@ -1,5 +1,6 @@
 package com.github.germangb.engine.graphics
 
+import com.github.germangb.engine.files.FileHandle
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer

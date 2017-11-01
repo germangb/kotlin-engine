@@ -16,7 +16,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var nv = 0L
     var font = 0
     lateinit var color: NVGColor
-    override var fontSize = 15f
+    override var fontSize = 15
     val string = StringBuilder()
     val rows = NVGTextRow.create(128)
     var show = false
@@ -75,7 +75,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         // compute height
         val vel = 32f
-        debugHeight = numRows * fontSize + 3
+        debugHeight = numRows * fontSize + 3f
         offset = if (show) {
             minOf(offset + vel, debugHeight)
         } else {
@@ -93,7 +93,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.4f))
-        nvgRect(nv, 0f, 0f, width.toFloat(), numRows * fontSize)
+        nvgRect(nv, 0f, 0f, width.toFloat(), numRows * fontSize.toFloat())
         nvgFill(nv)
 
         // pointer
@@ -103,40 +103,40 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
             if (y in 0..(numRows - 1)) {
                 nvgBeginPath(nv)
                 nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.15f))
-                nvgRect(nv, 0f, fontSize * y, width.toFloat(), fontSize)
+                nvgRect(nv, 0f, fontSize * y.toFloat(), width.toFloat(), fontSize.toFloat())
                 nvgFill(nv)
             }
         }
 
         nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.2f))
-        nvgRect(nv, 0f, numRows * fontSize, width.toFloat(), 3f)
+        nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 3f)
         nvgFill(nv)
 
         // draw text and shit
         nvgTextAlign(nv, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
         nvgFontFaceId(nv, font)
-        nvgFontSize(nv, fontSize)
+        nvgFontSize(nv, fontSize.toFloat())
 
         nvgFontBlur(nv, 0f)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         for (i in 0 until numRows) {
             val row = rows[i]
-            nnvgText(nv, 0f + 1, fontSize * i + 1, row.start(), row.end())
+            nnvgText(nv, 0f + 1, fontSize * i + 1f, row.start(), row.end())
         }
 
         nvgFontBlur(nv, 4f)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         for (i in 0 until numRows) {
             val row = rows[i]
-            nnvgText(nv, 0f, fontSize * i + 2, row.start(), row.end())
+            nnvgText(nv, 0f, fontSize * i + 2f, row.start(), row.end())
         }
 
         nvgFontBlur(nv, 0f)
         nvgFillColor(nv, color.rgba(1f, 1f, 1f, 0.75f))
         for (i in 0 until numRows) {
             val row = rows[i]
-            nnvgText(nv, 0f, fontSize * i, row.start(), row.end())
+            nnvgText(nv, 0f, fontSize * i.toFloat(), row.start(), row.end())
         }
 
         nvgEndFrame(nv)
