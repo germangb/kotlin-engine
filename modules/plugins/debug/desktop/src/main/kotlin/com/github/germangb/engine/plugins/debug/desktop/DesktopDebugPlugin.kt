@@ -24,10 +24,8 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
     var debugHeight = 0f
     var offset = 0f
 
-    override fun add(build: StringBuilder.() -> Unit) = string.build()
-
     override fun add(str: CharSequence) {
-        string.appendln(str)
+        string.append(str)
     }
 
     override fun onPostInit() {

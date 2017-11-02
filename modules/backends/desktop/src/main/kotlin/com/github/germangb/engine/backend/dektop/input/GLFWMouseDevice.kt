@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW.*
 /**
  * GLFW mouse
  */
-class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
+class GLFWMouseDevice(val window: Long, val width: Int, val height: Int) : MouseDevice, Destroyable {
     var ix = 0
     var iy = 0
 
@@ -57,6 +57,8 @@ class GLFWMouseDevice(val window: Long) : MouseDevice, Destroyable {
      * Cursor position Y
      */
     override val y get() = iy
+
+    override val insideWindow get() = ix in 0..width && iy in 0..height
 
     var mouseListener: ((MouseEvent) -> Unit)? = null
 

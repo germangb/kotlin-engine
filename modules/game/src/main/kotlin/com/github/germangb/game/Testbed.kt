@@ -16,6 +16,7 @@ import com.github.germangb.engine.graphics.TestFunction.DISABLED
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.DEPTH24
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
+import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
@@ -26,6 +27,7 @@ import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
 import com.github.germangb.engine.plugins.heightfield.terrain
+import com.github.germangb.engine.utils.DummyMesh
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
@@ -39,7 +41,7 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadAudio(ctx.files.getLocal("audio/click.ogg"), "click", stream = false)
         assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
-        assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, NEAREST, NEAREST)
+        assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR)
     }
 
     val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24), NEAREST, NEAREST)
@@ -220,33 +222,6 @@ class Testbed(val ctx: Context) : Application {
     var debug = false
 
     val floorTexture = assetManager.getTexture("dirt_texture")
-    val floorMesh = let {
-        val vertex = ctx.buffers.create(1000)
-        val index = ctx.buffers.create(1000).asIntBuffer()
-        val s = 32f
-        vertex.putFloat(-s).putFloat(0f).putFloat(-s)
-        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
-        vertex.putFloat(0f).putFloat(0f)
-
-        vertex.putFloat(+s).putFloat(0f).putFloat(-s)
-        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
-        vertex.putFloat(1f).putFloat(0f)
-
-        vertex.putFloat(-s).putFloat(0f).putFloat(+s)
-        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
-        vertex.putFloat(0f).putFloat(1f)
-
-        vertex.putFloat(+s).putFloat(0f).putFloat(+s)
-        vertex.putFloat(0f).putFloat(1f).putFloat(0f)
-        vertex.putFloat(1f).putFloat(1f).flip()
-        index.put(intArrayOf(0, 1, 2, 3)).flip()
-        val mesh = ctx.graphics.createMesh(vertex, index, MeshPrimitive.TRIANGLE_STRIP, MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
-        vertex.clear()
-        index.clear()
-        ctx.buffers.free(vertex)
-        ctx.buffers.free(index)
-        mesh
-    }
 
     val hmapHeight = 24f
     val hmap = let {
@@ -261,8 +236,8 @@ class Testbed(val ctx: Context) : Application {
 
         for (x in 0 until size + 1) {
             for (z in 0 until size + 1) {
-                vert.putFloat(x.toFloat())
-                vert.putFloat(z.toFloat())
+                vert.putFloat(x.toFloat() - size / 2)
+                vert.putFloat(z.toFloat() - size / 2)
             }
         }
 
@@ -301,7 +276,6 @@ class Testbed(val ctx: Context) : Application {
         hmapShader.destroy()
         hmap?.destroy()
         composite.destroy()
-        floorMesh.destroy()
         floorTexture?.destroy()
         fbo.destroy()
         ctx.buffers.free(instanceData)
@@ -324,9 +298,8 @@ class Testbed(val ctx: Context) : Application {
         }
 
         root.attachChild {
-            addMeshInstancer(cube!!, mapOf(
-                    "diffuse" to (assetManager.getTexture("cube_texture") ?: DummyTexture)
-            ))
+            val tex = assetManager.getTexture("cube_texture") ?: DummyTexture
+            addMeshInstancer(cube ?: DummyMesh, mapOf("diffuse" to tex))
 
             fun cube(x: Float, y: Float, z: Float): Actor.() -> Unit = {
                 transformMode = ABSOLUTE
@@ -366,15 +339,13 @@ class Testbed(val ctx: Context) : Application {
     }
 
     fun debug() {
-        ctx.debug.add {
+        val str = buildString {
             appendln("> # textures = ${ctx.graphics.textures.size}")
             appendln("> # meshes = ${ctx.graphics.meshes.size}")
             appendln("> # shaders = ${ctx.graphics.shaderPrograms.size}")
             appendln("> # framebuffers = ${ctx.graphics.framebuffers.size}")
             appendln("-".repeat(16))
-        }
 
-        ctx.debug.add {
             val src = ctx.audio.sources
             appendln("> # audio sources = ${src.size}, gain = ${ctx.audio.gain}")
             src.forEachIndexed { index, audio ->
@@ -387,9 +358,7 @@ class Testbed(val ctx: Context) : Application {
                 val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
                 appendln("> # $index [state = ${animation?.state}, timer = $time]")
             }
-        }
 
-        ctx.debug.add {
             appendln("-".repeat(16))
             appendln("> # Rigid bodies = ${world.bodies.size}")
             world.bodies.forEach {
@@ -397,7 +366,7 @@ class Testbed(val ctx: Context) : Application {
                 appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
             }
         }
-
+        ctx.debug.add(str)
     }
 
     override fun update() {
@@ -447,9 +416,16 @@ class Testbed(val ctx: Context) : Application {
         val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
         val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
 
+        val viewProj = Matrix4(proj).mul(view)
+        val culler = FrustumIntersection(viewProj)
+
         ctx.graphics(fbo) {
             state.cullMode(CullMode.DISABLED)
             state.polygonMode(DrawMode.SOLID)
+
+            //
+            // Build instance buffer data
+            //
 
             val aux = Matrix4()
             instanceData.clear()
@@ -457,6 +433,7 @@ class Testbed(val ctx: Context) : Application {
             val len = 16
             for (x in -len until len + 1) {
                 for (z in -len until len + 1) {
+
                     count++
                     aux.m30(x * 32f)
                     aux.m32(z * 32f)
@@ -464,6 +441,10 @@ class Testbed(val ctx: Context) : Application {
                 }
             }
             instanceData.flip()
+
+            //
+            // Render terrain chunks
+            //
 
             renderInstances(hmapMesh, hmapShader, uniformMap(
                     "u_proj" to proj,

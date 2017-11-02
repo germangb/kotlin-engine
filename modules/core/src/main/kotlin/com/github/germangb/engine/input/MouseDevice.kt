@@ -20,6 +20,9 @@ interface MouseDevice {
     /** Cursor Y position */
     val y: Int
 
+    /** Returns true if cursor pointer is inside of the window */
+    val insideWindow: Boolean
+
     /**
      * Set keyboard listener
      */

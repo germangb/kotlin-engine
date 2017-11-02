@@ -6,11 +6,11 @@ import com.github.germangb.engine.input.InputDevice
 /**
  * GLFW input
  */
-class GLFWInputDevice(window: Long) : InputDevice, Destroyable {
+class GLFWInputDevice(window: Long, width: Int, height: Int) : InputDevice, Destroyable {
     /**
      * GLFW mouse
      */
-    override val mouse = GLFWMouseDevice(window)
+    override val mouse = GLFWMouseDevice(window, width, height)
 
     /**
      * GLFW keyboard
