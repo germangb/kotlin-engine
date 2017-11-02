@@ -10,11 +10,8 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
-import com.github.germangb.engine.graphics.CullMode
-import com.github.germangb.engine.graphics.DrawMode
+import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
-import com.github.germangb.engine.graphics.MeshPrimitive
-import com.github.germangb.engine.graphics.MeshUsage
 import com.github.germangb.engine.graphics.TestFunction.DISABLED
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.DEPTH24
@@ -32,7 +29,6 @@ import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
-import java.util.*
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -469,7 +465,7 @@ class Testbed(val ctx: Context) : Application {
             }
             instanceData.flip()
 
-            renderInstances(hmapMesh, hmapShader, mapOf(
+            renderInstances(hmapMesh, hmapShader, uniformMap(
                     "u_proj" to proj,
                     "u_view" to view,
                     "u_size" to (hmap?.size?.toFloat() ?: 1f),
@@ -486,15 +482,17 @@ class Testbed(val ctx: Context) : Application {
             state.polygonMode(DrawMode.SOLID)
         }
 
-        val stack = Stack<Actor>()
-        stack.add(root)
-        while (stack.isNotEmpty()) {
-            val actor = stack.pop()
+        root.breathFirstTraversal().forEach { actor ->
             actor.joint?.let {
-                skin[it.id].set(actor.worldTransform).mul(it.offset)
+                skin[it.id]
+                        .set(actor.worldTransform)
+                        .mul(it.offset)
             }
-            actor.children.forEach { stack.push(it) }
         }
+
+        //
+        // Compute skin transforms
+        //
 
         skinData.clear()
         skin.forEachIndexed { i, mat4 ->
@@ -503,20 +501,22 @@ class Testbed(val ctx: Context) : Application {
         }
         skinData.flip()
 
-        stack.add(root)
-        while (stack.isNotEmpty()) {
-            val actor = stack.pop()
+        root.breathFirstTraversal().forEach { actor ->
             actor.meshInstancer?.let { inst ->
                 ctx.graphics.state.cullMode(CullMode.BACK)
 
                 // create uniforms
                 val mat = inst.material
-                val uniforms = mapOf(
+                val texture = mat["diffuse"] ?: DummyTexture
+                val uniforms = uniformMap(
                         "u_projection" to proj,
                         "u_view" to view,
-                        "u_texture" to (mat["diffuse"] ?: DummyTexture))
+                        "u_texture" to texture)
 
-                // build instancing buffer data
+                //
+                // Compute instancing data
+                //
+
                 instanceData.clear()
                 actor.children
                         .filter { it.instance != null }
@@ -531,13 +531,15 @@ class Testbed(val ctx: Context) : Application {
                     renderInstances(inst.mesh, staticShader, uniforms, instanceData)
                 }
             }
+        }
 
+        root.breathFirstTraversal().forEach { actor ->
             actor.skinnedMesh?.let { mesh ->
                 ctx.graphics.state.cullMode(CullMode.FRONT)
 
                 val mat = mesh.material
                 val texture = mat["diffuse"] ?: DummyTexture
-                val uniforms = mapOf(
+                val uniforms = uniformMap(
                         "u_projection" to proj,
                         "u_view" to view,
                         "u_texture" to texture,
@@ -551,17 +553,15 @@ class Testbed(val ctx: Context) : Application {
                     render(mesh.mesh, outlineSkinShader, uniforms)
                 }
             }
-
-            actor.children.forEach { stack.push(it) }
         }
 
         ctx.graphics {
             state.viewPort(0, 0, ctx.graphics.width, ctx.graphics.height)
             state.clearColor(0f, 0f, 0f, 1f)
             state.depthTest(DISABLED)
+            state.cullMode(CullMode.DISABLED)
             state.clearColorBuffer()
-            render(quad, composite, mapOf("u_texture" to fbo.targets[0]))
-            //render(quad, composite, mapOf("u_texture" to (hmap?.texture?:DummyTexture)))
+            render(quad, composite, uniformMap("u_texture" to fbo.targets[0]))
         }
     }
 
