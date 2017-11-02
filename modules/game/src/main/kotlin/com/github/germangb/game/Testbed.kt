@@ -219,7 +219,6 @@ class Testbed(val ctx: Context) : Application {
     val cube = assetManager.getMesh("cube_mesh")
     val music = assetManager.getAudio("music")
     val click = assetManager.getAudio("click")
-    var debug = false
 
     val floorTexture = assetManager.getTexture("dirt_texture")
 
@@ -413,7 +412,7 @@ class Testbed(val ctx: Context) : Application {
         val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
-        val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1000f)
+        val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 512f)
         val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
 
         val viewProj = Matrix4(proj).mul(view)
@@ -431,15 +430,21 @@ class Testbed(val ctx: Context) : Application {
             instanceData.clear()
             var count = 0
             val len = 16
+            val min = Vector3()
+            val max = Vector3()
             for (x in -len until len + 1) {
                 for (z in -len until len + 1) {
-
-                    count++
-                    aux.m30(x * 32f)
-                    aux.m32(z * 32f)
-                    aux.get(instanceData).position(16 * 4 * count)
+                    min.set(x*32f, 0f, z*32f).add(-16f, -16f, -16f)
+                    max.set(x*32f, 0f, z*32f).add(16f, 16f, 16f)
+                    if (culler.intersectAab(min, max) < 0) {
+                        count++
+                        aux.m30(x * 32f)
+                        aux.m32(z * 32f)
+                        aux.get(instanceData).position(16 * 4 * count)
+                    }
                 }
             }
+            println(count)
             instanceData.flip()
 
             //
