@@ -5,7 +5,7 @@ import com.github.germangb.engine.framework.Actor
 /**
  * This assumes the timelines are sorted by time
  */
-class SampledAnimationController(private val root: Actor,
+class SampledAnimationController(root: Actor,
                                  private val frames: Int,
                                  private val fps: Int,
                                  private val timeline: Map<String, AnimationTimeline>,
@@ -21,10 +21,10 @@ class SampledAnimationController(private val root: Actor,
     override val duration = frames / fps.toFloat()
 
     init {
-        timeline.forEach { node, _ ->
-            root.find(node)?.let {
-                bones[node] = it
-            }
+        val bfs = root.breathFirstTraversal()
+        bfs.forEach {
+            if (it.name in timeline)
+                bones[it.name] = it
         }
     }
 
@@ -36,13 +36,11 @@ class SampledAnimationController(private val root: Actor,
         timeline.forEach { node, timeline ->
             bones[node]?.let {
                 val timeCompute = maxOf(minOf(modFrameTime, frames.toFloat()), 0f)
-                timeline.applyTransform(timeCompute, it.localTransform.identity(), interpolate)
+                timeline.applyTransform(timeCompute, it.transform.identity(), interpolate)
             }
         }
     }
 
     /** Seek animation timeline */
-    override fun seek(time: Float) {
-        updateTransforms(time * fps)
-    }
+    override fun seek(time: Float) = updateTransforms(time * fps)
 }

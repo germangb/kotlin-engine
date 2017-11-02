@@ -300,7 +300,7 @@ class GCNode(val aiNode: AINode) {
      */
     fun convert(manager: AssetManager, meshes: List<Pair<Mesh, Int>>, materials: List<Map<String, Any>>, bones: Map<String, Pair<Int, Matrix4c>>): Actor.() -> Unit = {
         // set local transform
-        localTransform.set(this@GCNode.transform)
+        transform.set(this@GCNode.transform)
         name = this@GCNode.name
 
         // add joint component
@@ -310,7 +310,7 @@ class GCNode(val aiNode: AINode) {
 
         // add children
         this@GCNode.children.forEach {
-            addChild(it.convert(manager, meshes, materials, bones))
+            attachChild(it.convert(manager, meshes, materials, bones))
         }
 
         // armature root
@@ -318,13 +318,13 @@ class GCNode(val aiNode: AINode) {
 
         // add meshes
         this@GCNode.meshes.forEach {
-            addChild {
+            attachChild {
                 // static mesh
                 if (meshes[it].second == 0) {
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
                     addMesh(meshes[it].first, materials[it])
-//                    addChild {
+//                    attachChild {
 //                        addMeshInstance()
 //                    }
                 } else {
@@ -332,8 +332,8 @@ class GCNode(val aiNode: AINode) {
                     //val mat = Material()
                     //mat.setTexture("diffuse", materials[it])
                     addSkinnedMesh(armRoot, meshes[it].first, materials[it])
-//                    addChild {
-//                        addSkinnedMeshInstance(AAB())
+//                    attachChild {
+//                        addSkinnedInstance(AAB())
 //                    }
                 }
             }

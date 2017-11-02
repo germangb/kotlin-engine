@@ -10,7 +10,6 @@ import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
-import com.github.germangb.engine.framework.materials.DiffuseMaterial
 import com.github.germangb.engine.graphics.CullMode
 import com.github.germangb.engine.graphics.DrawMode
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
@@ -204,9 +203,9 @@ class Testbed(val ctx: Context) : Application {
 
         // create scene
         val actor = build?.let {
-            root.addChild {
+            root.attachChild {
                 it()
-                localTransform.scale(0.05f)
+                transform.scale(0.05f)
             }
         }
 
@@ -260,7 +259,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmapMesh = let {
-        val size = 16
+        val size = 32
         val vert = ctx.buffers.create(100000)
         val indx = ctx.buffers.create(100000).asIntBuffer()
 
@@ -328,91 +327,31 @@ class Testbed(val ctx: Context) : Application {
             world.createBody(height, false, 0f, 0.75f, 0f, Matrix4())
         }
 
-        root.addChild {
-            val mat = DiffuseMaterial()
+        root.attachChild {
             addMeshInstancer(cube!!, mapOf(
                     "diffuse" to (assetManager.getTexture("cube_texture") ?: DummyTexture)
             ))
 
-            addChild {
+            fun cube(x: Float, y: Float, z: Float): Actor.() -> Unit = {
                 transformMode = ABSOLUTE
-                localTransform.translate(-4f, 12f, 2f)
-                localTransform.rotateX(2f)
-                localTransform.rotateZ(0.3f)
+                transform.translate(x, y, z)
+                transform.rotateX(1f)
+                transform.rotateZ(0.2f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, localTransform)
+                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform)
                 addMeshInstance()
                 addUpdate {
-                    body.transform.get(localTransform)
+                    body.transform.get(transform)
                 }
             }
 
-            addChild {
-                transformMode = ABSOLUTE
-                localTransform.translate(-4f, 8f, 2f)
-                localTransform.rotateX(2f)
-                localTransform.rotateZ(0.3f)
-                val compShape = ctx.bullet.createCompound()
-                compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, localTransform)
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(localTransform)
-                }
-            }
-
-            addChild {
-                transformMode = ABSOLUTE
-                localTransform.translate(-4f, 4f, 2f)
-                localTransform.rotateX(2f)
-                localTransform.rotateZ(0.3f)
-                val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(localTransform)
-                }
-            }
-
-            addChild {
-                transformMode = ABSOLUTE
-                localTransform.translate(0f, 4f, 4f)
-                localTransform.rotateX(0.8f)
-                localTransform.rotateZ(0.3f)
-                val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(localTransform)
-                }
-            }
-
-            addChild {
-                transformMode = ABSOLUTE
-                localTransform.translate(0f, 4f, -4f)
-                localTransform.rotateX(0.8f)
-                localTransform.rotateZ(0.3f)
-                val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(localTransform)
-                }
-            }
-
-            addChild {
-                transformMode = ABSOLUTE
-                localTransform.translate(0f, 8f, -4f)
-                localTransform.rotateX(0.8f)
-                localTransform.rotateZ(0.3f)
-                val boxShape = ctx.bullet.createBox(Vector3(1f))
-                val body = world.createBody(boxShape, false, 1f, 0.5f, 0f, localTransform)
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(localTransform)
-                }
-            }
+            attachChild(cube(-4f, 12f, 2f))
+            attachChild(cube(-4f, 8f, 2f))
+            attachChild(cube(-4f, 4f, 2f))
+            attachChild(cube(0f, 4f, 4f))
+            attachChild(cube(0f, 4f, -4f))
+            attachChild(cube(0f, 8f, -4f))
         }
 
         animation?.play(true)
@@ -478,9 +417,10 @@ class Testbed(val ctx: Context) : Application {
         world.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
 
+        val bfs = root.breathFirstTraversal()
+        bfs.mapNotNull { it.updater }.forEach { it.update() }
+
         root.updateTransforms()
-        root.updateComponents()
-        //println("animation(s) = ${animation.controller.time}")
 
         if (KEY_SPACE.isJustPressed(ctx.input)) {
             if (music?.state == PLAYING) music.pause()
@@ -522,8 +462,8 @@ class Testbed(val ctx: Context) : Application {
             for (x in -len until len + 1) {
                 for (z in -len until len + 1) {
                     count++
-                    aux.m30(x * 16f)
-                    aux.m32(z * 16f)
+                    aux.m30(x * 32f)
+                    aux.m32(z * 32f)
                     aux.get(instanceData).position(16 * 4 * count)
                 }
             }
@@ -550,14 +490,10 @@ class Testbed(val ctx: Context) : Application {
         stack.add(root)
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
-            actor.getComponent<JointComponent>()?.let {
-                skin[it.id]
-                        .set(it.actor.worldTransform)
-                        .mul(it.offset)
+            actor.joint?.let {
+                skin[it.id].set(actor.worldTransform).mul(it.offset)
             }
-            actor.children.forEach {
-                stack.push(it)
-            }
+            actor.children.forEach { stack.push(it) }
         }
 
         skinData.clear()
@@ -570,7 +506,7 @@ class Testbed(val ctx: Context) : Application {
         stack.add(root)
         while (stack.isNotEmpty()) {
             val actor = stack.pop()
-            actor.getComponent<MeshInstancerComponent>()?.let { inst ->
+            actor.meshInstancer?.let { inst ->
                 ctx.graphics.state.cullMode(CullMode.BACK)
 
                 // create uniforms
@@ -582,10 +518,10 @@ class Testbed(val ctx: Context) : Application {
 
                 // build instancing buffer data
                 instanceData.clear()
-                inst.actor.children
-                        .mapNotNull { it.getComponent<MeshInstanceComponent>() }
-                        .forEachIndexed { index, instance ->
-                            instance.actor.worldTransform.get(instanceData)
+                actor.children
+                        .filter { it.instance != null }
+                        .forEachIndexed { index, actor ->
+                            actor.worldTransform.get(instanceData)
                             instanceData.position(16 * 4 * (index + 1))
                         }
                 instanceData.flip()
@@ -596,7 +532,7 @@ class Testbed(val ctx: Context) : Application {
                 }
             }
 
-            actor.getComponent<SkinnedMeshComponent>()?.let { mesh ->
+            actor.skinnedMesh?.let { mesh ->
                 ctx.graphics.state.cullMode(CullMode.FRONT)
 
                 val mat = mesh.material

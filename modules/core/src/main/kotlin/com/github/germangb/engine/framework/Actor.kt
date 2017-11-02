@@ -2,7 +2,43 @@ package com.github.germangb.engine.framework
 
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
+import java.util.*
 import kotlin.reflect.KClass
+
+/** Iterate over tree nodes (breadth-first) */
+class BFSIterator(root: Actor) : Iterator<Actor> {
+    private val queue = LinkedList<Actor>()
+
+    init {
+        queue.add(root)
+    }
+
+    override fun hasNext() = queue.isNotEmpty()
+
+    override fun next(): Actor {
+        val next = queue.poll()
+        queue.addAll(next.children)
+        return next
+    }
+
+}
+
+/** Iterate over tree nodes (depth-first) */
+class DFSIterator(root: Actor) : Iterator<Actor> {
+    //TODO shit...
+    private val stack = Stack<Actor>()
+
+    init {
+        fun fuckMe(actor: Actor) {
+            actor.children.forEach { fuckMe(it) }
+            stack.push(actor)
+        }
+
+        fuckMe(root)
+    }
+    override fun hasNext() = stack.isNotEmpty()
+    override fun next() = stack.pop()
+}
 
 /**
  * Actors contain position information and a list of components
@@ -13,118 +49,70 @@ class Actor {
 
     /** Actor parent */
     private var iparent: Actor? = null
-    /** Root scene */
-    private var iroot: Actor = this
+
     /** Parent actor */
     val parent get() = iparent
-    /** Root actor */
-    val root get() = iroot
-    /** Local transformation */
-    val localTransform = Matrix4()
 
-    /** World transformation (inmutable) */
+    /** Local transformation */
+    val transform = Matrix4()
+
+    /** World transformation (immutable) */
     val worldTransform: Matrix4c get() = iworldTransform
     private val iworldTransform = Matrix4()
 
     /** Transformation mode */
     var transformMode = TransformMode.RELATIVE
 
-    /**
-     * Update components of the actors
-     */
-    private fun updateInternalComponents() {
-        icomponents.forEach {
-            if (!it.init) {
-                it.init = true
-                it.init()
-            }
-            it.update()
-        }
+    /** Attached components */
+    private val components = mutableListOf<Any>()
+
+    /** Attached actors */
+    private val ichildren = mutableListOf<Actor>()
+    val children: List<Actor> get() = ichildren
+
+    /** Get DFS iterator */
+    fun breathFirstTraversal() = object : Sequence<Actor> {
+        override fun iterator() = BFSIterator(this@Actor)
     }
 
-    /** Attached components */
-    private val icomponents = mutableListOf<Component>()
-    /** Attached components */
-    val components: List<Component> get() = icomponents
+    fun depthFirstTraversal() = object : Sequence<Actor> {
+        override fun iterator() = DFSIterator(this@Actor)
+    }
 
     /**
      * Adds a component bind the actor
      */
-    fun addComponent(comp: Component) {
-        try {
-            // trigger exception if component is fresh
-            comp.actor.toString()
-            throw Exception("Component instance cannot be reused")
-        } catch (e: Exception) {
-            comp.iactor = this
-            icomponents.add(comp)
-        }
+    fun addComponent(comp: Any) {
+        components.add(comp)
     }
 
     /**
      * Remove a component of a given type
      */
-    fun <T : Component> removeComponent(comp: KClass<T>) {
-        icomponents.firstOrNull { it::class == comp }?.let {
-            icomponents.remove(it)
+    fun <T : Any> remove(component: KClass<T>) {
+        components.firstOrNull { it::class == component }?.let {
+            components.remove(it)
         }
     }
 
     /**
      * Get a component by type
      */
-    fun <T : Component> getComponent(comp: KClass<T>): T? {
+    fun <T : Any> get(comp: KClass<T>): T? {
         @Suppress("UNCHECKED_CAST")
-        return icomponents.firstOrNull { it::class == comp } as T?
+        return components.firstOrNull { it::class == comp } as T?
     }
 
-    /**
-     * Get a component by type
-     */
-    inline fun <reified T : Component> getComponent() = getComponent(T::class)
-
-    /**
-     * In what order is this actor updated
-     */
-    var updateMode = UpdateMode.ROOT_FIRST
-
-    /**
-     * Update components of the actor and its descendants
-     */
-    fun updateComponents() {
-        if (updateMode == UpdateMode.ROOT_FIRST) {
-            updateInternalComponents()
-            ichildren.forEach {
-                it.updateComponents()
-            }
-        } else {
-            ichildren.forEach {
-                it.updateComponents()
-            }
-            updateInternalComponents()
-        }
-    }
-
-    /**
-     * Update actors
-     */
-    fun update() {
-        updateTransforms()
-        updateComponents()
-    }
-
-    /**
-     * Update transformations
-     */
+    /** Update transformations */
     fun updateTransforms() {
-        if (this == root) {
-            iworldTransform.set(localTransform)
+        if (iparent == null) {
+            iworldTransform.set(transform)
         } else {
             if (transformMode == TransformMode.RELATIVE) {
                 iworldTransform.set(iparent!!.iworldTransform)
-                iworldTransform.mul(localTransform)
+                iworldTransform.mul(transform)
             } else {
-                iworldTransform.set(localTransform)
+                iworldTransform.set(transform)
             }
         }
 
@@ -133,33 +121,24 @@ class Actor {
         }
     }
 
-    /** Attached actors */
-    val children: List<Actor> get() = ichildren
-    private val ichildren = mutableListOf<Actor>()
+//    /** Do a Depth-first walk */
+//    fun depthFirstTraversal(action: (Actor) -> Unit) {
+//        children.forEach { it.depthFirstTraversal(action) }
+//        action(this)
+//    }
+//
+//    /** Do a Breadth-first walk */
+//    fun breadthFirstTraversal(action: (Actor) -> Unit) {
+//        action(this)
+//        children.forEach { it.breadthFirstTraversal(action) }
+//    }
 
-    /**
-     * Adds a child
-     */
-    fun addChild(def: Actor.() -> Unit): Actor {
+    /** Adds a child */
+    fun attachChild(def: Actor.() -> Unit): Actor {
         val actor = Actor()
         actor.iparent = this
-        actor.iroot = root
         def.invoke(actor)
         ichildren.add(actor)
         return actor
-    }
-
-    /**
-     * Find an actor by name
-     */
-    fun find(name: String): Actor? {
-        if (this.name == name) {
-            return this
-        }
-        children.forEach {
-            val act = it.find(name)
-            if (act != null) return act
-        }
-        return null
     }
 }
