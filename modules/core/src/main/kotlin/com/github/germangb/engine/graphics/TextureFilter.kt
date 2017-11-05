@@ -1,13 +1,9 @@
 package com.github.germangb.engine.graphics
 
 enum class TextureFilter {
-    /**
-     * Nearest neighbour
-     */
+    /** Nearest neighbour */
     NEAREST,
 
-    /**
-     * Bilinear interpolation
-     */
+    /** Bilinear interpolation */
     LINEAR
 }

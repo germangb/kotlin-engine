@@ -71,7 +71,7 @@ class Actor {
     val children: List<Actor> get() = ichildren
 
     /** Get DFS iterator */
-    fun breathFirstTraversal() = object : Sequence<Actor> {
+    fun breadthFirstTraversal() = object : Sequence<Actor> {
         override fun iterator() = BFSIterator(this@Actor)
     }
 
@@ -120,18 +120,6 @@ class Actor {
             it.updateTransforms()
         }
     }
-
-//    /** Do a Depth-first walk */
-//    fun depthFirstTraversal(action: (Actor) -> Unit) {
-//        children.forEach { it.depthFirstTraversal(action) }
-//        action(this)
-//    }
-//
-//    /** Do a Breadth-first walk */
-//    fun breadthFirstTraversal(action: (Actor) -> Unit) {
-//        action(this)
-//        children.forEach { it.breadthFirstTraversal(action) }
-//    }
 
     /** Adds a child */
     fun attachChild(def: Actor.() -> Unit): Actor {

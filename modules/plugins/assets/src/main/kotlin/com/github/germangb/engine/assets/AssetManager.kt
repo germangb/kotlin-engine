@@ -12,7 +12,7 @@ interface AssetManager : Destroyable {
     /**
      * Tell the resource manager bind load a texture
      */
-    fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter)
+    fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean = false)
 
     /**
      * Tell the resource manager bind load a mesh

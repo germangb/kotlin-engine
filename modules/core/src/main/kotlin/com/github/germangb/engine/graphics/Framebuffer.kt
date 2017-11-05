@@ -6,18 +6,12 @@ import com.github.germangb.engine.utils.Destroyable
  * Framebuffer stuff
  */
 interface Framebuffer: Destroyable {
-    /**
-     * Framebuffer width
-     */
+    /** Framebuffer width */
     val width: Int
 
-    /**
-     * Framebuffer height
-     */
+    /** Heights of the framebuffer */
     val height: Int
 
-    /**
-     * Get instancing texture
-     */
+    /** Each of the render targets accesible as a texture */
     val targets: List<Texture>
 }

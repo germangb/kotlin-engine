@@ -91,13 +91,8 @@ class GLUniforms {
         }
     }
 
-    fun uniform(name: String, value: Matrix4Buffer) {
+    fun uniform(name: String, value: FloatBuffer) {
         val unif = getUniform(name)
-        glUniformMatrix4fv(unif, false, value.container)
-    }
-
-    fun uniform(name: String, value: Matrix3Buffer) {
-        val unif = getUniform(name)
-        glUniformMatrix4fv(unif, false, value.container)
+        glUniformMatrix4fv(unif, false, value)
     }
 }

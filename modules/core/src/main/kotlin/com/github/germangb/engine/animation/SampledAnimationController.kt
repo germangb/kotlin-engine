@@ -21,7 +21,7 @@ class SampledAnimationController(root: Actor,
     override val duration = frames / fps.toFloat()
 
     init {
-        val bfs = root.breathFirstTraversal()
+        val bfs = root.breadthFirstTraversal()
         bfs.forEach {
             if (it.name in timeline)
                 bones[it.name] = it

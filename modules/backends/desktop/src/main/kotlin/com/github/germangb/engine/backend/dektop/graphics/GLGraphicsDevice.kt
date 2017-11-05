@@ -53,37 +53,45 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
 
     override fun invoke(action: GraphicsDevice.() -> Unit) = invoke(windowFramebuffer, action)
 
-    private fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture {
+    private fun createTexture(data: Buffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean): Texture {
         var id: Int = -1
 
         glCheckError("Error in createTexture()") {
             id = glGenTextures()
 
             glBindTexture(GL_TEXTURE_2D, id)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum(genMips))
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum(genMips))
             when (data) {
                 is ByteBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
                 is FloatBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_FLOAT, data)
                 is ShortBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_SHORT, data)
                 is IntBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT, data)
             }
+
+            if (genMips) {
+                glGenerateMipmap(GL_TEXTURE_2D)
+            }
+
             glBindTexture(GL_TEXTURE_2D, 0)
         }
         return GLTexture(this, id, width, height)
     }
 
     /** Create OpenGL texture using GL_UNSIGNED_BYTE */
-    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(null as ByteBuffer?, width, height, format, min, mag, false)
+
+    /** Create OpenGL texture using GL_UNSIGNED_BYTE */
+    override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
     /** Create OpenGL texture using GL_UNSIGNED_SHORT */
-    override fun createTexture(data: ShortBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: ShortBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
     /** Create OpenGL texture using GL_FLOAT */
-    override fun createTexture(data: FloatBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: FloatBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
     /** Create OpenGL texture using GL_UNSIGNED_INT */
-    override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(data as Buffer?, width, height, format, min, mag)
+    override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
     /**
      * Check if format is depth
@@ -93,10 +101,14 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
     /**
      * Create OpenGL framebuffer
      */
-    override fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, min: TextureFilter, mag: TextureFilter): Framebuffer {
+    //texDef: GraphicsDevice.(def: FramebufferTextureDef) -> Texture
+    override fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, texDef: GraphicsDevice.(def: FramebufferTextureDef) -> Texture): Framebuffer {
         // create textures
         var fbo = -1
-        val textures = targets.map { createTexture(null as ByteBuffer?, width, height, it, min, mag) }
+        val textures = targets.map { format ->
+            texDef(FramebufferTextureDef(0, width, height, format))
+            //createTexture(null as ByteBuffer?, width, height, it, TextureFilter.LINEAR, TextureFilter.LINEAR)
+        }
 
         glCheckError("Error in createFramebuffer()") {
             fbo = glGenFramebuffers()
@@ -244,16 +256,43 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
     }
 
     /**
-     * Create a skinShader program
+     * Create a shader program
      */
-    override fun createShaderProgram(vertexSource: String, fragmentSource: String): ShaderProgram {
+    override fun createShaderProgram(source: CharSequence): ShaderProgram {
+        val vertex = buildString {
+            appendln("#define VERTEX_SHADER")
+            append(source)
+        }
+
+        val fragment = buildString {
+            appendln("#define FRAGMENT_SHADER")
+            append(source)
+        }
+
+        return createShaderProgram(vertex, fragment)
+    }
+
+    /**
+     * Create a shader program
+     */
+    override fun createShaderProgram(vertexSource: CharSequence, fragmentSource: CharSequence): ShaderProgram {
         var vertexShader = -1
         var fragmentShader = -1
         var program = -1
 
+        val vertex = buildString {
+            appendln("#version 450 core")
+            append(vertexSource)
+        }
+
+        val fragment = buildString {
+            appendln("#version 450 core")
+            append(fragmentSource)
+        }
+
         glCheckError("Error in createShaderProgram() while creating vertex skinShader") {
             vertexShader = glCreateShader(GL_VERTEX_SHADER)
-            glShaderSource(vertexShader, vertexSource.inlineIncludes(files))
+            glShaderSource(vertexShader, vertex.inlineIncludes(files))
             //println(fragmentSource.inlineIncludes())
             glCompileShader(vertexShader)
             val log = glGetShaderInfoLog(vertexShader)
@@ -264,7 +303,7 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
 
         glCheckError("Error in createShaderProgram() while creating fragment skinShader") {
             fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-            glShaderSource(fragmentShader, fragmentSource.inlineIncludes(files))
+            glShaderSource(fragmentShader, fragment.inlineIncludes(files))
             glCompileShader(fragmentShader)
             val log = glGetShaderInfoLog(fragmentShader)
             if (log.isNotEmpty()) {
@@ -283,13 +322,13 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
             glDeleteShader(fragmentShader)
         }
 
-        return GLShaderProgram(this, program, vertexSource, fragmentSource)
+        return GLShaderProgram(this, program, vertexSource.toString(), fragmentSource.toString())
     }
 
     /**
      * Render a mesh using instance rendering
      */
-    override fun renderInstances(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) {
+    override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) {
         if (mesh is GLMesh && program is GLShaderProgram) instancer.begin(mesh, program, uniforms, instanceData)
     }
 

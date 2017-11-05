@@ -66,11 +66,10 @@ val MeshUsage.glEnum
     }
 
 /** Filters */
-val TextureFilter.glEnum
-    get() = when (this) {
-        NEAREST -> GL_NEAREST
-        LINEAR -> GL_LINEAR
-    }
+fun TextureFilter.glEnum(mips: Boolean) = when (this) {
+    NEAREST -> if (mips) GL_NEAREST_MIPMAP_NEAREST else GL_NEAREST
+    LINEAR -> if (mips) GL_LINEAR_MIPMAP_LINEAR else GL_LINEAR
+}
 
 /**
  * Primitive enums

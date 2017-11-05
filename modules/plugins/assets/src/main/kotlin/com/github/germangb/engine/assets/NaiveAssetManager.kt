@@ -27,9 +27,9 @@ class NaiveAssetManager(private val ctx: Context) : AssetManager {
         audios.forEach { (path, asset) -> println("$path [$asset]") }
     }
 
-    override fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter) {
+    override fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) {
         if (textures[path] == null) {
-            textures[path] = ctx.assets.loadTexture(file, format, min, mag)
+            textures[path] = ctx.assets.loadTexture(file, format, min, mag, genMips)
         }
     }
 

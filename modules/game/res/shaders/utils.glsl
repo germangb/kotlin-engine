@@ -6,3 +6,11 @@ vec3 fog(in vec3 color, in vec3 world_position) {
 }
 
 #endif
+
+#ifdef TERRAIN_UTILS
+
+vec3 compute_normal(in vec2 v_uv, sampler2D map) {
+    return vec3(0, 1, 0);
+}
+
+#endif

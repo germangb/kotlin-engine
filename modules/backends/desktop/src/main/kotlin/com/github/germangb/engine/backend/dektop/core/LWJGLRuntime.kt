@@ -55,7 +55,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         gfx = GLGraphicsDevice(files, width, height)
         audio = ALAudioDevice()
         mem = LWJGLBufferManager()
-        input = GLFWInputDevice(window, 640, 480)
+        input = GLFWInputDevice(window, width, height)
     }
 
     /**

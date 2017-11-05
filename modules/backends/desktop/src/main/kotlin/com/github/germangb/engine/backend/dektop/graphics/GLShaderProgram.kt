@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL20.glDeleteProgram
 val INCLUDE_REGEX = Regex("^\\s*#include\\s*\"(.)*\"\\s*$")
 
 /** preprocess file includes */
-fun String.inlineIncludes(files: Files): String = buildString {
+fun CharSequence.inlineIncludes(files: Files): String = buildString {
     val lines = this@inlineIncludes.lines()
 
     lines.forEach {
@@ -30,7 +30,6 @@ fun String.inlineIncludes(files: Files): String = buildString {
         }
     }
 }
-
 
 /**
  * OpenGL shader program

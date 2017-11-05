@@ -20,7 +20,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
     /**
      * Load texture file
      */
-    override fun loadTexture(file: FileHandle, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture? {
+    override fun loadTexture(file: FileHandle, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean): Texture? {
         var texture: Texture? = null
 
         stackMemory {
@@ -32,7 +32,7 @@ class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
             if (data == null) {
                 System.err.println("${stbi_failure_reason()} (${file.path})")
             } else {
-                texture = backend.graphics.createTexture(data, width[0], height[0], format, min, mag)
+                texture = backend.graphics.createTexture(data, width[0], height[0], format, min, mag, genMips)
             }
         }
 

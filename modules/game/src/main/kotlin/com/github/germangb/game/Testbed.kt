@@ -21,7 +21,9 @@ import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
-import com.github.germangb.engine.math.*
+import com.github.germangb.engine.math.FrustumIntersection
+import com.github.germangb.engine.math.Matrix4
+import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -30,6 +32,7 @@ import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyMesh
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
+import java.nio.ByteBuffer
 import java.text.NumberFormat
 
 class Testbed(val ctx: Context) : Application {
@@ -41,10 +44,13 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadAudio(ctx.files.getLocal("audio/click.ogg"), "click", stream = false)
         assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
-        assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR)
+        assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR, true)
     }
 
-    val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24), NEAREST, NEAREST)
+    val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24)) { (_, width, height, format) ->
+        createTexture(width, height, format, NEAREST, NEAREST)
+    }
+
     val quad = let {
         val vert = ctx.buffers.create(100)
         val index = ctx.buffers.create(100).asIntBuffer()
@@ -60,7 +66,7 @@ class Testbed(val ctx: Context) : Application {
     }
     val composite = let {
         @Language("GLSL")
-        val vert = """#version 450 core
+        val vert = """
             layout(location = 0) in vec2 a_position;
             out vec2 v_uv;
             void main() {
@@ -69,26 +75,26 @@ class Testbed(val ctx: Context) : Application {
             }
         """.trimMargin()
         @Language("GLSL")
-        val frag = """#version 450 core
+        val frag = """
             in vec2 v_uv;
             out vec4 frag_color;
             uniform sampler2D u_texture;
             void main() {
                 vec3 color = texture2D(u_texture, v_uv).rgb;
-                frag_color = vec4(color * vec3(0.97, 0.95, 0.84), 1.0);
+                frag_color = vec4(color * vec3(0.97, 0.95, 0.82), 1.0);
             }
         """.trimMargin()
         ctx.graphics.createShaderProgram(vert, frag)
     }
 
     val skin = Array(110) { Matrix4() }
-    val skinData = ctx.buffers.create(110 * 16 * 4).asMatrix4Buffer()
+    val skinData = ctx.buffers.create(128 * 16 * 4).asFloatBuffer()
     val instanceData = ctx.buffers.create(1000000)
 
     val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
         @Language("GLSL")
-        val vert = """#version 450 core
+        val vert = """
             layout(location = 0) in vec3 a_position;
             layout(location = 1) in vec3 a_normal;
             layout(location = 3) in ivec4 a_bones;
@@ -106,7 +112,7 @@ class Testbed(val ctx: Context) : Application {
             }
         """.trimMargin()
         @Language("GLSL")
-        val frag = """#version 450 core
+        val frag = """
             out vec4 frag_color;
             uniform sampler2D u_texture;
             void main() {
@@ -116,31 +122,10 @@ class Testbed(val ctx: Context) : Application {
         ctx.graphics.createShaderProgram(vert, frag)
     }
     val skinShader = let {
+        val vertFile = ctx.files.getLocal("shaders/skin.vert")
+        val vert = vertFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
         @Language("GLSL")
-        val vert = """#version 450 core
-            layout(location = 0) in vec3 a_position;
-            layout(location = 1) in vec3 a_normal;
-            layout(location = 2) in vec2 a_uv;
-            layout(location = 3) in ivec4 a_bones;
-            layout(location = 4) in vec4 a_weights;
-            out vec2 v_uv;
-            out vec3 v_normal;
-            uniform mat4 u_projection;
-            uniform mat4 u_view;
-            uniform mat4 u_skin[110];
-            void main () {
-                mat4 u_skin_transform = u_skin[a_bones.x] * a_weights.x +
-                                        u_skin[a_bones.y] * a_weights.y +
-                                        u_skin[a_bones.z] * a_weights.z +
-                                        u_skin[a_bones.w] * a_weights.w;
-                mat4 model = u_skin_transform;
-                gl_Position = u_projection * u_view * model * vec4(a_position, 1.0);
-                v_normal = normalize((model * vec4(a_normal, 0.0)).xyz);
-                v_uv = a_uv;
-            }
-        """.trimMargin()
-        @Language("GLSL")
-        val frag = """#version 450 core
+        val frag = """
             in vec2 v_uv;
             in vec3 v_normal;
             out vec4 frag_color;
@@ -156,7 +141,7 @@ class Testbed(val ctx: Context) : Application {
     }
     val staticShader = let {
         @Language("GLSL")
-        val vert = """#version 450 core
+        val vert = """
             layout(location = 0) in vec3 a_position;
             layout(location = 1) in vec3 a_normal;
             layout(location = 2) in vec2 a_uv;
@@ -176,7 +161,7 @@ class Testbed(val ctx: Context) : Application {
             }
         """.trimMargin()
         @Language("GLSL")
-        val frag = """#version 450 core
+        val frag = """
             in vec2 v_uv;
             in vec3 v_normal;
             in vec3 v_position;
@@ -263,12 +248,14 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmapShader = let {
-        val vertFile = ctx.files.getLocal("shaders/terrain.vert")
-        val fragFile = ctx.files.getLocal("shaders/terrain.frag")
-        val vert = vertFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
-        val frag = fragFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
-        ctx.graphics.createShaderProgram(vert, frag)
+        val file = ctx.files.getLocal("shaders/terrain.glsl")
+        val shader = file.read()?.bufferedReader()?.use { it.readText() } ?: ""
+        ctx.graphics.createShaderProgram(shader)
     }
+
+    val proj = Matrix4()
+    val view = Matrix4()
+    val temp = Matrix4()
 
     override fun destroy() {
         hmapMesh.destroy()
@@ -381,7 +368,7 @@ class Testbed(val ctx: Context) : Application {
         world.stepSimulation(1 / 60f)
         animationManager.update(1 / 60f)
 
-        val bfs = root.breathFirstTraversal()
+        val bfs = root.breadthFirstTraversal()
         bfs.mapNotNull { it.updater }.forEach { it.update() }
 
         root.updateTransforms()
@@ -412,11 +399,9 @@ class Testbed(val ctx: Context) : Application {
         val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
 
         val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
-        val proj = Matrix4().setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 512f)
-        val view = Matrix4().setLookAt(Vector3(6f, 4.0f + offY * 0.001f, 3f + offX * 0.001f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
-
-        val viewProj = Matrix4(proj).mul(view)
-        val culler = FrustumIntersection(viewProj)
+        proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 512f)
+        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
+        val culler = FrustumIntersection(temp.set(proj).mul(view))
 
         ctx.graphics(fbo) {
             state.cullMode(CullMode.DISABLED)
@@ -434,8 +419,8 @@ class Testbed(val ctx: Context) : Application {
             val max = Vector3()
             for (x in -len until len + 1) {
                 for (z in -len until len + 1) {
-                    min.set(x*32f, 0f, z*32f).add(-16f, -16f, -16f)
-                    max.set(x*32f, 0f, z*32f).add(16f, 16f, 16f)
+                    min.set(x * 32f, 0f, z * 32f).add(-16f, -16f, -16f)
+                    max.set(x * 32f, 0f, z * 32f).add(16f, 16f, 16f)
                     if (culler.intersectAab(min, max) < 0) {
                         count++
                         aux.m30(x * 32f)
@@ -444,14 +429,13 @@ class Testbed(val ctx: Context) : Application {
                     }
                 }
             }
-            println(count)
             instanceData.flip()
 
             //
             // Render terrain chunks
             //
 
-            renderInstances(hmapMesh, hmapShader, uniformMap(
+            render(hmapMesh, hmapShader, uniformMap(
                     "u_proj" to proj,
                     "u_view" to view,
                     "u_size" to (hmap?.size?.toFloat() ?: 1f),
@@ -459,7 +443,7 @@ class Testbed(val ctx: Context) : Application {
                     "u_texture" to (floorTexture ?: DummyTexture),
                     "u_height" to (hmap?.texture ?: DummyTexture)
             ), instanceData)
-            /*renderInstances(floorMesh, staticShader, mapOf(
+            /*render(floorMesh, staticShader, mapOf(
                     "u_projection" to proj,
                     "u_view" to view,
                     "u_texture" to (floorTexture ?: DummyTexture)
@@ -468,36 +452,9 @@ class Testbed(val ctx: Context) : Application {
             state.polygonMode(DrawMode.SOLID)
         }
 
-        root.breathFirstTraversal().forEach { actor ->
-            actor.joint?.let {
-                skin[it.id]
-                        .set(actor.worldTransform)
-                        .mul(it.offset)
-            }
-        }
-
-        //
-        // Compute skin transforms
-        //
-
-        skinData.clear()
-        skin.forEachIndexed { i, mat4 ->
-            mat4.get(skinData)
-            skinData.position(i + 1)
-        }
-        skinData.flip()
-
-        root.breathFirstTraversal().forEach { actor ->
+        root.breadthFirstTraversal().forEach { actor ->
             actor.meshInstancer?.let { inst ->
                 ctx.graphics.state.cullMode(CullMode.BACK)
-
-                // create uniforms
-                val mat = inst.material
-                val texture = mat["diffuse"] ?: DummyTexture
-                val uniforms = uniformMap(
-                        "u_projection" to proj,
-                        "u_view" to view,
-                        "u_texture" to texture)
 
                 //
                 // Compute instancing data
@@ -513,18 +470,43 @@ class Testbed(val ctx: Context) : Application {
                 instanceData.flip()
 
                 ctx.graphics(fbo) {
-                    // renderInstances instanced meshes
-                    renderInstances(inst.mesh, staticShader, uniforms, instanceData)
+                    // create uniforms
+                    val texture = inst.material["diffuse"] ?: DummyTexture
+                    val uniforms = uniformMap(
+                            "u_projection" to proj,
+                            "u_view" to view,
+                            "u_texture" to texture)
+
+                    // render instanced meshes
+                    render(inst.mesh, staticShader, uniforms, instanceData)
                 }
             }
         }
 
-        root.breathFirstTraversal().forEach { actor ->
+        //
+        // Compute skin transforms
+        //
+
+        root.breadthFirstTraversal().forEach { actor ->
+            actor.joint?.let {
+                skin[it.id]
+                        .set(actor.worldTransform)
+                        .mul(it.offset)
+            }
+        }
+
+        skinData.clear()
+        skin.forEachIndexed { i, mat4 ->
+            mat4.get(skinData)
+            skinData.position(16 * i + 16)
+        }
+        skinData.flip()
+
+        root.breadthFirstTraversal().forEach { actor ->
             actor.skinnedMesh?.let { mesh ->
                 ctx.graphics.state.cullMode(CullMode.FRONT)
 
-                val mat = mesh.material
-                val texture = mat["diffuse"] ?: DummyTexture
+                val texture = mesh.material["diffuse"] ?: DummyTexture
                 val uniforms = uniformMap(
                         "u_projection" to proj,
                         "u_view" to view,

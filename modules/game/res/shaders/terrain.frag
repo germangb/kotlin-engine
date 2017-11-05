@@ -1,5 +1,3 @@
-#version 450 core
-
 #define FOG_UTILS
 #include "shaders/utils.glsl"
 

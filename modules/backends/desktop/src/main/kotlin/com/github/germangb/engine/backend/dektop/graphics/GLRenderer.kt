@@ -7,11 +7,12 @@ import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.glDrawElements
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.glUseProgram
-import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.GL30.glBindVertexArray
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 import org.lwjgl.system.jemalloc.JEmalloc.je_free
 import org.lwjgl.system.jemalloc.JEmalloc.je_malloc
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 
 class GLRenderer : Destroyable {
     companion object {
@@ -77,8 +78,7 @@ class GLRenderer : Destroyable {
                     is Matrix4c -> uniforms.uniform(unif, value)
                     is Matrix3c -> uniforms.uniform(unif, value)
                     is Texture -> uniforms.uniform(unif, value)
-                    is Matrix4Buffer -> uniforms.uniform(unif, value)
-                    is Matrix3Buffer -> uniforms.uniform(unif, value)
+                    is FloatBuffer -> uniforms.uniform(unif, value)
                 }
             }
 
@@ -100,7 +100,7 @@ class GLRenderer : Destroyable {
     }
 
     fun endInstancing() {
-        //renderInstances()
+        //render()
         glCheckError("Error in GLRenderer.end()") {
             //glBindFramebuffer(GL_FRAMEBUFFER, 0)
             glUseProgram(0)

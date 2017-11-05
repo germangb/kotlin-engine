@@ -11,7 +11,7 @@ interface AssetLoader {
     /**
      * Load a texture
      */
-    fun loadTexture(file: FileHandle, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture?
+    fun loadTexture(file: FileHandle, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean = false): Texture?
 
     /**
      * Load a mesh

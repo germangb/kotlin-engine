@@ -14,13 +14,10 @@ import java.nio.*
  * Just like in bullet physics, the world origin is assumed to be the center of the terrain grid.
  */
 class TerrainData<out T : Buffer>(private val ctx: Context, val data: T, val channels: Int, val texture: Texture, val size: Int) : Destroyable {
-    /**
-     * Free data
-     */
+    /** Free data */
     override fun destroy() {
         texture.destroy()
         data.clear()
-
         when (data) {
             is ShortBuffer -> ctx.buffers.free(data)
             is ByteBuffer -> ctx.buffers.free(data)

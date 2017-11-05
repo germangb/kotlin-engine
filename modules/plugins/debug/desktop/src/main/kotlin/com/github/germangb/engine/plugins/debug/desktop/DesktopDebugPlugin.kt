@@ -72,8 +72,8 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         string.setLength(0)
 
         // compute height
-        val vel = 32f
-        debugHeight = numRows * fontSize + 3f
+        val vel = 16f
+        debugHeight = numRows * fontSize + 4f
         offset = if (show) {
             minOf(offset + vel, debugHeight)
         } else {
@@ -81,7 +81,9 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         }
 
         if (debugHeight > 0) {
-            nvgGlobalAlpha(nv, offset / debugHeight)
+//            var alpha = offset / debugHeight
+//            alpha += 0.5f * (1 - alpha)
+//            nvgGlobalAlpha(nv, alpha)
         }
 
         if (offset == 0f) return
@@ -96,7 +98,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         // pointer
         //println("$debugHeight $offset")
-        if (show && offset == debugHeight) {
+        if (ctx.input.mouse.insideWindow && show && offset == debugHeight) {
             val y = ((ctx.input.mouse.y + (debugHeight - offset)) / fontSize).toInt()
             if (y in 0..(numRows - 1)) {
                 nvgBeginPath(nv)
@@ -108,7 +110,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
 
         nvgBeginPath(nv)
         nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.2f))
-        nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 3f)
+        nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 4f)
         nvgFill(nv)
 
         // draw text and shit
