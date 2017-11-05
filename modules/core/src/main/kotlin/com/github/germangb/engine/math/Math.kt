@@ -6,6 +6,11 @@ typealias Interpolation = org.joml.Interpolationf
 
 typealias Math = org.joml.Math
 
+typealias AABB = org.joml.AABBf
+
+/** Missing AABB test function */
+fun FrustumIntersection.testAab(aab: AABB) = testAab(aab.minX, aab.minY, aab.minZ, aab.maxX, aab.maxY, aab.maxZ)
+
 typealias Matrix3 = org.joml.Matrix3f
 
 typealias Matrix3c = org.joml.Matrix3fc

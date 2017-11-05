@@ -21,9 +21,7 @@ import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
-import com.github.germangb.engine.math.FrustumIntersection
-import com.github.germangb.engine.math.Matrix4
-import com.github.germangb.engine.math.Vector3
+import com.github.germangb.engine.math.*
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -417,11 +415,14 @@ class Testbed(val ctx: Context) : Application {
             val len = 16
             val min = Vector3()
             val max = Vector3()
+            val aabb = AABB()
             for (x in -len until len + 1) {
                 for (z in -len until len + 1) {
                     min.set(x * 32f, 0f, z * 32f).add(-16f, -16f, -16f)
                     max.set(x * 32f, 0f, z * 32f).add(16f, 16f, 16f)
-                    if (culler.intersectAab(min, max) < 0) {
+                    aabb.setMin(min)
+                    aabb.setMax(max)
+                    if (culler.testAab(aabb)) {
                         count++
                         aux.m30(x * 32f)
                         aux.m32(z * 32f)
