@@ -7,9 +7,9 @@ import com.github.germangb.engine.math.Vector3
 /**
  * Animation timeline
  */
-class AnimationTimeline(private val rotation: List<RotationKey>,
-                        private val position: List<PositionKey>,
-                        private val scale: List<ScaleKey>) {
+class AnimationTimeline(private val rotation: Array<RotationKey>,
+                        private val position: Array<PositionKey>,
+                        private val scale: Array<ScaleKey>) {
     companion object {
         val auxVec = Vector3()
         val auxQuat = Quaternion()

@@ -6,6 +6,27 @@ typealias Interpolation = org.joml.Interpolationf
 
 typealias Math = org.joml.Math
 
+/** PI float32 */
+val PI = Math.PI.toFloat()
+
+/** Two times PI */
+val PI2 = PI*2
+
+/** exp float32 */
+fun exp(n: Float) = Math.exp(n.toDouble()).toFloat()
+
+/** Cos for float32 */
+fun cos(n: Float) = Math.cos(n.toDouble()).toFloat()
+
+/** Sin for float32 */
+fun sin(n: Float) = Math.sin(n.toDouble()).toFloat()
+
+/** tan for float32 */
+fun tan(n: Float) = Math.tan(n.toDouble()).toFloat()
+
+/** atan2 for float32 */
+fun atan2(n: Float, m: Float) = Math.atan2(n.toDouble(), m.toDouble()).toFloat()
+
 typealias AABB = org.joml.AABBf
 
 /** Missing AABB test function */

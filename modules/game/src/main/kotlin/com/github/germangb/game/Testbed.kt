@@ -30,6 +30,7 @@ import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyMesh
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
+import org.joml.Math
 import java.nio.ByteBuffer
 import java.text.NumberFormat
 

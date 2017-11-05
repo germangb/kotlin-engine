@@ -16,6 +16,7 @@ import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.TexelFormat.RGBA8
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.VertexAttribute.*
+import com.github.germangb.engine.math.Math
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import com.github.germangb.engine.math.Quaternion
@@ -43,6 +44,8 @@ fun loadAIAnimation(anim: AIAnimation): AnimationData {
             .forEachIndexed { i, ch ->
                 val node = ch.mNodeName().dataString()
 
+                Math.PI
+
                 // timeline
                 val pos = mutableListOf<PositionKey>()
                 val rot = mutableListOf<RotationKey>()
@@ -61,7 +64,10 @@ fun loadAIAnimation(anim: AIAnimation): AnimationData {
                             sca.add(ScaleKey(time.toFloat(), Vector3(1f)))
                         }
                 //println("node:$node")
-                timelines[node] = AnimationTimeline(rot, pos, sca)
+                timelines[node] = AnimationTimeline(
+                        rot.toTypedArray(),
+                        pos.toTypedArray(),
+                        sca.toTypedArray())
             }
 
     //aiFreeScene(scene)
