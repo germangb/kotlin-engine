@@ -15,6 +15,8 @@ import com.github.germangb.engine.plugin.bullet.PhysicsShape
 import com.github.germangb.engine.plugin.bullet.PhysicsWorld
 import com.github.germangb.engine.plugin.bullet.RigidBody
 
+private val ID = Matrix4()
+
 class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : PhysicsWorld {
     val world: btDynamicsWorld
     val ibodies = mutableListOf<RigidBody>()
@@ -61,6 +63,8 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
         if (collision is RigidBody) return collision
         return null
     }
+
+    override fun createBody(shape: PhysicsShape, fixedRotation: Boolean, mass: Float, friction: Float, restitution: Float) = createBody(shape, fixedRotation, mass, friction, restitution, ID)
 
     override fun createBody(shape: PhysicsShape, fixedRotation: Boolean, mass: Float, friction: Float, restitution: Float, transform: Matrix4c): RigidBody {
         if (shape !is BulletPhysicsShape) throw IllegalArgumentException()

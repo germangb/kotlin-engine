@@ -51,7 +51,7 @@ class Actor {
     private var iparent: Actor? = null
 
     /** Parent actor */
-    val parent get() = iparent
+    val parent get() = iparent ?: this
 
     /** Local transformation */
     val transform = Matrix4()
@@ -104,7 +104,7 @@ class Actor {
     }
 
     /** Update transformations */
-    fun updateTransforms() {
+    fun computeTransforms() {
         if (iparent == null) {
             iworldTransform.set(transform)
         } else {
@@ -117,7 +117,7 @@ class Actor {
         }
 
         ichildren.forEach {
-            it.updateTransforms()
+            it.computeTransforms()
         }
     }
 

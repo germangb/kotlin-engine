@@ -10,33 +10,24 @@ import kotlin.reflect.KClass
  * Engine backend
  */
 interface Context {
-    /**
-     * GraphicsDevice backend
-     */
+    /** GraphicsDevice backend */
     val graphics: GraphicsDevice
 
-    /**
-     * AudioDevice backend
-     */
+    /** AudioDevice backend */
     val audio: AudioDevice
 
-    /**
-     * InputDevice backend
-     */
+    /** InputDevice backend */
     val input: InputDevice
 
-    /**
-     * Files backend
-     */
+    /** Files backend */
     val files: Files
 
-    /**
-     * Buffer management
-     */
+    /** Buffer management */
     val buffers: BufferManager
 
-    /**
-     * Get plugin
-     */
+    /** Timing values */
+    val time: Time
+
+    /** Get a plugin that extends the capabilities of the framework */
     fun <T : Plugin> getPlugin(plug: KClass<T>): T?
 }

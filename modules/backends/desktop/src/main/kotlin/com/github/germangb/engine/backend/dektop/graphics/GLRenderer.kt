@@ -90,11 +90,13 @@ class GLRenderer : Destroyable {
             if (data == null) {
                 glDrawElements(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L)
             } else {
-                //TODO buffer overflow
-                // take care of overflows
-                //val batches = data.remaining() / INSTANCE_BUFFER_SIZE
-                glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
-                glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, data.remaining() / activeMesh.instanceStride)
+                if (data.remaining() > 0) {
+                    //TODO buffer overflow
+                    // take care of overflows
+                    //val batches = data.remaining() / INSTANCE_BUFFER_SIZE
+                    glBufferSubData(GL_ARRAY_BUFFER, 0L, data)
+                    glDrawElementsInstanced(activeMesh.primitive.glEnum, activeMesh.indices, activeMesh.indexType, 0L, data.remaining() / activeMesh.instanceStride)
+                }
             }
         }
     }

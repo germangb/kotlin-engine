@@ -25,5 +25,7 @@ fun main(args: Array<String>) {
     val runtime = LWJGLRuntime(720, 480)
     val ctx = LWJGLContext(runtime)
     ctx.installPlugins()
-    runtime.start { Testbed(ctx) }
+    runtime.start {
+        Testbed(ctx)
+    }
 }

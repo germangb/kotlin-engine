@@ -124,6 +124,8 @@ val TexelFormat.glEnum
         DEPTH16 -> GL_DEPTH_COMPONENT16
         DEPTH24 -> GL_DEPTH_COMPONENT24
         DEPTH24_STENCIL8 -> GL_DEPTH24_STENCIL8
+        RGB4 -> GL_RGB4
+        RGBA4 -> GL_RGBA4
     }
 
 /**
@@ -150,4 +152,6 @@ val TexelFormat.dataFormat
         DEPTH16 -> GL_DEPTH_COMPONENT
         DEPTH24 -> GL_DEPTH_COMPONENT
         DEPTH24_STENCIL8 -> GL_DEPTH_STENCIL
+        RGB4 -> GL_RGB
+        RGBA4 -> GL_RGBA
     }

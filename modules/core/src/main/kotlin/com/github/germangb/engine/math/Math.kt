@@ -12,6 +12,12 @@ val PI = Math.PI.toFloat()
 /** Two times PI */
 val PI2 = PI*2
 
+/** Convert from degrees to radians */
+fun toRadians(deg: Float) = deg * PI / 180
+
+/** Convert from radians to degrees */
+fun toDegrees(rad: Float) = rad * 180 / PI
+
 /** exp float32 */
 fun exp(n: Float) = Math.exp(n.toDouble()).toFloat()
 

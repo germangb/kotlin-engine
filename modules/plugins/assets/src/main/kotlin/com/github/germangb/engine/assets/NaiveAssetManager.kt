@@ -18,14 +18,14 @@ class NaiveAssetManager(private val ctx: Context) : AssetManager {
 
     override fun isLoaded(path: String) = path in textures || path in meshes || path in audios
 
-    /**
-     * Debug method
-     */
-    fun dump() {
-        textures.forEach { (path, asset) -> println("$path [$asset]") }
-        meshes.forEach { (path, asset) -> println("$path [$asset]") }
-        audios.forEach { (path, asset) -> println("$path [$asset]") }
-    }
+//    /**
+//     * Debug method
+//     */
+//    fun dump() {
+//        textures.forEach { (path, asset) -> println("$path [$asset]") }
+//        meshes.forEach { (path, asset) -> println("$path [$asset]") }
+//        audios.forEach { (path, asset) -> println("$path [$asset]") }
+//    }
 
     override fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) {
         if (textures[path] == null) {
@@ -36,6 +36,12 @@ class NaiveAssetManager(private val ctx: Context) : AssetManager {
     override fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>) {
         if (meshes[path] == null) {
             meshes[path] = ctx.assets.loadMesh(file, usage, attributes, instanceAttributes)
+        }
+    }
+
+    override fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>) {
+        if (meshes[path] == null) {
+            meshes[path] = ctx.assets.loadMesh(file, usage, attributes)
         }
     }
 

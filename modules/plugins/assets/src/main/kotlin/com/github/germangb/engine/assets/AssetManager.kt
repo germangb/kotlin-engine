@@ -15,9 +15,14 @@ interface AssetManager : Destroyable {
     fun preloadTexture(file: FileHandle, path: String, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean = false)
 
     /**
-     * Tell the resource manager bind load a mesh
+     * Tell the resource manager load a mesh
      */
     fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>, instanceAttributes: Array<out InstanceAttribute>)
+
+    /**
+     * Tell the resource manager load a mesh
+     */
+    fun preloadMesh(file: FileHandle, path: String, usage: MeshUsage, attributes: Array<out VertexAttribute>)
 
     /**
      * Load audio file

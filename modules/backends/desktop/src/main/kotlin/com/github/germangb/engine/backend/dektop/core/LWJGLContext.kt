@@ -2,6 +2,7 @@ package com.github.germangb.engine.backend.dektop.core
 
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.core.Plugin
+import com.github.germangb.engine.core.Time
 import kotlin.reflect.KClass
 
 /**
@@ -16,6 +17,7 @@ class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     override val input get() = runtime.input
     override val buffers get() = runtime.mem
     override val files get() = runtime.files
+    override val time get() = runtime.time
 
     /**
      * Install plugin in backend

@@ -30,8 +30,6 @@ import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyMesh
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
-import org.joml.Math
-import java.nio.ByteBuffer
 import java.text.NumberFormat
 
 class Testbed(val ctx: Context) : Application {
@@ -46,8 +44,11 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR, true)
     }
 
-    val fbo = ctx.graphics.createFramebuffer(ctx.graphics.width, ctx.graphics.height, arrayOf(RGB8, DEPTH24)) { (_, width, height, format) ->
-        createTexture(width, height, format, NEAREST, NEAREST)
+    val fbo = let {
+        val (width, height) = ctx.graphics.dimensions
+        ctx.graphics.createFramebuffer(width, height, arrayOf(RGB8, DEPTH24)) { (_, width, height, format) ->
+            createTexture(width, height, format, NEAREST, NEAREST)
+        }
     }
 
     val quad = let {
@@ -208,7 +209,7 @@ class Testbed(val ctx: Context) : Application {
 
     val hmapHeight = 24f
     val hmap = let {
-        val file = ctx.files.getLocal("data/terrain/height.png")
+        val file = ctx.files.getLocal("data/terrainTexture/height.png")
         ctx.terrain.load16(file, 1, true)
     }
 
@@ -247,7 +248,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmapShader = let {
-        val file = ctx.files.getLocal("shaders/terrain.glsl")
+        val file = ctx.files.getLocal("shaders/terrainTexture.glsl")
         val shader = file.read()?.bufferedReader()?.use { it.readText() } ?: ""
         ctx.graphics.createShaderProgram(shader)
     }
@@ -370,7 +371,7 @@ class Testbed(val ctx: Context) : Application {
         val bfs = root.breadthFirstTraversal()
         bfs.mapNotNull { it.updater }.forEach { it.update() }
 
-        root.updateTransforms()
+        root.computeTransforms()
 
         if (KEY_SPACE.isJustPressed(ctx.input)) {
             if (music?.state == PLAYING) music.pause()
@@ -387,17 +388,19 @@ class Testbed(val ctx: Context) : Application {
         }
 
         ctx.graphics(fbo) {
-            state.viewPort(0, 0, fbo.width, fbo.height)
+            val (w, h) = fbo.dimensions
+            state.viewPort(0, 0, w, h)
             state.depthTest(LESS)
             state.clearColor(0.2f, 0.2f, 0.2f, 1f)
             state.clearColorBuffer()
             state.clearDepthBuffer()
         }
 
-        val offX = ctx.input.mouse.x - ctx.graphics.width / 2f
-        val offY = ctx.input.mouse.y - ctx.graphics.height / 2f
+        val (w, h) = ctx.graphics.dimensions
+        val offX = ctx.input.mouse.x - w / 2f
+        val offY = ctx.input.mouse.y - h / 2f
 
-        val aspect = ctx.graphics.width.toFloat() / ctx.graphics.height
+        val aspect = w.toFloat() / h
         proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 512f)
         view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
         val culler = FrustumIntersection(temp.set(proj).mul(view))
@@ -434,7 +437,7 @@ class Testbed(val ctx: Context) : Application {
             instanceData.flip()
 
             //
-            // Render terrain chunks
+            // Render terrainTexture chunks
             //
 
             render(hmapMesh, hmapShader, uniformMap(
@@ -526,7 +529,8 @@ class Testbed(val ctx: Context) : Application {
         }
 
         ctx.graphics {
-            state.viewPort(0, 0, ctx.graphics.width, ctx.graphics.height)
+            val (w, h) = ctx.graphics.dimensions
+            state.viewPort(0, 0, w, h)
             state.clearColor(0f, 0f, 0f, 1f)
             state.depthTest(DISABLED)
             state.cullMode(CullMode.DISABLED)

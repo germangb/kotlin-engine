@@ -65,5 +65,4 @@ class GLMesh(val gfx: GLGraphicsDevice,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
         indices = data.capacity() / 4
     }
-
 }

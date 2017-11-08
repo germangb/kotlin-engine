@@ -113,7 +113,11 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, instanceAtt
     // create mesh
     indexData.flip()
     vertexData.flip()
-    val glMesh = gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, usage, attributes, instanceAttributes)
+    val glMesh = if (instanceAttributes.isEmpty()) {
+        gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, usage, attributes)
+    } else {
+        gfx.createMesh(vertexData, indexData, MeshPrimitive.TRIANGLES, usage, attributes, instanceAttributes)
+    }
 
     // free resources
     vertexData.clear()

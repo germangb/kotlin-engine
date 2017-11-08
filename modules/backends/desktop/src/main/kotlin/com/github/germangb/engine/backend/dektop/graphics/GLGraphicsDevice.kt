@@ -15,7 +15,7 @@ import java.nio.*
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, override val height: Int) : GraphicsDevice, Destroyable {
+class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
@@ -26,16 +26,15 @@ class GLGraphicsDevice(val files: DesktopFiles, override val width: Int, overrid
         instancer.destroy()
     }
 
-    /**
-     * Graphics state thing
-     */
+    /** GL state thing */
     override val state = GLGraphicsState()
+
+    override val dimensions = FramebufferDimensions(width, height)
 
     val itextures = mutableListOf<Texture>()
     val imeshes = mutableListOf<Mesh>()
     val ishaders = mutableListOf<ShaderProgram>()
     val ifbos = mutableListOf<Framebuffer>()
-
     override val textures: List<Texture> get() = itextures
     override val meshes: List<Mesh> get() = imeshes
     override val shaderPrograms: List<ShaderProgram> get() = ishaders

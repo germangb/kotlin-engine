@@ -64,7 +64,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         if (string.isEmpty()) return
 
         // begin drawing context
-        val (width, height) = Pair(ctx.graphics.width, ctx.graphics.height)
+        val (width, height) = ctx.graphics.dimensions
         nvgBeginFrame(nv, width, height, 1f)
 
         // get paragraph

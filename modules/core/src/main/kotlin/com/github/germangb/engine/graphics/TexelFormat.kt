@@ -31,6 +31,12 @@ enum class TexelFormat(val channels: Int) {
      */
     RGB8(3),
 
+    /** RGB 4bits per channel */
+    RGB4(3),
+
+    /** RGBA 4bits per channel */
+    RGBA4(4),
+
     /**
      * RG 8bits per component
      */

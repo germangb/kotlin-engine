@@ -19,6 +19,7 @@ class LWJGLRuntime(width: Int, height: Int) {
     val mem: LWJGLBufferManager
     val input: GLFWInputDevice
     val files: DesktopFiles
+    val time: GLFWTime
     val window: Long
 
     val plugins = mutableListOf<Plugin>()
@@ -56,6 +57,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         audio = ALAudioDevice()
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window, width, height)
+        time = GLFWTime()
     }
 
     /**
@@ -70,7 +72,16 @@ class LWJGLRuntime(width: Int, height: Int) {
         plugins.forEach { it.onPostInit() }
 
         glfwShowWindow(window)
+
+        // reset elapsed
+        glfwSetTime(0.0)
+        var lastTime = 0f
         while (!glfwWindowShouldClose(window)) {
+            val now = glfwGetTime().toFloat()
+            time._elapsed = now
+            time._delta = now - lastTime
+            lastTime = now
+
             try {
                 plugins.forEach { it.onPreUpdate() }
                 audio.updateStreaming()

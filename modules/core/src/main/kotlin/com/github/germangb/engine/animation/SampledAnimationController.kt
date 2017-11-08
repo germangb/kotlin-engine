@@ -3,7 +3,7 @@ package com.github.germangb.engine.animation
 import com.github.germangb.engine.framework.Actor
 
 /**
- * This assumes the timelines are sorted by time
+ * This assumes the timelines are sorted by elapsed
  */
 class SampledAnimationController(root: Actor,
                                  private val frames: Int,

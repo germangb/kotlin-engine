@@ -1,6 +1,7 @@
 package com.github.germangb.engine.backend.dektop.graphics
 
 import com.github.germangb.engine.graphics.Framebuffer
+import com.github.germangb.engine.graphics.FramebufferDimensions
 import com.github.germangb.engine.graphics.Texture
 import org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0
 
@@ -9,8 +10,8 @@ import org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0
  */
 class GLFramebuffer(val gfx: GLGraphicsDevice,
                     val id: Int,
-                    override val width: Int,
-                    override val height: Int,
+                    width: Int,
+                    height: Int,
                     override val targets: List<Texture>) : Framebuffer {
     init {
         try {
@@ -20,9 +21,9 @@ class GLFramebuffer(val gfx: GLGraphicsDevice,
         }
     }
 
-    /**
-     * Draw buffers
-     */
+    override val dimensions = FramebufferDimensions(width, height)
+
+    /** Draw buffers */
     val drawBuffers = IntArray(targets.size, { GL_COLOR_ATTACHMENT0 + it })
 
     override fun destroy() {

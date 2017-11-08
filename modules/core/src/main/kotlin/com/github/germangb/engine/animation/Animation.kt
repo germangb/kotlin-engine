@@ -52,7 +52,7 @@ interface Animation<out T : AnimationController> : Destroyable {
     var listener: AnimationListener?
 
     /**
-     * Animation time
+     * Animation elapsed
      */
     val time: Float
 
