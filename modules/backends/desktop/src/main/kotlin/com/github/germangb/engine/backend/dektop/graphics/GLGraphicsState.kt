@@ -45,7 +45,7 @@ class GLGraphicsState : GraphicsState {
         glDepthFunc(func.glEnum)
     }
 
-    override fun cullMode(mode: CullMode) = if (mode == CullMode.DISABLED) {
+    override fun cullMode(mode: CullingMode) = if (mode == CullingMode.DISABLED) {
         glDisable(GL_CULL_FACE)
     } else {
         glEnable(GL_CULL_FACE)

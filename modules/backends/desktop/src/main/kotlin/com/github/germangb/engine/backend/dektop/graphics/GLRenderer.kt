@@ -48,7 +48,7 @@ class GLRenderer : Destroyable {
     /**
      * Begin draw call
      */
-    fun begin(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, data: ByteBuffer?) {
+    fun render(mesh: GLMesh, program: GLShaderProgram, uniformData: Map<String, Any>, data: ByteBuffer?) {
         shaderProgram = program
         activeMesh = mesh
         uniforms.setup(program)
@@ -58,7 +58,7 @@ class GLRenderer : Destroyable {
     }
 
     fun setupInstancing(uniformData: Map<String, Any>) {
-        glCheckError("Error in GLRenderer.begin()") {
+        glCheckError("Error in GLRenderer.render()") {
             glUseProgram(shaderProgram.program)
             glBindVertexArray(activeMesh.vao)
             glBindBuffer(GL_ARRAY_BUFFER, activeMesh.vbo)

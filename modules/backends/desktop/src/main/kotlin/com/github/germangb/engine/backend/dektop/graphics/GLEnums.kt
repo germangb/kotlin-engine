@@ -40,12 +40,12 @@ val StencilOperation.glEnum
 /**
  * Culling mode
  */
-val CullMode.glEnum
+val CullingMode.glEnum
     get() = when (this) {
-        CullMode.DISABLED -> -1
-        CullMode.BACK -> GL_BACK
-        CullMode.FRONT -> GL_FRONT
-        CullMode.FRONT_AND_BACK -> GL_FRONT_AND_BACK
+        CullingMode.DISABLED -> -1
+        CullingMode.BACK -> GL_BACK
+        CullingMode.FRONT -> GL_FRONT
+        CullingMode.FRONT_AND_BACK -> GL_FRONT_AND_BACK
     }
 
 /** Attribute type */

@@ -1,6 +1,6 @@
 package com.github.germangb.engine.graphics
 
-enum class TexelFormat(val channels: Int) {
+enum class TexelFormat(val channels: Int, val isDepth: Boolean = false, val isStencil: Boolean = false) {
     /** RGBA 8bits per component */
     RGBA16F(4),
 
@@ -59,11 +59,11 @@ enum class TexelFormat(val channels: Int) {
     R16(1),
 
     /** Depth component 16bits */
-    DEPTH16(1),
+    DEPTH16(1, isDepth = true),
 
     /** Depth component 24bits */
-    DEPTH24(1),
+    DEPTH24(1, isDepth = true),
 
     /** Depth & stencil */
-    DEPTH24_STENCIL8(2)
+    DEPTH24_STENCIL8(2, isDepth = true, isStencil = true)
 }

@@ -67,16 +67,16 @@ class Testbed(val ctx: Context) : Application {
     }
     val composite = let {
         @Language("GLSL")
-        val vert = """
+        val shader = """
+            #ifdef VERTEX_SHADER
             layout(location = 0) in vec2 a_position;
             out vec2 v_uv;
             void main() {
                 gl_Position = vec4(a_position, 0.0, 1.0);
                 v_uv = a_position * 0.5 + 0.5;
             }
-        """.trimMargin()
-        @Language("GLSL")
-        val frag = """
+            #endif
+            #ifdef FRAGMENT_SHADER
             in vec2 v_uv;
             out vec4 frag_color;
             uniform sampler2D u_texture;
@@ -84,8 +84,9 @@ class Testbed(val ctx: Context) : Application {
                 vec3 color = texture2D(u_texture, v_uv).rgb;
                 frag_color = vec4(color * vec3(0.97, 0.95, 0.82), 1.0);
             }
+            #endif
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(shader)
     }
 
     val skin = Array(110) { Matrix4() }
@@ -95,7 +96,8 @@ class Testbed(val ctx: Context) : Application {
     val animationManager = SimpleAnimationManager()
     val outlineSkinShader = let {
         @Language("GLSL")
-        val vert = """
+        val shader = """
+            #ifdef VERTEX_SHADER
             layout(location = 0) in vec3 a_position;
             layout(location = 1) in vec3 a_normal;
             layout(location = 3) in ivec4 a_bones;
@@ -111,16 +113,16 @@ class Testbed(val ctx: Context) : Application {
 
                 gl_Position = u_projection * u_view * u_skin_transform * vec4(a_position + a_normal, 1.0);
             }
-        """.trimMargin()
-        @Language("GLSL")
-        val frag = """
+            #endif
+            #ifdef FRAGMENT_SHADER
             out vec4 frag_color;
             uniform sampler2D u_texture;
             void main() {
                 frag_color = vec4(0, 0, 0, 1);
             }
+            #endif
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(shader)
     }
     val skinShader = let {
         val vertFile = ctx.files.getLocal("shaders/skin.vert")
@@ -142,7 +144,8 @@ class Testbed(val ctx: Context) : Application {
     }
     val staticShader = let {
         @Language("GLSL")
-        val vert = """
+        val shader = """
+            #ifdef VERTEX_SHADER
             layout(location = 0) in vec3 a_position;
             layout(location = 1) in vec3 a_normal;
             layout(location = 2) in vec2 a_uv;
@@ -160,9 +163,8 @@ class Testbed(val ctx: Context) : Application {
                 v_uv = a_uv;// + a_uv_offset;
                 v_position = viewPos.xyz;
             }
-        """.trimMargin()
-        @Language("GLSL")
-        val frag = """
+            #endif
+            #ifdef FRAGMENT_SHADER
             in vec2 v_uv;
             in vec3 v_normal;
             in vec3 v_position;
@@ -176,8 +178,9 @@ class Testbed(val ctx: Context) : Application {
                 color.rgb = mix(color.rgb, vec3(0.2), clamp(abs(v_position.z) / 32 - 0.1, 0, 0.8));
                 frag_color = vec4(color.rgb, 1.0);
             }
+            #endif
         """.trimMargin()
-        ctx.graphics.createShaderProgram(vert, frag)
+        ctx.graphics.createShaderProgram(shader)
     }
     val root = Actor()
     val animation by lazy {
@@ -210,7 +213,7 @@ class Testbed(val ctx: Context) : Application {
 
     val hmapHeight = 24f
     val hmap = let {
-        val file = ctx.files.getLocal("data/terrainTexture/height.png")
+        val file = ctx.files.getLocal("data/terrain/height.png")
         ctx.terrain.load16(file, 1, true)
     }
 
@@ -249,7 +252,7 @@ class Testbed(val ctx: Context) : Application {
     }
 
     val hmapShader = let {
-        val file = ctx.files.getLocal("shaders/terrainTexture.glsl")
+        val file = ctx.files.getLocal("shaders/terrain.glsl")
         val shader = file.read()?.bufferedReader()?.use { it.readText() } ?: ""
         ctx.graphics.createShaderProgram(shader)
     }
@@ -278,12 +281,12 @@ class Testbed(val ctx: Context) : Application {
     override fun init() {
         if (hmap == null) {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
-            val body = world.createBody(floor, BodyType.DYNAMIC, 0f, 0, 0)
+            val body = world.createBody(floor, BodyType.DYNAMIC, 0f, 1, 1)
             body.friction = 0.5f
             body.restitution = 0f
         } else {
             val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, hmapHeight / Short.MAX_VALUE, -10f, 10f)
-            val body = world.createBody(height, BodyType.DYNAMIC, 0f, 0, 0)
+            val body = world.createBody(height, BodyType.DYNAMIC, 0f, 1, 1)
             body.friction = 0.75f
             body.restitution = 0f
         }
@@ -299,9 +302,10 @@ class Testbed(val ctx: Context) : Application {
                 transform.rotateZ(0.2f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, BodyType.DYNAMIC, 1f, 0, 0)
+                val body = world.createBody(compShape, BodyType.DYNAMIC, 1f, 1, 1)
                 body.friction = 0.5f
                 body.restitution = 0f
+                body.transform = transform
                 addMeshInstance()
                 addUpdate {
                     body.transform.get(transform)
@@ -413,7 +417,7 @@ class Testbed(val ctx: Context) : Application {
         val culler = FrustumIntersection(temp.set(proj).mul(view))
 
         ctx.graphics(fbo) {
-            state.cullMode(CullMode.DISABLED)
+            state.cullMode(CullingMode.DISABLED)
             state.polygonMode(DrawMode.SOLID)
 
             //
@@ -466,7 +470,7 @@ class Testbed(val ctx: Context) : Application {
 
         root.breadthFirstTraversal().forEach { actor ->
             actor.meshInstancer?.let { inst ->
-                ctx.graphics.state.cullMode(CullMode.BACK)
+                ctx.graphics.state.cullMode(CullingMode.BACK)
 
                 //
                 // Compute instancing data
@@ -516,7 +520,7 @@ class Testbed(val ctx: Context) : Application {
 
         root.breadthFirstTraversal().forEach { actor ->
             actor.skinnedMesh?.let { mesh ->
-                ctx.graphics.state.cullMode(CullMode.FRONT)
+                ctx.graphics.state.cullMode(CullingMode.FRONT)
 
                 val texture = mesh.material["diffuse"] ?: DummyTexture
                 val uniforms = uniformMap(
@@ -526,10 +530,10 @@ class Testbed(val ctx: Context) : Application {
                         "u_skin" to skinData)
 
                 ctx.graphics(fbo) {
-                    state.cullMode(CullMode.BACK)
+                    state.cullMode(CullingMode.BACK)
                     render(mesh.mesh, skinShader, uniforms)
 
-                    state.cullMode(CullMode.FRONT)
+                    state.cullMode(CullingMode.FRONT)
                     render(mesh.mesh, outlineSkinShader, uniforms)
                 }
             }
@@ -540,7 +544,7 @@ class Testbed(val ctx: Context) : Application {
             state.viewPort(0, 0, w, h)
             state.clearColor(0f, 0f, 0f, 1f)
             state.depthTest(DISABLED)
-            state.cullMode(CullMode.DISABLED)
+            state.cullMode(CullingMode.DISABLED)
             state.clearColorBuffer()
             render(quad, composite, uniformMap("u_texture" to fbo.targets[0]))
         }

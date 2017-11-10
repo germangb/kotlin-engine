@@ -2,8 +2,8 @@ in vec2 v_uv;
 in vec3 v_normal;
 in vec3 v_position;
 
-// output fragment color
 out vec4 frag_color;
+out vec4 normal_color;
 
 uniform float u_size;
 uniform sampler2D u_texture;
@@ -34,4 +34,5 @@ void main() {
 
     color = fog(color, v_position);
     frag_color = vec4(color, 1.0);
+    normal_color = vec4(v_normal * 0.5 + 0.5, 1.0);
 }

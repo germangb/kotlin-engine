@@ -44,15 +44,13 @@ interface GraphicsState {
      */
     fun stencilFunc(func: TestFunction, ref: Int, mask: Int)
 
-    /**
-     * Stencil operation
-     */
+    /** Stencil operation */
     fun stencilOp(sfail: StencilOperation, dfail: StencilOperation, dpass: StencilOperation)
 
     /**
      * Set culling mode
      */
-    fun cullMode(mode: CullMode)
+    fun cullMode(mode: CullingMode)
 
     /**
      * Set viewport

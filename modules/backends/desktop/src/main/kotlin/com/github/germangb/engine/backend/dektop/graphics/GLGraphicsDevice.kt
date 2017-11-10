@@ -4,7 +4,7 @@ import com.github.germangb.engine.backend.dektop.core.glCheckError
 import com.github.germangb.engine.backend.dektop.files.DesktopFiles
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
-import com.github.germangb.engine.graphics.TexelFormat.*
+import com.github.germangb.engine.graphics.TexelFormat.DEPTH24_STENCIL8
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
@@ -16,7 +16,7 @@ import java.nio.*
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int) : GraphicsDevice, Destroyable {
+class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : GraphicsDevice, Destroyable {
     /**
      * Instancing draw call builder
      */
@@ -104,16 +104,7 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
     /** Create OpenGL texture using GL_UNSIGNED_INT */
     override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
-    /** Check if format is depth */
-    fun TexelFormat.isDepth() = (this == DEPTH16 || this == DEPTH24 || this == DEPTH24_STENCIL8)
-
-    /** Check if format stores stencil */
-    fun TexelFormat.isStencil() = this == DEPTH24_STENCIL8
-
-    /**
-     * Create OpenGL framebuffer
-     */
-    //texDef: GraphicsDevice.(def: FramebufferTextureDef) -> Texture
+    /** Create OpenGL framebuffer */
     override fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, texDef: GraphicsDevice.(def: FramebufferTextureDef) -> Texture): Framebuffer {
         // create textures
         var fbo = -1
@@ -126,9 +117,9 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
             var colorIndex = GL_COLOR_ATTACHMENT0
             textures.mapIndexed { index, texture -> (targets[index] to texture as GLTexture) }
                     .forEach { (format, texture) ->
-                        if (format.isDepth() && format.isStencil()) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
-                        else if (format.isDepth()) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
-                        else if (format.isStencil()) TODO("Handle stencil-only format")
+                        if (format.isDepth && format.isStencil) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        else if (format.isDepth) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        else if (format.isStencil) TODO("Handle stencil-only format")
                         else {
                             glFramebufferTexture2D(GL_FRAMEBUFFER, colorIndex, GL_TEXTURE_2D, texture.id, 0)
                             colorIndex++
@@ -339,13 +330,13 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
      * Render a mesh using instance rendering
      */
     override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) {
-        if (mesh is GLMesh && program is GLShaderProgram) instancer.begin(mesh, program, uniforms, instanceData)
+        if (mesh is GLMesh && program is GLShaderProgram) instancer.render(mesh, program, uniforms, instanceData)
     }
 
     /**
      * Render a mesh
      */
     override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>) {
-        if (mesh is GLMesh && program is GLShaderProgram) instancer.begin(mesh, program, uniforms, null)
+        if (mesh is GLMesh && program is GLShaderProgram) instancer.render(mesh, program, uniforms, null)
     }
 }

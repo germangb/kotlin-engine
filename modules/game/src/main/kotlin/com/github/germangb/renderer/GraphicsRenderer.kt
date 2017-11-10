@@ -12,10 +12,11 @@ import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLES
 import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLE_STRIP
 import com.github.germangb.engine.graphics.MeshUsage.STATIC
-import com.github.germangb.engine.graphics.StencilOperation
-import com.github.germangb.engine.graphics.StencilOperation.KEEP
+import com.github.germangb.engine.graphics.CullingMode
+import com.github.germangb.engine.graphics.StencilOperation.*
 import com.github.germangb.engine.graphics.TestFunction.*
-import com.github.germangb.engine.graphics.TexelFormat.*
+import com.github.germangb.engine.graphics.TexelFormat.DEPTH24_STENCIL8
+import com.github.germangb.engine.graphics.TexelFormat.RGB8
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.graphics.TextureFilter.NEAREST
@@ -40,7 +41,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         val cross = ctx.files.getLocal("textures/cross.png")
         val capsule = ctx.files.getLocal("meshes/capsule.obj")
         val cube = ctx.files.getLocal("meshes/cube.obj")
-        assets.preloadTexture(terrain, "terrain_debug", RGB8, LINEAR, LINEAR, genMips = false)
+        assets.preloadTexture(terrain, "terrain_debug", RGB8, LINEAR, LINEAR, genMips = true)
         assets.preloadTexture(cross, "crosshair", RGB8, NEAREST, NEAREST)
         assets.preloadMesh(capsule, "capsule_debug", STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assets.preloadMesh(cube, "cube_debug", STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
@@ -84,7 +85,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     /** Render target */
     private val fbo = let {
         val (width, height) = ctx.graphics.dimensions
-        ctx.graphics.createFramebuffer(width, height, arrayOf(RGB8, DEPTH24_STENCIL8))
+        ctx.graphics.createFramebuffer(width, height, arrayOf(RGB8, RGB8, DEPTH24_STENCIL8))
     }
     /** Composite shader */
     private val compositeShader = let {
@@ -248,22 +249,9 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         root.computeTransforms()
 
         ctx.graphics(fbo) {
-            // render blocks
-
             state.clearStencilBuffer()
 
-            buildInstanceData(blocks)
-            assets.getMesh("cube_debug")?.let {
-                render(it, capsuleShader, uniformMap(
-                        "u_view" to view,
-                        "u_proj" to projection
-                ), instanceData)
-            }
-
             // render terrain
-            // put a one whenever depth test FAILS
-            state.stencilFunc(ALWAYS, 1, 0xFF)
-            state.stencilOp(KEEP, KEEP, StencilOperation.REPLACE)
 
             buildTerrainInstanceData(view, projection)
             render(terrainMesh, terrainShader, uniformMap(
@@ -275,8 +263,27 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
                     "u_texture" to terrainDebug
             ), instanceData)
 
+            // render blocks
+
+            assets.getMesh("cube_debug")?.let {
+                buildInstanceData(blocks)
+
+                state.stencilFunc(ALWAYS, 4, 0xff)
+                state.stencilOp(KEEP, KEEP, REPLACE)
+
+                state.cullMode(CullingMode.FRONT)
+                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
+                state.stencilOp(KEEP, KEEP, KEEP)
+
+                state.cullMode(CullingMode.BACK)
+                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
+
+                state.cullMode(CullingMode.DISABLED)
+            }
+
             // Render capsules
 
+            state.stencilOp(KEEP, INCREMENT, DECREMENT)
             val caps = agents.breadthFirstTraversal()
             caps.forEach { actor ->
                 val agent = actor.get(LocalAgent::class)
@@ -286,23 +293,13 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
                 }
             }
 
-            // Increments stencil buffer whenever it is behind a building
-            state.stencilFunc(DISABLED, 1, 0xFF)
-            state.stencilOp(KEEP, KEEP, KEEP)
-
-            buildInstanceData(agents)
             assets.getMesh("capsule_debug")?.let {
-                render(it, capsuleShader, uniformMap(
-                        "u_view" to view,
-                        "u_proj" to projection
-                ), instanceData)
+                buildInstanceData(agents)
+                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
             }
 
-            // reset stencil ops
-            state.stencilOp(KEEP, KEEP, KEEP)
-
             // render colored background with stencil
-            state.stencilFunc(EQUAL, 1, 0xFF)
+            state.stencilFunc(LESS, 4, 0xFF)
             render(quadMesh, stencilShader, emptyMap())
 
             // disable stencil buffer
@@ -313,7 +310,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         ctx.graphics {
             state.depthTest(DISABLED)
             state.clearColorBuffer()
-            render(quadMesh, compositeShader, uniformMap("u_texture" to fbo.targets[0]))
+            render(quadMesh, compositeShader, uniformMap("u_texture" to fbo.targets[0], "u_normal" to fbo.targets[1]))
 
             // render cursor
             if (false && ctx.input.mouse.insideWindow) {

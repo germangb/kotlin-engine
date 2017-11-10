@@ -107,7 +107,7 @@ class ShooterApplication(val ctx: Context) : Application, Game {
 
         // debug blocks
         addBlock(Vector3(8f, 6f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
-        addBlock(Vector3(10f, 6f, 8f), Vector3(24f, 0f, 8f - 0.1f), Quaternion())
+        addBlock(Vector3(10f, 8f, 8f), Vector3(24f, 0f, 8f - 0.1f), Quaternion().rotateY(0.2f))
     }
 
     /** Add a debug block */

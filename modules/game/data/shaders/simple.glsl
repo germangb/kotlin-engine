@@ -27,6 +27,7 @@ in vec3 v_normal;
 in vec3 v_position;
 
 out vec4 frag_color;
+out vec4 normal_color;
 
 #define FOG_UTILS
 #define LIGHTING_UTILS
@@ -38,5 +39,6 @@ void main() {
     //light = mix(0.1, 1.0, light);
     vec3 color = fog(vec3(light), v_position);
     frag_color = vec4(color, 1.0);
+    normal_color = vec4(v_normal * 0.5 + 0.5, 1.0);
 }
 #endif
