@@ -15,7 +15,7 @@ void main() {
     mat4 model_view = u_view * a_transform;
     vec4 model_view_position = model_view * vec4(a_position, 1.0);
     gl_Position = u_proj * model_view_position;
-    v_normal = normalize((model_view * vec4(a_normal, 0.0)).xyz);
+    v_normal = normalize((a_transform * vec4(a_normal, 0.0)).xyz);
     v_position = model_view_position.xyz;
     v_uv = a_uv;
 }
@@ -29,11 +29,13 @@ in vec3 v_position;
 out vec4 frag_color;
 
 #define FOG_UTILS
+#define LIGHTING_UTILS
 #include "shaders/utils.glsl"
 
 void main() {
-    float light = clamp(dot(v_normal, vec3(0, 0, 1)), 0.0, 1.0);
-    light = clamp(0.75, 1.0, light);
+    //float light = clamp(dot(v_normal, vec3(0, 0, 1)), 0.0, 1.0);
+    float light = clamp(dot(v_normal, normalize(SUN_DIR)), 0.0, 1.0);
+    //light = mix(0.1, 1.0, light);
     vec3 color = fog(vec3(light), v_position);
     frag_color = vec4(color, 1.0);
 }

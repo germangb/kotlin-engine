@@ -97,6 +97,8 @@ val TestFunction.glEnum
         GREATER -> GL_GREATER
         LESS_OR_EQUAL -> GL_LEQUAL
         GREATER_OR_EQUAL -> GL_GEQUAL
+        ALWAYS -> GL_ALWAYS
+        NEVER -> GL_NEVER
         else -> -1
     }
 
@@ -125,6 +127,7 @@ val TexelFormat.glEnum
         DEPTH24 -> GL_DEPTH_COMPONENT24
         DEPTH24_STENCIL8 -> GL_DEPTH24_STENCIL8
         RGB4 -> GL_RGB4
+        R3_G3_B2 -> GL_R3_G3_B2
         RGBA4 -> GL_RGBA4
     }
 
@@ -153,5 +156,6 @@ val TexelFormat.dataFormat
         DEPTH24 -> GL_DEPTH_COMPONENT
         DEPTH24_STENCIL8 -> GL_DEPTH_STENCIL
         RGB4 -> GL_RGB
+        R3_G3_B2 -> GL_RGB
         RGBA4 -> GL_RGBA
     }

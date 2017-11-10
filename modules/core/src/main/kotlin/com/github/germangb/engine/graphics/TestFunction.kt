@@ -6,6 +6,12 @@ enum class TestFunction {
      */
     DISABLED,
 
+    /** Always pass test */
+    ALWAYS,
+
+    /** Never pass test */
+    NEVER,
+
     /**
      * Pass if the new value is equal bind the current vale
      */

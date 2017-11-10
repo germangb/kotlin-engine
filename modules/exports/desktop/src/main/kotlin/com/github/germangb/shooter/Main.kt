@@ -22,9 +22,12 @@ fun LWJGLContext.installPlugins() {
 }
 
 fun main(args: Array<String>) {
-    val runtime = LWJGLRuntime(800, 533)
+    val runtime = LWJGLRuntime(720, 480)
+    runtime.cursorHidden = false
+
     val ctx = LWJGLContext(runtime)
     ctx.installPlugins()
+
     runtime.start {
         ShooterApplication(ctx)
     }

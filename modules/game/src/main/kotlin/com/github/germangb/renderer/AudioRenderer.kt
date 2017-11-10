@@ -7,7 +7,7 @@ import com.github.germangb.player.Agent
 import com.github.germangb.shooter.GameListener
 
 /** Manage audio rendering */
-class AudioRenderer(private val ctx: Context, private val assets: AssetManager) : GameListener, Destroyable {
+class AudioRenderer(ctx: Context, private val assets: AssetManager) : GameListener, Destroyable {
     init {
         val birds = ctx.files.getLocal("audio/birds.ogg")
         assets.preloadAudio(birds, "ambient_birds", stream = true)
@@ -24,15 +24,7 @@ class AudioRenderer(private val ctx: Context, private val assets: AssetManager) 
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onDeaded(player: Agent) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onSpawned(player: Agent) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onAttack(player: Agent) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -45,6 +37,14 @@ class AudioRenderer(private val ctx: Context, private val assets: AssetManager) 
     }
 
     override fun onLook(player: Agent) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onPosition(player: Agent) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onTarget(player: Agent) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

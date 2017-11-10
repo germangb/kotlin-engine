@@ -31,6 +31,9 @@ interface GraphicsState {
      */
     fun pointSize(size: Float)
 
+    /** Set blending */
+    fun blending(mode: BlendMode)
+
     /**
      * Set depth test function
      */

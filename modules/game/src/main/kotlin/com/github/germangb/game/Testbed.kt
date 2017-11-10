@@ -22,6 +22,7 @@ import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.*
+import com.github.germangb.engine.plugin.bullet.BodyType
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -277,10 +278,14 @@ class Testbed(val ctx: Context) : Application {
     override fun init() {
         if (hmap == null) {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
-            world.createBody(floor, false, 0f, 0.5f, 0f, Matrix4())
+            val body = world.createBody(floor, BodyType.DYNAMIC, 0f, 0, 0)
+            body.friction = 0.5f
+            body.restitution = 0f
         } else {
             val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, hmapHeight / Short.MAX_VALUE, -10f, 10f)
-            world.createBody(height, false, 0f, 0.75f, 0f, Matrix4())
+            val body = world.createBody(height, BodyType.DYNAMIC, 0f, 0, 0)
+            body.friction = 0.75f
+            body.restitution = 0f
         }
 
         root.attachChild {
@@ -294,7 +299,9 @@ class Testbed(val ctx: Context) : Application {
                 transform.rotateZ(0.2f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, false, 1f, 0.5f, 0f, transform)
+                val body = world.createBody(compShape, BodyType.DYNAMIC, 1f, 0, 0)
+                body.friction = 0.5f
+                body.restitution = 0f
                 addMeshInstance()
                 addUpdate {
                     body.transform.get(transform)
@@ -365,8 +372,8 @@ class Testbed(val ctx: Context) : Application {
 
         debug()
 
-        world.stepSimulation(1 / 60f)
-        animationManager.update(1 / 60f)
+        world.stepSimulation(ctx.time.delta)
+        animationManager.update(ctx.time.delta)
 
         val bfs = root.breadthFirstTraversal()
         bfs.mapNotNull { it.updater }.forEach { it.update() }

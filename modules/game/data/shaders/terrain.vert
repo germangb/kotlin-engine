@@ -16,8 +16,19 @@ uniform sampler2D u_height;
 uniform float u_size;
 uniform float u_max_height;
 
+float sample_height(vec2 uv) {
+    return (texture(u_height, uv) * 2 - 1) * u_max_height;
+}
+
 vec3 compute_normal(in vec2 uv) {
-    return vec3(0, 1, 0);
+    vec2 dd = vec2(2. / u_size, 0.0);
+    float sample0 = sample_height(uv);
+    float sampley = sample_height(uv + dd.xy);
+    float samplex = sample_height(uv + dd.yx);
+    vec3 a = vec3(uv.x * u_size, sample0, uv.y * u_size * u_size);
+    vec3 b = vec3(uv.x * u_size + dd.x * u_size, samplex, uv.y * u_size);
+    vec3 c = vec3(uv.x * u_size, sampley, uv.y * u_size + dd.x * u_size);
+    return normalize(cross(b-a, c-a));
 }
 
 void main() {
@@ -25,8 +36,8 @@ void main() {
 
     // sample height
     vec2 uv = model.xz / u_size + 0.5;
-    float height = texture(u_height, uv).r * 2 - 1;
-    model.y = height * u_max_height;
+    float height = sample_height(uv);
+    model.y = height;
 
     vec4 view_pos = u_view * model;
     gl_Position = u_proj * view_pos;

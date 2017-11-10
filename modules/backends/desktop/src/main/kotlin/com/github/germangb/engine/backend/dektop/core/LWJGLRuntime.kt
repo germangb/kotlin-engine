@@ -21,6 +21,7 @@ class LWJGLRuntime(width: Int, height: Int) {
     val files: DesktopFiles
     val time: GLFWTime
     val window: Long
+    var cursorHidden = false
 
     val plugins = mutableListOf<Plugin>()
 
@@ -38,6 +39,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         //glfwWindowHint(GLFW_SAMPLES, 4)
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL)
         glfwMakeContextCurrent(window)
+        glfwSwapInterval(0)
 
         GL.createCapabilities()
         //debug
@@ -72,6 +74,8 @@ class LWJGLRuntime(width: Int, height: Int) {
         plugins.forEach { it.onPostInit() }
 
         glfwShowWindow(window)
+
+        if(cursorHidden) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN)
 
         // reset elapsed
         glfwSetTime(0.0)

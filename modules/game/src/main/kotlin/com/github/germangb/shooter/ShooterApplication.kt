@@ -3,17 +3,21 @@ package com.github.germangb.shooter
 import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
-import com.github.germangb.engine.math.Matrix4
-import com.github.germangb.engine.math.Vector3
-import com.github.germangb.engine.math.Vector3c
-import com.github.germangb.engine.math.toRadians
+import com.github.germangb.engine.math.*
+import com.github.germangb.engine.plugin.bullet.BodyType.DYNAMIC
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyTexture
 import com.github.germangb.player.*
+import com.github.germangb.player.CrouchState.STANDING
+import com.github.germangb.player.WalkState.RUNNING
+import com.github.germangb.player.WalkState.STOPPED
 import com.github.germangb.renderer.AudioRenderer
 import com.github.germangb.renderer.GraphicsRenderer
 import java.util.*
+
+private val MAP_COLLISION = 0x4
+private val AGENT_COLLISION = 0x2
 
 /** Base application */
 class ShooterApplication(val ctx: Context) : Application, Game {
@@ -26,7 +30,7 @@ class ShooterApplication(val ctx: Context) : Application, Game {
     var simTime = 0f
 
     /** Terrain maximum height */
-    val terrainHeight = 32f
+    val terrainHeight = 24f
     /** Loaded terrain heightfield */
     val terrain = let {
         val file = ctx.files.getLocal("textures/heightfield.png")
@@ -47,13 +51,15 @@ class ShooterApplication(val ctx: Context) : Application, Game {
     val listeners = mutableListOf<GameListener>()
     /** Pending agents */
     val pending = LinkedList<LocalAgent>()
+    /** Active agents */
+    val activeAgents = LinkedList<LocalAgent>()
     /** Agent controllers */
     val agentControllers = mutableListOf<AgentController>()
 
     /** Register agent controllers */
     fun registerControllers() {
-        val dim = ctx.graphics.dimensions
-        addController(InputAgentController(this, ctx.input, ctx.time, dim))
+        addController(InputAgentController(this, ctx, world))
+        addController(FollowAgentController(this))
     }
 
     /** Set core listeners */
@@ -83,9 +89,12 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         terrain?.let {
             val size = terrain.size
             val shape = ctx.bullet.createHeightfield(size, size, terrain.data, terrainHeight / Short.MAX_VALUE, -terrainHeight, terrainHeight)
-            world.createBody(shape, false, 0f, 0.5f, 0f, Matrix4())
+            val body = world.createBody(shape, DYNAMIC, 0f, MAP_COLLISION, AGENT_COLLISION)
+
+            body.friction = 0.5f
+            body.restitution = 0f
             graphics.terrainSize = size
-        }
+        } ?: TODO("Create flat plane")
     }
 
     /** Init game resources */
@@ -95,6 +104,26 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         initTerrain()
         registerControllers()
         initControllers()
+
+        // debug blocks
+        addBlock(Vector3(8f, 6f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
+        addBlock(Vector3(10f, 6f, 8f), Vector3(24f, 0f, 8f - 0.1f), Quaternion())
+    }
+
+    /** Add a debug block */
+    private fun addBlock(half: Vector3c, position: Vector3c, rotation: Quaternionc) {
+        val transform = Matrix4()
+
+        transform.translate(position).rotate(rotation)
+
+        val shape = ctx.bullet.createBox(half)
+        val body = world.createBody(shape, DYNAMIC, 0f, MAP_COLLISION, AGENT_COLLISION)
+        body.friction = 0.5f
+        body.restitution = 0f
+        body.transform = transform
+
+        transform.scale(half)
+        graphics.addBlock(transform)
     }
 
     /** Spawn agents on demand */
@@ -102,14 +131,26 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         while (pending.isNotEmpty()) {
             //TODO activate, register, and spawn agent
             val agent = pending.poll()
+
+            // create rigid body
+            val transf = Matrix4().translate(agent.position)
+            val shape = ctx.bullet.createCapsule(0.5f, 1f)
+            agent.body = world.createBody(shape, DYNAMIC, 1f, AGENT_COLLISION, MAP_COLLISION)
+
+            agent.body.friction = 1f
+            agent.body.restitution = 0f
+            agent.body.transform = transf
+            agent.body.angularFactor = Vector3(0f, 0f, 0f)
+
             agent._isActive = true
+            activeAgents.add(agent)
             listeners.forEach { it.onSpawned(agent) }
         }
     }
 
     /** Step & update physics simulation */
     fun handlePhysics() {
-        val step = 1 / 60f
+        val step = 1 / 120f
         simTime += ctx.time.delta
         while (simTime >= step) {
             simTime -= step
@@ -117,9 +158,43 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         }
     }
 
+    /** Checks if we can make the agent move */
+    fun LocalAgent.canWalk() = walk != STOPPED && crouching == STANDING && inGround
+
+    /** Update agents */
+    fun handleAgents() {
+        val aux = Vector3()
+        activeAgents.forEach {
+            //TODO check if agent is grounded
+            //it.grounded = ...
+
+            if (it.canWalk()) {
+                it.body.friction = 0.5f
+                val velo = it.body.velocity
+                aux.set(it.target)
+                aux.y = 0f
+
+                if (aux.lengthSquared() > 0.001f) {
+                    aux.normalize()
+                    aux.mul(if (it.walk == RUNNING) 4f else 2f)
+                }
+
+                aux.y = velo.y
+                it.body.velocity = aux
+            } else {
+                it.body.friction = 2f
+            }
+
+            // update position
+            it.body.transform.getTranslation(it.position as Vector3)
+            it.body.transform.get(it.transform)
+        }
+    }
+
     /** Update game state */
     override fun update() {
         handleSpawns()
+        handleAgents()
         handlePhysics()
 
         // update agent controllers
@@ -129,49 +204,35 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         graphics.render(view, projection)
     }
 
-    override fun suicide(player: Agent) {
-        if (player !is LocalAgent) throw Exception()
-        player._isDead = true
-        listeners.forEach { it.onDeaded(player) }
-        TODO()
-    }
-
-    override fun attack(player: Agent, location: Vector3c) {
-        if (player !is LocalAgent) throw Exception()
-        listeners.forEach { it.onAttack(player) }
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setCrouch(player: Agent, state: CrouchState) {
+    fun setCrouch(player: Agent, state: CrouchState) {
         if (player !is LocalAgent) throw Exception()
         player._crouching = state
         listeners.forEach { it.onCrouched(player) }
     }
 
-    override fun setLook(player: Agent, state: LookState) {
+    fun setLook(player: Agent, state: LookState) {
         if (player !is LocalAgent) throw Exception()
         player._look = state
         listeners.forEach { it.onLook(player) }
     }
 
-    override fun setWalk(player: Agent, state: WalkState) {
+    fun setWalk(player: Agent, state: WalkState) {
         if (player !is LocalAgent) throw Exception()
         player._walk = state
         listeners.forEach { it.onWalk(player) }
     }
 
-    override fun setTarget(player: Agent, target: Vector3c) {
+    fun setTarget(player: Agent, target: Vector3c) {
         if (player !is LocalAgent) throw Exception()
-        player.target.set(target)
     }
 
-    override fun testLineOfSight(from: Vector3c, to: Vector3c): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun setPosition(player: Agent, target: Vector3c) {
+        if (player !is LocalAgent) throw Exception()
     }
 
     override fun spawnPlayer(location: Vector3c): Agent {
-        val agent = LocalAgent()
-        agent.position.set(location)
+        val agent = LocalAgent(this)
+        (agent.position as Vector3).set(location)
         pending.add(agent)
         return agent
     }

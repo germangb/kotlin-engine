@@ -72,18 +72,12 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         string.setLength(0)
 
         // compute height
-        val vel = 16f
+        val vel = ctx.time.delta * 512
         debugHeight = numRows * fontSize + 4f
         offset = if (show) {
             minOf(offset + vel, debugHeight)
         } else {
             maxOf(0f, offset - vel)
-        }
-
-        if (debugHeight > 0) {
-//            var alpha = offset / debugHeight
-//            alpha += 0.5f * (1 - alpha)
-//            nvgGlobalAlpha(nv, alpha)
         }
 
         if (offset == 0f) return
@@ -109,7 +103,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         }
 
         nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.2f))
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
         nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 4f)
         nvgFill(nv)
 

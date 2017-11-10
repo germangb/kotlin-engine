@@ -6,21 +6,18 @@ interface Agent {
     /** If the player is active in the game */
     val isActive: Boolean
 
-    /** if the player has been killed in the game */
-    val isDead: Boolean
-
     /** Agent position */
-    val position: Vector3c
+    var position: Vector3c
 
     /** Agent target position */
-    val target: Vector3c
+    var target: Vector3c
 
     /** Agent looking state */
-    val look: LookState
+    var look: LookState
 
     /** Agent walking state */
-    val walk: WalkState
+    var walk: WalkState
 
     /** Agent crouching state */
-    val crouching: CrouchState
+    var crouching: CrouchState
 }

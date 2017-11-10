@@ -4,6 +4,7 @@ import com.github.germangb.engine.backend.dektop.core.glCheckError
 import com.github.germangb.engine.backend.dektop.files.DesktopFiles
 import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
+import com.github.germangb.engine.graphics.TexelFormat.*
 import com.github.germangb.engine.utils.Destroyable
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
@@ -61,11 +62,22 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
             glBindTexture(GL_TEXTURE_2D, id)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum(genMips))
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum(genMips))
-            when (data) {
-                is ByteBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
-                is FloatBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_FLOAT, data)
-                is ShortBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_SHORT, data)
-                is IntBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT, data)
+
+            if (format == DEPTH24_STENCIL8) {
+                // depth stencil
+                when (data) {
+                    is ByteBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT_24_8, data)
+                    is FloatBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT_24_8, data)
+                    is ShortBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT_24_8, data)
+                    is IntBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT_24_8, data)
+                }
+            } else {
+                when (data) {
+                    is ByteBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_BYTE, data)
+                    is FloatBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_FLOAT, data)
+                    is ShortBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_SHORT, data)
+                    is IntBuffer? -> glTexImage2D(GL_TEXTURE_2D, 0, format.glEnum, width, height, 0, format.dataFormat, GL_UNSIGNED_INT, data)
+                }
             }
 
             if (genMips) {
@@ -92,10 +104,11 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
     /** Create OpenGL texture using GL_UNSIGNED_INT */
     override fun createTexture(data: IntBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
 
-    /**
-     * Check if format is depth
-     */
-    fun TexelFormat.isDepth() = (this == TexelFormat.DEPTH16 || this == TexelFormat.DEPTH24)
+    /** Check if format is depth */
+    fun TexelFormat.isDepth() = (this == DEPTH16 || this == DEPTH24 || this == DEPTH24_STENCIL8)
+
+    /** Check if format stores stencil */
+    fun TexelFormat.isStencil() = this == DEPTH24_STENCIL8
 
     /**
      * Create OpenGL framebuffer
@@ -104,27 +117,25 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
     override fun createFramebuffer(width: Int, height: Int, targets: Array<out TexelFormat>, texDef: GraphicsDevice.(def: FramebufferTextureDef) -> Texture): Framebuffer {
         // create textures
         var fbo = -1
-        val textures = targets.map { format ->
-            texDef(FramebufferTextureDef(0, width, height, format))
-            //createTexture(null as ByteBuffer?, width, height, it, TextureFilter.LINEAR, TextureFilter.LINEAR)
-        }
+        val textures = targets.map { texDef(FramebufferTextureDef(0, width, height, it)) }
 
         glCheckError("Error in createFramebuffer()") {
             fbo = glGenFramebuffers()
             glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
-            // color targets
-            textures.map { it as GLTexture }
-                    .filterIndexed { i, _ -> !targets[i].isDepth() }
-                    .forEachIndexed { index, texture ->
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, texture.id, 0)
-                    }
-
-            // depth target
-            textures.map { it as GLTexture }
-                    .filterIndexed { index, _ -> targets[index].isDepth() }
-                    .forEach {
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, it.id, 0)
+            var colorIndex = GL_COLOR_ATTACHMENT0
+            textures.mapIndexed { index, texture -> (targets[index] to texture as GLTexture) }
+                    .forEach { (format, texture) ->
+                        if (format.isDepth() && format.isStencil()) {
+                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        } else if (format.isDepth()) {
+                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        } else if (format.isStencil()) {
+                            TODO("Handle stencil-only format")
+                        } else {
+                            glFramebufferTexture2D(GL_FRAMEBUFFER, colorIndex, GL_TEXTURE_2D, texture.id, 0)
+                            colorIndex++
+                        }
                     }
 
             // check error
@@ -291,7 +302,9 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
 
         glCheckError("Error in createShaderProgram() while creating vertex skinShader") {
             vertexShader = glCreateShader(GL_VERTEX_SHADER)
-            glShaderSource(vertexShader, vertex.inlineIncludes(files))
+            val prepVertex = vertex.inlineIncludes(files)
+            //println(prepVertex)
+            glShaderSource(vertexShader, prepVertex)
             //println(fragmentSource.inlineIncludes())
             glCompileShader(vertexShader)
             val log = glGetShaderInfoLog(vertexShader)
@@ -302,7 +315,8 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
 
         glCheckError("Error in createShaderProgram() while creating fragment skinShader") {
             fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-            glShaderSource(fragmentShader, fragment.inlineIncludes(files))
+            val prepFragment = fragment.inlineIncludes(files)
+            glShaderSource(fragmentShader, prepFragment)
             glCompileShader(fragmentShader)
             val log = glGetShaderInfoLog(fragmentShader)
             if (log.isNotEmpty()) {

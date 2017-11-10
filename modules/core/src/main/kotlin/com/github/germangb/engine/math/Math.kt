@@ -64,22 +64,58 @@ typealias Vector2 = org.joml.Vector2f
 
 typealias Vector2c = org.joml.Vector2fc
 
+val Vector2c.x get() = x()
+
+val Vector2c.y get() = y()
+
 typealias Vector2i = org.joml.Vector2i
 
 typealias Vector2ic = org.joml.Vector2ic
+
+val Vector2ic.x get() = x()
+
+val Vector2ic.y get() = y()
 
 typealias Vector3 = org.joml.Vector3f
 
 typealias Vector3c = org.joml.Vector3fc
 
+val Vector3c.x get() = x()
+
+val Vector3c.y get() = y()
+
+val Vector3c.z get() = z()
+
 typealias Vector3i = org.joml.Vector3i
 
 typealias Vector3ic = org.joml.Vector3ic
+
+val Vector3ic.x get() = x()
+
+val Vector3ic.y get() = y()
+
+val Vector3ic.z get() = z()
 
 typealias Vector4 = org.joml.Vector4f
 
 typealias Vector4c = org.joml.Vector4fc
 
+val Vector4c.x get() = x()
+
+val Vector4c.y get() = y()
+
+val Vector4c.z get() = z()
+
+val Vector4c.w get() = w()
+
 typealias Vector4i = org.joml.Vector4i
 
 typealias Vector4ic = org.joml.Vector4ic
+
+val Vector4ic.x get() = x()
+
+val Vector4ic.y get() = y()
+
+val Vector4ic.z get() = z()
+
+val Vector4ic.w get() = w()
