@@ -126,13 +126,10 @@ class GLGraphicsDevice(val files: DesktopFiles, val width: Int, val height: Int)
             var colorIndex = GL_COLOR_ATTACHMENT0
             textures.mapIndexed { index, texture -> (targets[index] to texture as GLTexture) }
                     .forEach { (format, texture) ->
-                        if (format.isDepth() && format.isStencil()) {
-                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
-                        } else if (format.isDepth()) {
-                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
-                        } else if (format.isStencil()) {
-                            TODO("Handle stencil-only format")
-                        } else {
+                        if (format.isDepth() && format.isStencil()) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        else if (format.isDepth()) glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id, 0)
+                        else if (format.isStencil()) TODO("Handle stencil-only format")
+                        else {
                             glFramebufferTexture2D(GL_FRAMEBUFFER, colorIndex, GL_TEXTURE_2D, texture.id, 0)
                             colorIndex++
                         }
