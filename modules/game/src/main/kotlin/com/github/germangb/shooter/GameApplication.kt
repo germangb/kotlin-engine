@@ -32,7 +32,7 @@ class GameApplication(val ctx: Context) : Application, Game {
     var simTime = 0f
 
     /** Terrain maximum height */
-    val terrainHeight = 24f
+    val terrainHeight = 16f
     /** Loaded terrain heightfield */
     val terrain = let {
         val file = ctx.files.getLocal("textures/heightfield.png")
@@ -108,15 +108,14 @@ class GameApplication(val ctx: Context) : Application, Game {
         initControllers()
 
         // debug buildings
-        addBlock(Vector3(14f, 7f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
-        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 8f), Quaternion().rotateY(0.2f))
-
-        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 38f), Quaternion().rotateY(0.1f))
-        addBlock(Vector3(10f, 7f, 5f), Vector3(32f, 0f, 30f), Quaternion().rotateY(0.1f))
+        addBuilding(Vector3(14f, 6f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
+        addBuilding(Vector3(10f, 6f, 8f), Vector3(24f, 0f, 8f), Quaternion().rotateY(0.2f))
+        addBuilding(Vector3(10f, 6f, 8f), Vector3(24f, 0f, 38f), Quaternion().rotateY(0.1f))
+        addBuilding(Vector3(10f, 6f, 5f), Vector3(32f, 0f, 30f), Quaternion().rotateY(0.1f))
     }
 
     /** Add a debug block */
-    private fun addBlock(half: Vector3c, position: Vector3c, rotation: Quaternionc) {
+    private fun addBuilding(half: Vector3c, position: Vector3c, rotation: Quaternionc) {
         val transform = Matrix4()
 
         transform.translate(position).rotate(rotation)

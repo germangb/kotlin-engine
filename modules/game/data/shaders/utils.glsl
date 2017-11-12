@@ -74,10 +74,10 @@ float compute_ao(in vec2 uv, in sampler2D depth, in sampler2D normals, in mat4 p
     float ao = 1;
     for (int i = 0; i < 16; ++i) {
         // transform sample
-        vec3 tan = vec3(1, 0, 0);
+        vec3 tan = vec3(1, 1, 1);
         tan = tan - normal * dot(tan, normal);
 
-        mat3 transf = mat3(tan, normal, cross(normal, tan));
+        mat3 transf = mat3(normalize(tan), normalize(normal), normalize(cross(normal, tan)));
         vec4 offset = world + vec4(transf * u_samples[i] * 0.005, 0.0);
 
         // project result
@@ -86,7 +86,7 @@ float compute_ao(in vec2 uv, in sampler2D depth, in sampler2D normals, in mat4 p
 
         // sample depth and compare with computed z
         float depth_sample = texture(depth, result.xy * 0.5 + 0.5).r * 2 - 1;
-        if (depth_sample < result.z - 0.0001) ao -= 1/16.0;
+        if (depth_sample < result.z - 0.000025) ao -= 1/16.0;
         //if (depth_sample < result.z - 0.00025) ao -= 1/16.0;
         //if (depth_sample < result.z - 0.0005) ao -= 1/16.0;
 

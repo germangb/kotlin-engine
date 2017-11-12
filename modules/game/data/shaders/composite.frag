@@ -40,7 +40,7 @@ void main() {
     //color = vec3(mix(color, vec3(1), 0.8) * ao);
 
     //color = vec3(texture(u_depth, v_uv).r, 0, 0);
-    color = color * mix(0.25, 1.0, sobel_out * ao) * tint;
+    color = color * mix(0.65, 1.0, sobel_out * ao) * tint;
 
     //color = floor(color * 100) / 100;
 
