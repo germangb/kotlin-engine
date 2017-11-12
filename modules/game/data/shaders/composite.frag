@@ -22,5 +22,7 @@ float sobel(in vec2 uv) {
 
 void main() {
     vec3 color = texture(u_texture, v_uv).rgb;
-    frag_color = vec4(color*sobel(v_uv)*vec3(0.92, 0.89, 0.75), 1.0);
+    //vec3 tint = vec3(0.92, 0.89, 0.75);
+    vec3 tint = vec3(0.95, 0.89, 0.89);
+    frag_color = vec4(color*sobel(v_uv)*tint, 1.0);
 }

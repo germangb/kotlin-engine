@@ -3,9 +3,6 @@ package com.github.germangb.engine.backend.dektop.graphics
 import com.github.germangb.engine.graphics.*
 import org.lwjgl.opengl.GL11.*
 
-/**
- * Manage state
- */
 class GLGraphicsState : GraphicsState {
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
     override fun clearDepth(d: Float) = glClearDepth(d.toDouble())
@@ -18,18 +15,6 @@ class GLGraphicsState : GraphicsState {
     override fun clearColorBuffer() = glClear(GL_COLOR_BUFFER_BIT)
     override fun clearDepthBuffer() = glClear(GL_DEPTH_BUFFER_BIT)
     override fun clearStencilBuffer() = glClear(GL_STENCIL_BUFFER_BIT)
-
-    override fun blending(mode: BlendMode) {
-        if (mode == BlendMode.DISABLED) {
-            glDisable(GL_BLEND)
-        } else if (mode == BlendMode.ALPHA) {
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        } else if (mode == BlendMode.NEGATE) {
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO)
-        }
-    }
 
     override fun stencilFunc(func: TestFunction, ref: Int, mask: Int) = if (func == TestFunction.DISABLED) {
         glDisable(GL_STENCIL_TEST)

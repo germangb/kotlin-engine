@@ -1,5 +1,8 @@
 package com.github.germangb.engine.graphics
 
+/**
+ * Discard pixels that are facing away or directly the view
+ */
 enum class CullingMode {
     /** Disable face culling */
     DISABLED,
@@ -11,5 +14,5 @@ enum class CullingMode {
     FRONT,
 
     /** Cull front-back faces */
-    FRONT_AND_BACK
+    FRONT_AND_BACK;
 }

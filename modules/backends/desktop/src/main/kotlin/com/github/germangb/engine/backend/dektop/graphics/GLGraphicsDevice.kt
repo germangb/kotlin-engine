@@ -17,15 +17,8 @@ import java.nio.*
  * Lwjgl OpenGL graphics implementation
  */
 class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : GraphicsDevice, Destroyable {
-    /**
-     * Instancing draw call builder
-     */
-    private val instancer = GLRenderer()
     private val windowFramebuffer = GLFramebuffer(this, 0, width, height, emptyList())
-
-    override fun destroy() {
-        instancer.destroy()
-    }
+    private val renderer = GLRenderer()
 
     /** GL state thing */
     override val state = GLGraphicsState()
@@ -36,10 +29,15 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
     val imeshes = mutableListOf<Mesh>()
     val ishaders = mutableListOf<ShaderProgram>()
     val ifbos = mutableListOf<Framebuffer>()
+
     override val textures: List<Texture> get() = itextures
     override val meshes: List<Mesh> get() = imeshes
     override val shaderPrograms: List<ShaderProgram> get() = ishaders
     override val framebuffers: List<Framebuffer> get() = ifbos
+
+    override fun destroy() {
+        renderer.destroy()
+    }
 
     override fun invoke(fbo: Framebuffer, action: GraphicsDevice.() -> Unit) {
         if (fbo is GLFramebuffer) {
@@ -60,9 +58,6 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
             id = glGenTextures()
 
             glBindTexture(GL_TEXTURE_2D, id)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum(genMips))
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum(genMips))
-
             if (format == DEPTH24_STENCIL8) {
                 // depth stencil
                 when (data) {
@@ -80,9 +75,12 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
                 }
             }
 
-            if (genMips) {
-                glGenerateMipmap(GL_TEXTURE_2D)
-            }
+            if (genMips) glGenerateMipmap(GL_TEXTURE_2D)
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag.glEnum(false))
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min.glEnum(genMips))
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
 
             glBindTexture(GL_TEXTURE_2D, 0)
         }
@@ -90,7 +88,7 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
     }
 
     /** Create OpenGL texture using GL_UNSIGNED_BYTE */
-    override fun createTexture(width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter) = createTexture(null as ByteBuffer?, width, height, format, min, mag, false)
+    override fun createTexture(width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(null as ByteBuffer?, width, height, format, min, mag, genMips)
 
     /** Create OpenGL texture using GL_UNSIGNED_BYTE */
     override fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean) = createTexture(data as Buffer?, width, height, format, min, mag, genMips)
@@ -210,7 +208,7 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
                 }
 
                 // per-instance attributes
-                glBindBuffer(GL_ARRAY_BUFFER, instancer.buffer)
+                glBindBuffer(GL_ARRAY_BUFFER, renderer.buffer)
 
                 var instanceOffset = 0L
                 var instanceAttribute = attributes.size
@@ -330,13 +328,13 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
      * Render a mesh using instance rendering
      */
     override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer) {
-        if (mesh is GLMesh && program is GLShaderProgram) instancer.render(mesh, program, uniforms, instanceData)
+        if (mesh is GLMesh && program is GLShaderProgram) renderer.render(mesh, program, uniforms, instanceData)
     }
 
     /**
      * Render a mesh
      */
     override fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>) {
-        if (mesh is GLMesh && program is GLShaderProgram) instancer.render(mesh, program, uniforms, null)
+        if (mesh is GLMesh && program is GLShaderProgram) renderer.render(mesh, program, uniforms, null)
     }
 }

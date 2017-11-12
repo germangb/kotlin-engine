@@ -4,10 +4,12 @@ layout(location = 1) in mat4 a_transform;
 out vec2 v_uv;
 out vec3 v_normal;
 out vec3 v_position;
+out vec4 v_shadow_position;
 
 // camera matrices
 uniform mat4 u_proj;
 uniform mat4 u_view;
+uniform mat4 u_shadow_transform;
 
 // heightfield texture (1 channel, unsigned)
 uniform sampler2D u_height;
@@ -41,6 +43,7 @@ void main() {
 
     vec4 view_pos = u_view * model;
     gl_Position = u_proj * view_pos;
+    v_shadow_position = u_shadow_transform * model;
 
     v_uv = uv;
     v_normal = compute_normal(uv);

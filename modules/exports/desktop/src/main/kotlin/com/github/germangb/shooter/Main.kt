@@ -29,6 +29,6 @@ fun main(args: Array<String>) {
     ctx.installPlugins()
 
     runtime.start {
-        ShooterApplication(ctx)
+        GameApplication(ctx)
     }
 }

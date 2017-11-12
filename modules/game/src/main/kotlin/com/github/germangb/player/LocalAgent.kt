@@ -7,10 +7,10 @@ import com.github.germangb.engine.plugin.bullet.RigidBody
 import com.github.germangb.player.CrouchState.STANDING
 import com.github.germangb.player.LookState.EAST
 import com.github.germangb.player.WalkState.STOPPED
-import com.github.germangb.shooter.ShooterApplication
+import com.github.germangb.shooter.GameApplication
 
 /** Local game player agent */
-class LocalAgent(val game: ShooterApplication) : Agent {
+class LocalAgent(val game: GameApplication) : Agent {
     lateinit var body: RigidBody
 
     var inGround = true

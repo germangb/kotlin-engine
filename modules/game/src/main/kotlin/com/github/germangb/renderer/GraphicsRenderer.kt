@@ -7,24 +7,23 @@ import com.github.germangb.engine.framework.TransformMode
 import com.github.germangb.engine.framework.components.addMeshInstance
 import com.github.germangb.engine.framework.components.addMeshInstancer
 import com.github.germangb.engine.framework.components.instance
-import com.github.germangb.engine.graphics.BlendMode
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLES
 import com.github.germangb.engine.graphics.MeshPrimitive.TRIANGLE_STRIP
 import com.github.germangb.engine.graphics.MeshUsage.STATIC
-import com.github.germangb.engine.graphics.CullingMode
-import com.github.germangb.engine.graphics.StencilOperation.*
-import com.github.germangb.engine.graphics.TestFunction.*
-import com.github.germangb.engine.graphics.TexelFormat.DEPTH24_STENCIL8
-import com.github.germangb.engine.graphics.TexelFormat.RGB8
+import com.github.germangb.engine.graphics.TestFunction.DISABLED
+import com.github.germangb.engine.graphics.TestFunction.LESS
+import com.github.germangb.engine.graphics.TexelFormat.*
 import com.github.germangb.engine.graphics.Texture
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
-import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.graphics.uniformMap
 import com.github.germangb.engine.input.KeyboardKey.KEY_GRAVE_ACCENT
 import com.github.germangb.engine.input.isJustPressed
-import com.github.germangb.engine.math.*
+import com.github.germangb.engine.math.FrustumIntersection
+import com.github.germangb.engine.math.Matrix4
+import com.github.germangb.engine.math.Matrix4c
+import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.plugin.bullet.PhysicsWorld
 import com.github.germangb.engine.plugins.debug.debug
 import com.github.germangb.engine.utils.Destroyable
@@ -38,40 +37,12 @@ import com.github.germangb.shooter.GameListener
 class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld, val assets: AssetManager) : GameListener, Destroyable {
     init {
         val terrain = ctx.files.getLocal("textures/terrain_debug.jpg")
-        val cross = ctx.files.getLocal("textures/cross.png")
         val capsule = ctx.files.getLocal("meshes/capsule.obj")
         val cube = ctx.files.getLocal("meshes/cube.obj")
         assets.preloadTexture(terrain, "terrain_debug", RGB8, LINEAR, LINEAR, genMips = true)
-        assets.preloadTexture(cross, "crosshair", RGB8, NEAREST, NEAREST)
         assets.preloadMesh(capsule, "capsule_debug", STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
         assets.preloadMesh(cube, "cube_debug", STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
     }
-
-    /** Cursor shader */
-    private val cursorShader = let {
-        val file = ctx.files.getLocal("shaders/cursor.glsl")
-        ctx.graphics.createShaderProgram(file.read()?.use {
-            it.bufferedReader().readText()
-        } ?: "")
-    }
-    /** Cursor mesh */
-    private val cursorMesh = let {
-        val vertex = ctx.buffers.create(4 * 4 * 4)
-        val index = ctx.buffers.create(4 * 4).asIntBuffer()
-        index.put(intArrayOf(0, 1, 2, 3)).flip()
-        vertex.putFloat(-1f).putFloat(-1f).putFloat(0f).putFloat(0f)
-        vertex.putFloat(1f).putFloat(-1f).putFloat(1f).putFloat(0f)
-        vertex.putFloat(-1f).putFloat(1f).putFloat(0f).putFloat(1f)
-        vertex.putFloat(1f).putFloat(1f).putFloat(1f).putFloat(1f).flip()
-        val mesh = ctx.graphics.createMesh(vertex, index, TRIANGLE_STRIP, STATIC, arrayOf(POSITION2, UV))
-        vertex.clear()
-        index.clear()
-        ctx.buffers.free(vertex)
-        ctx.buffers.free(index)
-        mesh
-    }
-    /** Cursor texture */
-    private val cursorTexture by lazy { assets.getTexture("crosshair") }
 
     /** Instancing buffer */
     private val instanceData = ctx.buffers.create(4096 * 16 * 4)
@@ -82,6 +53,10 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
             it.bufferedReader().readText()
         } ?: "")
     }
+    /** Capsule mesh */
+    private val capsuleMesh by lazy { assets.getMesh("capsule_debug") ?: DummyMesh }
+    /** Block shape */
+    private val blockMesh by lazy { assets.getMesh("cube_debug") ?: DummyMesh }
     /** Render target */
     private val fbo = let {
         val (width, height) = ctx.graphics.dimensions
@@ -111,6 +86,14 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         mesh
     }
 
+    /** Shadowmap rendering */
+    private val shadowFbo = ctx.graphics.createFramebuffer(1024, 1024, arrayOf(DEPTH24)) {
+        createTexture(it.width, it.height, it.format, LINEAR, LINEAR)
+    }
+    /** Transform of the shadow map */
+    private val shadowProjection = Matrix4()
+    private val shadowView = Matrix4()
+
     /** Scene graph */
     val root = Actor()
     /** Agents stuff */
@@ -118,15 +101,14 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         addMeshInstancer(assets.getMesh("capsule_debug") ?: DummyMesh, emptyMap())
     }
 
-    // Debug blocks
-
-    val blocks = root.attachChild {
+    // Buildings
+    /** Instanced buildings */
+    val buildings = root.attachChild {
         val mesh = assets.getMesh("cube_debug") ?: DummyMesh
         addMeshInstancer(mesh, emptyMap())
     }
 
     // stencil occ rendering
-
     /** Used to render things behind other things */
     private val stencilShader = let {
         val file = ctx.files.getLocal("shaders/stencil.glsl")
@@ -188,9 +170,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     /** Terrain debug texture */
     private val terrainDebug = assets.getTexture("terrain_debug") ?: DummyTexture
 
-    //
     // Camera stuff
-    //
 
     /** Frustum culling computations */
     private val culling = FrustumIntersection()
@@ -199,9 +179,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
 
     /** Free rendering resources */
     override fun destroy() {
-        cursorShader.destroy()
-        cursorMesh.destroy()
-        stencilShader.destroy()
+        shadowFbo.destroy()
 
         fbo.destroy()
         compositeShader.destroy()
@@ -215,8 +193,8 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     }
 
     /** Add debug block */
-    fun addBlock(trans: Matrix4c) {
-        blocks.attachChild {
+    fun addBuilding(trans: Matrix4c) {
+        buildings.attachChild {
             transform.set(trans)
             addMeshInstance()
         }
@@ -224,9 +202,9 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
 
     /** Render game */
     fun render(view: Matrix4c, projection: Matrix4c) {
-        if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
-            ctx.debug.toggle()
-        }
+        if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) ctx.debug.toggle()
+        updateAgents()
+        root.computeTransforms()
 
         ctx.debug.add(buildString {
             ctx.graphics {
@@ -238,21 +216,46 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
             }
         })
 
-        ctx.graphics(fbo) {
+        // render shadowmap
+        val s = 64f
+        shadowProjection.setOrtho(-s, s, -s, s, -s, s)
+        shadowView.setLookAt(0f, 0f, 0f, 4f, -4f, 2f, 0f, 1f, 0f)
+
+        ctx.graphics(shadowFbo) {
+            val (w, h) = shadowFbo.dimensions
+            state.viewPort(0, 0, w, h)
             state.depthTest(LESS)
             state.clearColor(0.2f, 0.2f, 0.2f, 1f)
-            state.clearDepthBuffer()
             state.clearColorBuffer()
+            state.clearDepthBuffer()
+            buildTerrainInstanceData(shadowView, shadowProjection)
+            render(terrainMesh, terrainShader, uniformMap(
+                    "u_view" to shadowView,
+                    "u_proj" to shadowProjection,
+                    "u_max_height" to terrainHeight,
+                    "u_size" to 2048f,
+                    "u_height" to terrainTexture,
+                    "u_texture" to terrainDebug
+            ), instanceData)
+            buildInstanceData(buildings)
+            render(blockMesh, capsuleShader, uniformMap(
+                    "u_view" to shadowView,
+                    "u_proj" to shadowProjection
+            ), instanceData)
+            buildInstanceData(agents)
+            render(capsuleMesh, capsuleShader, uniformMap(
+                    "u_view" to shadowView,
+                    "u_proj" to shadowProjection
+            ), instanceData)
         }
 
-        // update actor transforms
-        root.computeTransforms()
-
         ctx.graphics(fbo) {
-            state.clearStencilBuffer()
-
-            // render terrain
-
+            val (w, h) = fbo.dimensions
+            state.viewPort(0, 0, w, h)
+            state.depthTest(LESS)
+            state.clearColor(0.2f, 0.2f, 0.2f, 1f)
+            state.clearColorBuffer()
+            state.clearDepthBuffer()
             buildTerrainInstanceData(view, projection)
             render(terrainMesh, terrainShader, uniformMap(
                     "u_view" to view,
@@ -260,71 +263,42 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
                     "u_max_height" to terrainHeight,
                     "u_size" to 2048f,
                     "u_height" to terrainTexture,
-                    "u_texture" to terrainDebug
+                    "u_texture" to terrainDebug,
+                    "u_shadow_map" to shadowFbo.targets[0],
+                    "u_shadow_transform" to aux.set(shadowProjection).mul(shadowView)
             ), instanceData)
-
-            // render blocks
-
-            assets.getMesh("cube_debug")?.let {
-                buildInstanceData(blocks)
-
-                state.stencilFunc(ALWAYS, 4, 0xff)
-                state.stencilOp(KEEP, KEEP, REPLACE)
-
-                state.cullMode(CullingMode.FRONT)
-                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
-                state.stencilOp(KEEP, KEEP, KEEP)
-
-                state.cullMode(CullingMode.BACK)
-                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
-
-                state.cullMode(CullingMode.DISABLED)
-            }
-
-            // Render capsules
-
-            state.stencilOp(KEEP, INCREMENT, DECREMENT)
-            val caps = agents.breadthFirstTraversal()
-            caps.forEach { actor ->
-                val agent = actor.get(LocalAgent::class)
-                agent?.let {
-                    actor.transform.set(it.transform)
-                    if (it.crouching == CrouchState.CROUCHING) actor.transform.scale(1.5f, 0.5f, 1.5f)
-                }
-            }
-
-            assets.getMesh("capsule_debug")?.let {
-                buildInstanceData(agents)
-                render(it, capsuleShader, uniformMap("u_view" to view, "u_proj" to projection), instanceData)
-            }
-
-            // render colored background with stencil
-            state.stencilFunc(LESS, 4, 0xFF)
-            render(quadMesh, stencilShader, emptyMap())
-
-            // disable stencil buffer
-            state.stencilFunc(DISABLED, 1, 0xFF)
+            buildInstanceData(buildings)
+            render(blockMesh, capsuleShader, uniformMap(
+                    "u_view" to view,
+                    "u_proj" to projection,
+                    "u_shadow_map" to shadowFbo.targets[0],
+                    "u_shadow_transform" to aux.set(shadowProjection).mul(shadowView)
+            ), instanceData)
+            buildInstanceData(agents)
+            render(capsuleMesh, capsuleShader, uniformMap(
+                    "u_view" to view,
+                    "u_proj" to projection
+            ), instanceData)
         }
 
-        // render composite image
         ctx.graphics {
+            val (w, h) = dimensions
+            state.viewPort(0, 0, w, h)
             state.depthTest(DISABLED)
             state.clearColorBuffer()
             render(quadMesh, compositeShader, uniformMap("u_texture" to fbo.targets[0], "u_normal" to fbo.targets[1]))
+        }
+    }
 
-            // render cursor
-            if (false && ctx.input.mouse.insideWindow) {
-                state.blending(BlendMode.NEGATE)
-                val transform = Matrix4().ortho(0f, dimensions.width.toFloat(), dimensions.height.toFloat(), 0f, -10f, 10f)
-                render(cursorMesh, cursorShader, uniformMap(
-                        "u_transform" to transform,
-                        "u_texture" to (cursorTexture ?: DummyTexture),
-                        "u_position" to Vector2(ctx.input.mouse.x.toFloat(), ctx.input.mouse.y.toFloat())
-                ))
-                state.blending(BlendMode.DISABLED)
+    fun updateAgents() {
+        val caps = agents.breadthFirstTraversal()
+        caps.forEach { actor ->
+            val agent = actor.get(LocalAgent::class)
+            agent?.let {
+                actor.transform.set(it.transform)
+                if (it.crouching == CrouchState.CROUCHING) actor.transform.scale(1.5f, 0.5f, 1.5f)
             }
         }
-
     }
 
     fun buildTerrainInstanceData(view: Matrix4c, projection: Matrix4c) {

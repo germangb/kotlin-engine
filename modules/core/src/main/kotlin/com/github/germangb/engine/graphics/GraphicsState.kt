@@ -1,74 +1,45 @@
 package com.github.germangb.engine.graphics
 
 interface GraphicsState {
-    /**
-     * Clear color buffer
-     */
+    /** Clear color buffer */
     fun clearColor(r: Float, g: Float, b: Float, a: Float)
 
-    /**
-     * Clear depth buffer
-     */
+    /** Clear depth buffer */
     fun clearDepth(d: Float)
 
-    /**
-     * Clear stencil buffer
-     */
+    /** Clear stencil buffer */
     fun clearStencil(s: Int)
 
-    /**
-     * Render mode
-     */
+    /** Render mode */
     fun polygonMode(mode: DrawMode)
 
-    /**
-     * Set line width
-     */
+    /** Set line width */
     fun lineWidth(width: Float)
 
-    /**
-     * Set point size
-     */
+    /** Set point size */
     fun pointSize(size: Float)
 
-    /** Set blending */
-    fun blending(mode: BlendMode)
-
-    /**
-     * Set depth test function
-     */
+    /** Set depth test function */
     fun depthTest(func: TestFunction)
 
-    /**
-     * Stencil test function
-     */
+    /** Stencil test function */
     fun stencilFunc(func: TestFunction, ref: Int, mask: Int)
 
     /** Stencil operation */
     fun stencilOp(sfail: StencilOperation, dfail: StencilOperation, dpass: StencilOperation)
 
-    /**
-     * Set culling mode
-     */
+    /** Set culling mode */
     fun cullMode(mode: CullingMode)
 
-    /**
-     * Set viewport
-     */
+    /** Set viewport */
     fun viewPort(x: Int, y: Int, width: Int, height: Int)
 
-    /**
-     * Clear color buffer
-     */
+    /** Clear color buffer */
     fun clearColorBuffer()
 
-    /**
-     * Clear depth buffer
-     */
+    /** Clear depth buffer */
     fun clearDepthBuffer()
 
-    /**
-     * Clear stencil buffer
-     */
+    /** Clear stencil buffer */
     fun clearStencilBuffer()
 }

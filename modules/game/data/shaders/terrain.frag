@@ -1,12 +1,14 @@
 in vec2 v_uv;
 in vec3 v_normal;
 in vec3 v_position;
+in vec4 v_shadow_position;
 
 out vec4 frag_color;
 out vec4 normal_color;
 
 uniform float u_size;
 uniform sampler2D u_texture;
+uniform sampler2D u_shadow_map;
 
 #define FOG_UTILS
 #define LIGHTING_UTILS
@@ -22,15 +24,22 @@ void main() {
     vec3 color = v_normal * 0.5 + 0.5;
     color = vec3(1.0);
 
-    color = mix(color, texture(u_texture, v_uv*128).rgb, 0.9);
+    color = mix(color, texture(u_texture, v_uv*128).rgb, 0.5);
 
     //color *= clamp(dot(v_normal, normalize(vec3(1, 4, 2))), 0.0, 1.0);
 
     float light = clamp(dot(v_normal, normalize(SUN_DIR)), 0.0, 1.0);
+
+    // compute shadow
+    float shadow = shadow_contrib(u_shadow_map, v_shadow_position.xyz);
+    light = min(shadow, light);
+
     light = smoothstep(0.2, 0.8, light);
+    light = mix(0.6, 1.0, light);
     color *= light;
 
-    color = mix(color*0.4, color, grid(8, v_uv));
+    color = mix(color*0.7, color, grid(8, v_uv));
+
 
     color = fog(color, v_position);
     frag_color = vec4(color, 1.0);

@@ -16,11 +16,13 @@ import com.github.germangb.renderer.AudioRenderer
 import com.github.germangb.renderer.GraphicsRenderer
 import java.util.*
 
+/** Environment collision flag */
 private val MAP_COLLISION = 0x4
+/** Agent collision flag */
 private val AGENT_COLLISION = 0x2
 
 /** Base application */
-class ShooterApplication(val ctx: Context) : Application, Game {
+class GameApplication(val ctx: Context) : Application, Game {
     /** Asset manager */
     val assets = NaiveAssetManager(ctx)
 
@@ -105,9 +107,12 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         registerControllers()
         initControllers()
 
-        // debug blocks
-        addBlock(Vector3(8f, 6f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
-        addBlock(Vector3(10f, 8f, 8f), Vector3(24f, 0f, 8f - 0.1f), Quaternion().rotateY(0.2f))
+        // debug buildings
+        addBlock(Vector3(8f, 8f, 8f), Vector3(12f, 2f, 0f), Quaternion().rotateY(0.15f))
+        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 8f), Quaternion().rotateY(0.2f))
+
+        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 38f), Quaternion().rotateY(0.2f))
+        addBlock(Vector3(10f, 7f, 5f), Vector3(32f, 0f, 30f), Quaternion().rotateY(0.2f))
     }
 
     /** Add a debug block */
@@ -123,7 +128,7 @@ class ShooterApplication(val ctx: Context) : Application, Game {
         body.transform = transform
 
         transform.scale(half)
-        graphics.addBlock(transform)
+        graphics.addBuilding(transform)
     }
 
     /** Spawn agents on demand */

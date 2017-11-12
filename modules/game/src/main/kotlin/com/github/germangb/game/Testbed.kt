@@ -11,6 +11,8 @@ import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
 import com.github.germangb.engine.graphics.*
+import com.github.germangb.engine.graphics.CullingMode.BACK
+import com.github.germangb.engine.graphics.CullingMode.FRONT
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
 import com.github.germangb.engine.graphics.TestFunction.DISABLED
 import com.github.germangb.engine.graphics.TestFunction.LESS
@@ -470,7 +472,7 @@ class Testbed(val ctx: Context) : Application {
 
         root.breadthFirstTraversal().forEach { actor ->
             actor.meshInstancer?.let { inst ->
-                ctx.graphics.state.cullMode(CullingMode.BACK)
+                ctx.graphics.state.cullMode(BACK)
 
                 //
                 // Compute instancing data
@@ -520,7 +522,7 @@ class Testbed(val ctx: Context) : Application {
 
         root.breadthFirstTraversal().forEach { actor ->
             actor.skinnedMesh?.let { mesh ->
-                ctx.graphics.state.cullMode(CullingMode.FRONT)
+                ctx.graphics.state.cullMode(FRONT)
 
                 val texture = mesh.material["diffuse"] ?: DummyTexture
                 val uniforms = uniformMap(
@@ -530,18 +532,16 @@ class Testbed(val ctx: Context) : Application {
                         "u_skin" to skinData)
 
                 ctx.graphics(fbo) {
-                    state.cullMode(CullingMode.BACK)
+                    state.cullMode(BACK)
                     render(mesh.mesh, skinShader, uniforms)
 
-                    state.cullMode(CullingMode.FRONT)
+                    state.cullMode(FRONT)
                     render(mesh.mesh, outlineSkinShader, uniforms)
                 }
             }
         }
 
         ctx.graphics {
-            val (w, h) = ctx.graphics.dimensions
-            state.viewPort(0, 0, w, h)
             state.clearColor(0f, 0f, 0f, 1f)
             state.depthTest(DISABLED)
             state.cullMode(CullingMode.DISABLED)

@@ -31,8 +31,14 @@ interface GraphicsDevice {
     /** Work with default framebuffer  */
     operator fun invoke(action: GraphicsDevice.() -> Unit)
 
+    /** Perform instancing call to the framebuffer */
+    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer)
+
+    /** Perform draw call to the framebuffer */
+    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>)
+
     /** Create a texture with garbage data */
-    fun createTexture(width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter): Texture
+    fun createTexture(width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean = false): Texture
 
     /** Create a texture from 8bit components */
     fun createTexture(data: ByteBuffer?, width: Int, height: Int, format: TexelFormat, min: TextureFilter, mag: TextureFilter, genMips: Boolean = false): Texture
@@ -72,10 +78,4 @@ interface GraphicsDevice {
 
     /** Create a shader program */
     fun createShaderProgram(source: CharSequence): ShaderProgram
-
-    /** Perform instancing call to the framebuffer */
-    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>, instanceData: ByteBuffer)
-
-    /** Perform draw call to the framebuffer */
-    fun render(mesh: Mesh, program: ShaderProgram, uniforms: Map<String, Any>)
 }
