@@ -60,7 +60,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     /** Render target */
     private val fbo = let {
         val (width, height) = ctx.graphics.dimensions
-        ctx.graphics.createFramebuffer(width, height, arrayOf(RGB8, RGB8, DEPTH24_STENCIL8))
+        ctx.graphics.createFramebuffer(width, height, arrayOf(RGB8, RGB16, DEPTH24_STENCIL8))
     }
     /** Composite shader */
     private val compositeShader = let {
@@ -92,6 +92,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     }
     /** Transform of the shadow map */
     private val shadowProjection = Matrix4()
+    /** Shadow view matrix */
     private val shadowView = Matrix4()
 
     /** Scene graph */
@@ -106,15 +107,6 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
     val buildings = root.attachChild {
         val mesh = assets.getMesh("cube_debug") ?: DummyMesh
         addMeshInstancer(mesh, emptyMap())
-    }
-
-    // stencil occ rendering
-    /** Used to render things behind other things */
-    private val stencilShader = let {
-        val file = ctx.files.getLocal("shaders/stencil.glsl")
-        ctx.graphics.createShaderProgram(file.read()?.use {
-            it.bufferedReader().readText()
-        } ?: "")
     }
 
     // Terrain rendering
@@ -208,6 +200,7 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
 
         ctx.debug.add(buildString {
             ctx.graphics {
+                appendln("FPS = ${ctx.time.fps}")
                 appendln("# textures = ${textures.size}")
                 appendln("# meshes = ${meshes.size}")
                 appendln("# framebuffers = ${framebuffers.size}")
@@ -286,7 +279,13 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
             state.viewPort(0, 0, w, h)
             state.depthTest(DISABLED)
             state.clearColorBuffer()
-            render(quadMesh, compositeShader, uniformMap("u_texture" to fbo.targets[0], "u_normal" to fbo.targets[1]))
+            render(quadMesh, compositeShader, uniformMap(
+                    "u_texture" to fbo.targets[0],
+                    "u_normal" to fbo.targets[1],
+                    "u_depth" to fbo.targets[2],
+                    "u_projection" to aux.set(projection).mul(view),
+                    "u_inv_projection" to Matrix4(aux).invert()
+            ))
         }
     }
 

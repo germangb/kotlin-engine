@@ -24,7 +24,7 @@ void main() {
     vec3 color = v_normal * 0.5 + 0.5;
     color = vec3(1.0);
 
-    color = mix(color, texture(u_texture, v_uv*128).rgb, 0.5);
+    color = mix(color, texture(u_texture, v_uv*128).rgb, 0.25);
 
     //color *= clamp(dot(v_normal, normalize(vec3(1, 4, 2))), 0.0, 1.0);
 
@@ -35,10 +35,10 @@ void main() {
     light = min(shadow, light);
 
     light = smoothstep(0.2, 0.8, light);
-    light = mix(0.6, 1.0, light);
+    light = mix(0.85, 1.0, light);
     color *= light;
 
-    color = mix(color*0.7, color, grid(8, v_uv));
+    color = mix(color*0.85, color, grid(8, v_uv));
 
 
     color = fog(color, v_position);

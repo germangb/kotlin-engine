@@ -47,9 +47,9 @@ void main() {
     float shadow = shadow_contrib(u_shadow_map, v_shadow_position.xyz);
     light = min(shadow, light);
 
-    light = mix(0.6, 1.0, light);
+    light = mix(0.85, 1.0, light);
 
-    vec3 color = fog(vec3(light), v_position);
+    vec3 color = fog(vec3(1)*light, v_position);
     frag_color = vec4(color, 1.0);
     normal_color = vec4(v_normal * 0.5 + 0.5, 1.0);
 }

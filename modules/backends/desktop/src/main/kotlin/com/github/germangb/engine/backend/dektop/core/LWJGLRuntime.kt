@@ -39,7 +39,7 @@ class LWJGLRuntime(width: Int, height: Int) {
         //glfwWindowHint(GLFW_SAMPLES, 4)
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL)
         glfwMakeContextCurrent(window)
-        glfwSwapInterval(0)
+        glfwSwapInterval(1)
 
         GL.createCapabilities()
         //debug
@@ -80,11 +80,21 @@ class LWJGLRuntime(width: Int, height: Int) {
         // reset elapsed
         glfwSetTime(0.0)
         var lastTime = 0f
+
+        var lastFpsTime = 0f
+        var ticks = 0
+
         while (!glfwWindowShouldClose(window)) {
             val now = glfwGetTime().toFloat()
             time._elapsed = now
             time._delta = now - lastTime
             lastTime = now
+
+            if (now - lastFpsTime > 1) {
+                time._fps = ticks
+                lastFpsTime = now
+                ticks = 0
+            } else ticks++
 
             try {
                 plugins.forEach { it.onPreUpdate() }

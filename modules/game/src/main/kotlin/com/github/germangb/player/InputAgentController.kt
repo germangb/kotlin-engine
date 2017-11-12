@@ -49,9 +49,9 @@ class InputAgentController(game: Game, val ctx: Context, val world: PhysicsWorld
         val origin = Vector3()
         val dir = Vector3()
         val (width, height) = ctx.graphics.dimensions
-        val x = ctx.input.mouse.x
-        val y = height - ctx.input.mouse.y
-        auxMat.set(projection).mul(view).unprojectRay(x.toFloat(), y.toFloat(), intArrayOf(0, 0, width, height), origin, dir)
+        val x = ctx.input.mouse.x.toFloat()
+        val y = height - ctx.input.mouse.y.toFloat()
+        auxMat.set(projection).mul(view).unprojectRay(x, y, intArrayOf(0, 0, width, height), origin, dir)
 
         // test collision
         val dest = aux.set(origin).add(dir)

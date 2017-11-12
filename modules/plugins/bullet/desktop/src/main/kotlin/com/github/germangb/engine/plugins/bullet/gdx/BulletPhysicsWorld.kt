@@ -15,8 +15,6 @@ import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.plugin.bullet.*
 
-private val ID = Matrix4()
-
 class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : PhysicsWorld {
     val world: btDynamicsWorld
     val ibodies = mutableListOf<RigidBody>()
@@ -24,7 +22,6 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
     override val bodies get() = ibodies
 
     companion object {
-        val auxMat = GdxMatrix4()
         val auxVec0 = GdxVector3()
         val auxVec1 = GdxVector3()
     }
@@ -56,8 +53,10 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
 
         if (closestCallback.hasHit()) {
             closestCallback.getHitPointWorld(auxVec0)
-            val pos = Vector3(auxVec0.x, auxVec0.y, auxVec0.z)
-            return RayTestResult(closestCallback.collisionObject.userData as RigidBody, pos)
+            closestCallback.getHitNormalWorld(auxVec1)
+            val position = Vector3().set(auxVec0)
+            val normal = Vector3().set(auxVec1)
+            return RayTestResult(closestCallback.collisionObject.userData as RigidBody, position, normal)
         }
 
         return null

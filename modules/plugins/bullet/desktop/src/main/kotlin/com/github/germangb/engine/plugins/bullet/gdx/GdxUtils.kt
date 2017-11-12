@@ -6,7 +6,10 @@ internal typealias GdxVector3 = com.badlogic.gdx.math.Vector3
 internal typealias GdxMatrix4 = com.badlogic.gdx.math.Matrix4
 
 /** use Gdx's Vector3 class with my own */
-internal fun GdxVector3.set(from: Vector3c) = set(from[0], from[1], from[2])
+internal fun GdxVector3.set(from: Vector3c) = set(from.x, from.y, from.z)
+
+/** Gdx to joml */
+fun Vector3.set(from: GdxVector3) = set(from.x, from.y, from.z)
 
 /** Set joml Matrix4 from gdx Matrix4 */
 internal fun Matrix4.set(from: GdxMatrix4): Matrix4 {

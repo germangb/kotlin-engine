@@ -108,11 +108,11 @@ class GameApplication(val ctx: Context) : Application, Game {
         initControllers()
 
         // debug buildings
-        addBlock(Vector3(8f, 8f, 8f), Vector3(12f, 2f, 0f), Quaternion().rotateY(0.15f))
+        addBlock(Vector3(14f, 7f, 8f), Vector3(12f, 0f, 0f), Quaternion().rotateY(0.15f))
         addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 8f), Quaternion().rotateY(0.2f))
 
-        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 38f), Quaternion().rotateY(0.2f))
-        addBlock(Vector3(10f, 7f, 5f), Vector3(32f, 0f, 30f), Quaternion().rotateY(0.2f))
+        addBlock(Vector3(10f, 7f, 8f), Vector3(24f, 0f, 38f), Quaternion().rotateY(0.1f))
+        addBlock(Vector3(10f, 7f, 5f), Vector3(32f, 0f, 30f), Quaternion().rotateY(0.1f))
     }
 
     /** Add a debug block */

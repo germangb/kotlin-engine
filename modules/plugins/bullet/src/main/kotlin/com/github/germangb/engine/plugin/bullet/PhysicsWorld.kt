@@ -7,7 +7,7 @@ import com.github.germangb.engine.utils.Destroyable
 enum class BodyType { DYNAMIC, KINEMATIC }
 
 /** Result of ray test */
-data class RayTestResult(val body: RigidBody, val position: Vector3c)
+data class RayTestResult(val body: RigidBody, val position: Vector3c, val normal: Vector3c)
 
 /** Dynamics world interface with functions to spawn rigid bodies and constraints */
 interface PhysicsWorld : Destroyable {
