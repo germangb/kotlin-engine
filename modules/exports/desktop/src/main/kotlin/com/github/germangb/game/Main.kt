@@ -23,9 +23,13 @@ fun LWJGLContext.installPlugins() {
 
 fun main(args: Array<String>) {
     val runtime = LWJGLRuntime(720, 480)
-    val ctx = LWJGLContext(runtime)
+
+    //runtime.samples = 4
+
+    val ctx = runtime.context
     ctx.installPlugins()
     runtime.start {
-        Testbed(ctx)
+        //Testbed(ctx)
+        PhysicsDemo(ctx)
     }
 }

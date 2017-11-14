@@ -20,8 +20,13 @@ class LWJGLRuntime(width: Int, height: Int) {
     val input: GLFWInputDevice
     val files: DesktopFiles
     val time: GLFWTime
+    val context: LWJGLContext
     val window: Long
+
     var cursorHidden = false
+    var depthBits = 24
+    var stencilBits = 8
+    var samples = 0
 
     val plugins = mutableListOf<Plugin>()
 
@@ -36,7 +41,9 @@ class LWJGLRuntime(width: Int, height: Int) {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
-        //glfwWindowHint(GLFW_SAMPLES, 4)
+        glfwWindowHint(GLFW_DEPTH_BITS, depthBits)
+        glfwWindowHint(GLFW_STENCIL_BITS, stencilBits)
+        glfwWindowHint(GLFW_SAMPLES, samples)
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL)
         glfwMakeContextCurrent(window)
         glfwSwapInterval(1)
@@ -60,6 +67,8 @@ class LWJGLRuntime(width: Int, height: Int) {
         mem = LWJGLBufferManager()
         input = GLFWInputDevice(window, width, height)
         time = GLFWTime()
+
+        context = LWJGLContext(this)
     }
 
     /**

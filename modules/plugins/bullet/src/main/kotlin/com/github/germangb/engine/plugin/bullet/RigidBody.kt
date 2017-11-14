@@ -28,4 +28,13 @@ interface RigidBody : Destroyable {
 
     /** User data attached bind bullet world */
     var data: Any?
+
+    /** Body motion state */
+    val motionState: MotionState
+
+    /** Clear body forces */
+    fun clearForces()
+
+    /** Activate rigid body */
+    fun activate()
 }

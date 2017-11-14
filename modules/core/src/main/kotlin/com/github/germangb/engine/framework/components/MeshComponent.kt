@@ -14,10 +14,10 @@ fun Actor.addMeshInstancer(mesh: Mesh, material: Map<String, Any>) = addComponen
 val Actor.meshInstancer get() = get(MeshInstancerComponent::class)
 
 /** Contains mesh information */
-class MeshComponent(val mesh: Mesh, val material: Material)
+class MeshComponent(val mesh: Mesh, val material: Map<String, Any>)
 
 /** Adds a mesh to the actor */
-fun Actor.addMesh(mesh: Mesh, material: Map<String, Any>) = addComponent(MeshInstancerComponent(mesh, material))
+fun Actor.addMesh(mesh: Mesh, material: Map<String, Any>) = addComponent(MeshComponent(mesh, material))
 
 /** Get mesh component */
 val Actor.mesh get() = get(MeshComponent::class)

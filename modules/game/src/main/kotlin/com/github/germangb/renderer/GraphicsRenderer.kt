@@ -212,15 +212,15 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
         // render shadowmap
         val s = 64f
         shadowProjection.setOrtho(-s, s, -s, s, -s, s)
-        shadowView.setLookAt(0f, 0f, 0f, 4f, -4f, 2f, 0f, 1f, 0f)
+        shadowView.setLookAt(0f, 0f, 0f, 4f, -3f, 2f, 0f, 1f, 0f)
 
         ctx.graphics(shadowFbo) {
             val (w, h) = shadowFbo.dimensions
-            state.viewPort(0, 0, w, h)
-            state.depthTest(LESS)
-            state.clearColor(0.2f, 0.2f, 0.2f, 1f)
-            state.clearColorBuffer()
-            state.clearDepthBuffer()
+            viewPort(0, 0, w, h)
+            depthTest(LESS)
+            clearColor(0.2f, 0.2f, 0.2f, 1f)
+            clearColorBuffer()
+            clearDepthBuffer()
             buildTerrainInstanceData(shadowView, shadowProjection)
             render(terrainMesh, terrainShader, uniformMap(
                     "u_view" to shadowView,
@@ -244,11 +244,11 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
 
         ctx.graphics(fbo) {
             val (w, h) = fbo.dimensions
-            state.viewPort(0, 0, w, h)
-            state.depthTest(LESS)
-            state.clearColor(0.2f, 0.2f, 0.2f, 1f)
-            state.clearColorBuffer()
-            state.clearDepthBuffer()
+            viewPort(0, 0, w, h)
+            depthTest(LESS)
+            clearColor(0.2f, 0.2f, 0.2f, 1f)
+            clearColorBuffer()
+            clearDepthBuffer()
             buildTerrainInstanceData(view, projection)
             render(terrainMesh, terrainShader, uniformMap(
                     "u_view" to view,
@@ -257,14 +257,14 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
                     "u_size" to 2048f,
                     "u_height" to terrainTexture,
                     "u_texture" to terrainDebug,
-                    "u_shadow_map" to shadowFbo.targets[0],
+                    "u_shadow_map" to shadowFbo.textures[0],
                     "u_shadow_transform" to aux.set(shadowProjection).mul(shadowView)
             ), instanceData)
             buildInstanceData(buildings)
             render(blockMesh, capsuleShader, uniformMap(
                     "u_view" to view,
                     "u_proj" to projection,
-                    "u_shadow_map" to shadowFbo.targets[0],
+                    "u_shadow_map" to shadowFbo.textures[0],
                     "u_shadow_transform" to aux.set(shadowProjection).mul(shadowView)
             ), instanceData)
             buildInstanceData(agents)
@@ -276,13 +276,13 @@ class GraphicsRenderer(private val ctx: Context, private val world: PhysicsWorld
 
         ctx.graphics {
             val (w, h) = dimensions
-            state.viewPort(0, 0, w, h)
-            state.depthTest(DISABLED)
-            state.clearColorBuffer()
+            viewPort(0, 0, w, h)
+            depthTest(DISABLED)
+            clearColorBuffer()
             render(quadMesh, compositeShader, uniformMap(
-                    "u_texture" to fbo.targets[0],
-                    "u_normal" to fbo.targets[1],
-                    "u_depth" to fbo.targets[2],
+                    "u_texture" to fbo.textures[0],
+                    "u_normal" to fbo.textures[1],
+                    "u_depth" to fbo.textures[2],
                     "u_projection" to aux.set(projection).mul(view),
                     "u_inv_projection" to Matrix4(aux).invert()
             ))

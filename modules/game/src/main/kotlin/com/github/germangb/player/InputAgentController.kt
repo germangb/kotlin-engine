@@ -32,7 +32,7 @@ class InputAgentController(game: Game, val ctx: Context, val world: PhysicsWorld
     }
 
     val inputStack = Stack<KeyboardKey>()
-    val radius: Vector3c = Vector3(0f, 32f, 18f)
+    val radius: Vector3c = Vector3(0f, 38f, 18f)
     val center = Vector3()
 
     override fun init() {

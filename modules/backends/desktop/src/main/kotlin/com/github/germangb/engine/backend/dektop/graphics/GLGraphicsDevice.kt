@@ -16,12 +16,9 @@ import java.nio.*
 /**
  * Lwjgl OpenGL graphics implementation
  */
-class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : GraphicsDevice, Destroyable {
+class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : GLGraphicsState(), Destroyable {
     private val windowFramebuffer = GLFramebuffer(this, 0, width, height, emptyList())
     private val renderer = GLRenderer()
-
-    /** GL state thing */
-    override val state = GLGraphicsState()
 
     override val dimensions = FramebufferDimensions(width, height)
 
@@ -42,10 +39,12 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
     override fun invoke(fbo: Framebuffer, action: GraphicsDevice.() -> Unit) {
         if (fbo is GLFramebuffer) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo.id)
+            glViewport(0, 0, fbo.dimensions.width, fbo.dimensions.height)
             if (fbo.drawBuffers.isNotEmpty())
                 glDrawBuffers(fbo.drawBuffers)
             action.invoke(this)
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            glViewport(0, 0, dimensions.width, dimensions.height)
         }
     }
 
@@ -256,12 +255,12 @@ class GLGraphicsDevice(val files: DesktopFiles, width: Int, height: Int) : Graph
      */
     override fun createShaderProgram(source: CharSequence): ShaderProgram {
         val vertex = buildString {
-            appendln("#define VERTEX_SHADER")
+            appendln("#define $VERTEX_MACRO")
             append(source)
         }
 
         val fragment = buildString {
-            appendln("#define FRAGMENT_SHADER")
+            appendln("#define $FRAGMENT_MACRO")
             append(source)
         }
 

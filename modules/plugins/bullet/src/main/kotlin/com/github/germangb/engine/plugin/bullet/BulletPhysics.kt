@@ -42,4 +42,7 @@ interface BulletPhysics {
      * Create heightfield shape
      */
     fun createHeightfield(width: Int, height: Int, data: FloatBuffer, minHeight: Float, maxHeight: Float): PhysicsShape
+
+    /** Create a point 2 point contraint */
+    fun createPoint2PointContraint(bodyA: RigidBody, bodyB: RigidBody, pivotA: Vector3c, pivotB: Vector3c): PhysicsContraint
 }

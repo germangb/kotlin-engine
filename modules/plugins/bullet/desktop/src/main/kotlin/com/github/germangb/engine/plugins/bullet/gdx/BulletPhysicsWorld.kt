@@ -1,15 +1,14 @@
 package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback
-import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEACTIVATION
 import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher
-import com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT
 import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase
 import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
+import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.math.Vector3c
@@ -62,7 +61,12 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
         return null
     }
 
-    override fun createBody(shape: PhysicsShape, type: BodyType, mass: Float, group: Int, mask: Int): RigidBody {
+    override fun addConstraint(constraint: PhysicsContraint) {
+        if (constraint !is BulletContraint) throw IllegalArgumentException()
+        world.addConstraint(constraint.btConstraint)
+    }
+
+    override fun addRigidBody(shape: PhysicsShape, mass: Float, group: Int, mask: Int): RigidBody {
         if (shape !is BulletPhysicsShape) throw IllegalArgumentException()
         val collShape = shape.btShape
 
@@ -71,16 +75,16 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
         //else collShape.calculateLocalInertia(mass, auxVec0)
         collShape.calculateLocalInertia(mass, auxVec0)
 
-        val motionSate = BulletMotionState(Matrix4())
+        val motionSate = btDefaultMotionState()
         val btBody = btRigidBody(mass, motionSate, collShape, auxVec0)
 
         world.addRigidBody(btBody, group.toShort(), mask.toShort())
 
-        // check body type
-        if (type == BodyType.KINEMATIC) {
-            btBody.collisionFlags = btBody.collisionFlags or CF_KINEMATIC_OBJECT
-            btBody.activationState = DISABLE_DEACTIVATION
-        }
+//        // check body type
+//        if (type == BodyType.KINEMATIC) {
+//            btBody.collisionFlags = btBody.collisionFlags or CF_KINEMATIC_OBJECT
+//            btBody.activationState = DISABLE_DEACTIVATION
+//        }
 
         val rb = BulletRigidBody(this, btBody, motionSate)
         btBody.userData = rb

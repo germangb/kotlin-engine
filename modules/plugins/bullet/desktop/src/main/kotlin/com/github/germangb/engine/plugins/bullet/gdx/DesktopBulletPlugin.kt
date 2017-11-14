@@ -2,13 +2,12 @@ package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.badlogic.gdx.physics.bullet.collision.*
+import com.badlogic.gdx.physics.bullet.dynamics.btPoint2PointConstraint
 import com.badlogic.gdx.utils.GdxNativesLoader
 import com.github.germangb.engine.math.Vector3c
-import com.github.germangb.engine.plugin.bullet.BulletPlugin
-import com.github.germangb.engine.plugin.bullet.CompoundPhysicsShape
-import com.github.germangb.engine.plugin.bullet.PhysicsShape
-import com.github.germangb.engine.plugin.bullet.PhysicsWorld
+import com.github.germangb.engine.plugin.bullet.*
 import com.github.germangb.engine.plugins.bullet.gdx.BulletPhysicsWorld.Companion.auxVec0
+import com.github.germangb.engine.plugins.bullet.gdx.BulletPhysicsWorld.Companion.auxVec1
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
@@ -23,9 +22,13 @@ object DesktopBulletPlugin : BulletPlugin {
         Bullet.init()
     }
 
-    /**
-     * Register a new bullet world
-     */
+    override fun createPoint2PointContraint(bodyA: RigidBody, bodyB: RigidBody, pivotA: Vector3c, pivotB: Vector3c): PhysicsContraint {
+        if (bodyA !is BulletRigidBody) throw IllegalArgumentException()
+        if (bodyB !is BulletRigidBody) throw IllegalArgumentException()
+        val p2p = btPoint2PointConstraint(bodyA.body, bodyB.body, auxVec0.set(pivotA), auxVec1.set(pivotB))
+        return BulletContraint(p2p)
+    }
+
     override fun createWorld(gravity: Vector3c): PhysicsWorld {
         val world = BulletPhysicsWorld(gravity, this)
         worlds.add(world)

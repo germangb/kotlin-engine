@@ -25,6 +25,7 @@ import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.*
 import com.github.germangb.engine.plugin.bullet.BodyType
+import com.github.germangb.engine.plugin.bullet.RigidBody
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
@@ -34,6 +35,10 @@ import com.github.germangb.engine.utils.DummyMesh
 import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
+
+val WORLD_FLAG = 0x1
+val RAGDOLL_FLAG = 0x2
+val PROPS_FLAG = 0x4
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -46,6 +51,12 @@ class Testbed(val ctx: Context) : Application {
         assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
         assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR, true)
     }
+
+    var ragdoll = false
+
+    val shadowFbo = ctx.graphics.createFramebuffer(1024, 1024, arrayOf(DEPTH24))
+    val shadowProjection = Matrix4()
+    val shadowView = Matrix4()
 
     val fbo = let {
         val (width, height) = ctx.graphics.dimensions
@@ -133,10 +144,25 @@ class Testbed(val ctx: Context) : Application {
         val frag = """
             in vec2 v_uv;
             in vec3 v_normal;
+            in vec4 v_shadow_position;
+
             out vec4 frag_color;
+
             uniform sampler2D u_texture;
+            uniform sampler2D u_depth;
+
+            #define LIGHT_UTILS
+            #include "shaders/utils.glsl"
+
             void main() {
                 float light = clamp(dot(v_normal, normalize(vec3(1, 0, 2))), 0.0, 1.0);
+
+
+                float shadow = shadow_contrib(v_shadow_position.xyz, u_depth);
+                light = min(light, shadow);
+
+                light = mix(0.5, 1, light);
+
                 vec4 color = texture(u_texture, v_uv);
                 color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
                 frag_color = vec4(color.rgb, 1.0);
@@ -156,24 +182,45 @@ class Testbed(val ctx: Context) : Application {
             out vec2 v_uv;
             out vec3 v_normal;
             out vec3 v_position;
+            out vec4 v_shadow_position;
+
             uniform mat4 u_projection;
             uniform mat4 u_view;
+            uniform mat4 u_shadow_viewproj;
+
             void main () {
                 vec4 viewPos = u_view * a_instance * vec4(a_position, 1.0);
                 gl_Position = u_projection * viewPos;
+                v_shadow_position = u_shadow_viewproj * a_instance * vec4(a_position, 1.0);
                 v_normal = normalize((a_instance * vec4(a_normal, 0.0)).xyz);
                 v_uv = a_uv;// + a_uv_offset;
                 v_position = viewPos.xyz;
             }
             #endif
+
             #ifdef FRAGMENT_SHADER
+
+            #define FOG_UTILS
+            #define LIGHT_UTILS
+            #include "shaders/utils.glsl"
+
             in vec2 v_uv;
             in vec3 v_normal;
             in vec3 v_position;
+            in vec4 v_shadow_position;
+
             out vec4 frag_color;
+
             uniform sampler2D u_texture;
+            uniform sampler2D u_depth;
+
             void main() {
                 float light = clamp(dot(v_normal, normalize(vec3(1, 0, 2))), 0.0, 1.0);
+
+                // compute shader
+                float shadow = shadow_contrib(v_shadow_position.xyz, u_depth);
+                light = min(light, shadow);
+
                 vec4 color = texture(u_texture, v_uv);
                 color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
                 // fog
@@ -194,7 +241,7 @@ class Testbed(val ctx: Context) : Application {
         val actor = build?.let {
             root.attachChild {
                 it()
-                transform.scale(0.05f)
+                //transform.scale(0.05f)
             }
         }
 
@@ -258,12 +305,12 @@ class Testbed(val ctx: Context) : Application {
         val shader = file.read()?.bufferedReader()?.use { it.readText() } ?: ""
         ctx.graphics.createShaderProgram(shader)
     }
-
     val proj = Matrix4()
     val view = Matrix4()
     val temp = Matrix4()
 
     override fun destroy() {
+        shadowFbo.destroy()
         hmapMesh.destroy()
         hmapShader.destroy()
         hmap?.destroy()
@@ -283,12 +330,12 @@ class Testbed(val ctx: Context) : Application {
     override fun init() {
         if (hmap == null) {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
-            val body = world.createBody(floor, BodyType.DYNAMIC, 0f, 1, 1)
+            val body = world.addRigidBody(floor, 0f, WORLD_FLAG, RAGDOLL_FLAG or PROPS_FLAG)
             body.friction = 0.5f
             body.restitution = 0f
         } else {
             val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, hmapHeight / Short.MAX_VALUE, -10f, 10f)
-            val body = world.createBody(height, BodyType.DYNAMIC, 0f, 1, 1)
+            val body = world.addRigidBody(height, 0f, WORLD_FLAG, RAGDOLL_FLAG or PROPS_FLAG)
             body.friction = 0.75f
             body.restitution = 0f
         }
@@ -304,7 +351,7 @@ class Testbed(val ctx: Context) : Application {
                 transform.rotateZ(0.2f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.createBody(compShape, BodyType.DYNAMIC, 1f, 1, 1)
+                val body = world.addRigidBody(compShape, 1f, PROPS_FLAG, WORLD_FLAG or PROPS_FLAG)
                 body.friction = 0.5f
                 body.restitution = 0f
                 body.transform = transform
@@ -368,23 +415,13 @@ class Testbed(val ctx: Context) : Application {
         ctx.debug.add(str)
     }
 
-    override fun update() {
+    fun input() {
         if (KEY_UP.isJustPressed(ctx.input)) ctx.debug.fontSize++
         if (KEY_DOWN.isJustPressed(ctx.input)) ctx.debug.fontSize--
         if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
             ctx.debug.toggle()
             click?.play()
         }
-
-        debug()
-
-        world.stepSimulation(ctx.time.delta)
-        animationManager.update(ctx.time.delta)
-
-        val bfs = root.breadthFirstTraversal()
-        bfs.mapNotNull { it.updater }.forEach { it.update() }
-
-        root.computeTransforms()
 
         if (KEY_SPACE.isJustPressed(ctx.input)) {
             if (music?.state == PLAYING) music.pause()
@@ -400,60 +437,92 @@ class Testbed(val ctx: Context) : Application {
             else animation?.pause()
         }
 
-        ctx.graphics(fbo) {
-            val (w, h) = fbo.dimensions
-            state.viewPort(0, 0, w, h)
-            state.depthTest(LESS)
-            state.clearColor(0.2f, 0.2f, 0.2f, 1f)
-            state.clearColorBuffer()
-            state.clearDepthBuffer()
-        }
+        if (KEY_R.isJustPressed(ctx.input)) {
+            if (!ragdoll) {
 
-        val (w, h) = ctx.graphics.dimensions
-        val offX = ctx.input.mouse.x - w / 2f
-        val offY = ctx.input.mouse.y - h / 2f
+                val bodies = mutableMapOf<Actor, RigidBody>()
 
-        val aspect = w.toFloat() / h
-        proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 512f)
-        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
-        val culler = FrustumIntersection(temp.set(proj).mul(view))
+                val bfs = root.breadthFirstTraversal()
+                bfs.mapNotNull { actor ->
+                    actor.joint?.let {
+                        actor to it
+                    }
+                }.forEach { (actor, joint) ->
+                    // set transform mode to absolute
+                    actor.transform.set(actor.worldTransform)
+                    actor.transformMode = ABSOLUTE
 
-        ctx.graphics(fbo) {
-            state.cullMode(CullingMode.DISABLED)
-            state.polygonMode(DrawMode.SOLID)
+                    // create rigid body
+                    val shape = ctx.bullet.createBox(Vector3(1f))
+                    val body = world.addRigidBody(shape, 1f, RAGDOLL_FLAG, WORLD_FLAG)
+                    body.transform = actor.transform
 
-            //
-            // Build instance buffer data
-            //
+                    bodies[actor] = body
 
-            val aux = Matrix4()
-            instanceData.clear()
-            var count = 0
-            val len = 16
-            val min = Vector3()
-            val max = Vector3()
-            val aabb = AABB()
-            for (x in -len until len + 1) {
-                for (z in -len until len + 1) {
-                    min.set(x * 32f, 0f, z * 32f).add(-16f, -16f, -16f)
-                    max.set(x * 32f, 0f, z * 32f).add(16f, 16f, 16f)
-                    aabb.setMin(min)
-                    aabb.setMax(max)
-                    if (culler.testAab(aabb)) {
-                        count++
-                        aux.m30(x * 32f)
-                        aux.m32(z * 32f)
-                        aux.get(instanceData).position(16 * 4 * count)
+                    // create constraint
+                    bodies[actor.parent]?.let {
+                        val pivotA = Vector3()
+                        val pivotB = Vector3()
+                        actor.transform.getTranslation(pivotA)
+                        actor.parent.worldTransform.getTranslation(pivotB)
+                        val const = ctx.bullet.createPoint2PointContraint(body, it, pivotA, pivotB)
+                        world.addConstraint(const)
+                    }
+
+                    actor.addUpdate {
+                        actor.transform.set(body.transform)
                     }
                 }
+
+                ragdoll = true
             }
-            instanceData.flip()
 
-            //
-            // Render terrainTexture chunks
-            //
+        }
+    }
 
+    fun buildTerrainInstancing(view: Matrix4c, proj: Matrix4c) {
+        val culler = FrustumIntersection(temp.set(proj).mul(view))
+        val aux = Matrix4()
+        instanceData.clear()
+        var count = 0
+        val len = 16
+        val min = Vector3()
+        val max = Vector3()
+        val aabb = AABB()
+        for (x in -len until len + 1) {
+            for (z in -len until len + 1) {
+                min.set(x * 32f, 0f, z * 32f).add(-16f, -16f, -16f)
+                max.set(x * 32f, 0f, z * 32f).add(16f, 16f, 16f)
+                aabb.setMin(min)
+                aabb.setMax(max)
+                if (culler.testAab(aabb)) {
+                    count++
+                    aux.m30(x * 32f)
+                    aux.m32(z * 32f)
+                    aux.get(instanceData).position(16 * 4 * count)
+                }
+            }
+        }
+        instanceData.flip()
+    }
+
+    fun buildInstanceData(root: Actor) {
+        instanceData.clear()
+        root.children
+                .filter { it.instance != null }
+                .forEachIndexed { index, actor ->
+                    actor.worldTransform.get(instanceData)
+                    instanceData.position(16 * 4 * (index + 1))
+                }
+        instanceData.flip()
+    }
+
+    fun render(fbo: Framebuffer, view: Matrix4c, proj: Matrix4c) {
+        ctx.graphics(fbo) {
+            buildTerrainInstancing(view, proj)
             render(hmapMesh, hmapShader, uniformMap(
+                    "u_shadow_viewproj" to Matrix4(shadowProjection).mul(shadowView),
+                    "u_depth" to shadowFbo.textures[0],
                     "u_proj" to proj,
                     "u_view" to view,
                     "u_size" to (hmap?.size?.toFloat() ?: 1f),
@@ -461,58 +530,74 @@ class Testbed(val ctx: Context) : Application {
                     "u_texture" to (floorTexture ?: DummyTexture),
                     "u_height" to (hmap?.texture ?: DummyTexture)
             ), instanceData)
-            /*render(floorMesh, staticShader, mapOf(
-                    "u_projection" to proj,
-                    "u_view" to view,
-                    "u_texture" to (floorTexture ?: DummyTexture)
-            ), instanceData)*/
-
-            state.polygonMode(DrawMode.SOLID)
         }
 
-        root.breadthFirstTraversal().forEach { actor ->
-            actor.meshInstancer?.let { inst ->
-                ctx.graphics.state.cullMode(BACK)
-
-                //
-                // Compute instancing data
-                //
-
-                instanceData.clear()
-                actor.children
-                        .filter { it.instance != null }
-                        .forEachIndexed { index, actor ->
-                            actor.worldTransform.get(instanceData)
-                            instanceData.position(16 * 4 * (index + 1))
-                        }
-                instanceData.flip()
-
-                ctx.graphics(fbo) {
-                    // create uniforms
+        ctx.graphics(fbo) {
+            val trav = root.breadthFirstTraversal()
+            trav.forEach { actor ->
+                actor.meshInstancer?.let { inst ->
+                    ctx.graphics.cullMode(BACK)
+                    buildInstanceData(actor)
                     val texture = inst.material["diffuse"] ?: DummyTexture
                     val uniforms = uniformMap(
+                            "u_shadow_viewproj" to Matrix4(shadowProjection).mul(shadowView),
+                            "u_depth" to shadowFbo.textures[0],
                             "u_projection" to proj,
                             "u_view" to view,
                             "u_texture" to texture)
-
-                    // render instanced meshes
                     render(inst.mesh, staticShader, uniforms, instanceData)
                 }
             }
         }
 
-        //
-        // Compute skin transforms
-        //
-
-        root.breadthFirstTraversal().forEach { actor ->
-            actor.joint?.let {
-                skin[it.id]
-                        .set(actor.worldTransform)
-                        .mul(it.offset)
+        ctx.graphics(fbo) {
+            val tra = root.breadthFirstTraversal()
+            tra.forEach { actor ->
+                actor.skinnedMesh?.let { mesh ->
+                    ctx.graphics.cullMode(FRONT)
+                    val texture = mesh.material["diffuse"] ?: DummyTexture
+                    val uniforms = uniformMap(
+                            "u_shadow_viewproj" to Matrix4(shadowProjection).mul(shadowView),
+                            "u_depth" to shadowFbo.textures[0],
+                            "u_projection" to proj,
+                            "u_view" to view,
+                            "u_texture" to texture,
+                            "u_skin" to skinData
+                    )
+                    cullMode(BACK)
+                    render(mesh.mesh, skinShader, uniforms)
+                    cullMode(FRONT)
+                    render(mesh.mesh, outlineSkinShader, uniforms)
+                }
             }
+            cullMode(CullingMode.DISABLED)
+        }
+    }
+
+    override fun update() {
+        input()
+        debug()
+
+        world.stepSimulation(ctx.time.delta)
+
+        if (!ragdoll) {
+            animationManager.update(ctx.time.delta)
+        } else {
+            // update rigid joints according to rigid bodies
         }
 
+        val bfs = root.breadthFirstTraversal()
+        bfs.mapNotNull { it.updater }.forEach { it.update() }
+
+        root.computeTransforms()
+
+        // compute skin transforms
+        root.breadthFirstTraversal().forEach { actor ->
+            actor.joint?.let {
+                skin[it.id].set(actor.worldTransform).mul(it.offset)
+            }
+        }
+        // buid skin uniform data
         skinData.clear()
         skin.forEachIndexed { i, mat4 ->
             mat4.get(skinData)
@@ -520,33 +605,37 @@ class Testbed(val ctx: Context) : Application {
         }
         skinData.flip()
 
-        root.breadthFirstTraversal().forEach { actor ->
-            actor.skinnedMesh?.let { mesh ->
-                ctx.graphics.state.cullMode(FRONT)
-
-                val texture = mesh.material["diffuse"] ?: DummyTexture
-                val uniforms = uniformMap(
-                        "u_projection" to proj,
-                        "u_view" to view,
-                        "u_texture" to texture,
-                        "u_skin" to skinData)
-
-                ctx.graphics(fbo) {
-                    state.cullMode(BACK)
-                    render(mesh.mesh, skinShader, uniforms)
-
-                    state.cullMode(FRONT)
-                    render(mesh.mesh, outlineSkinShader, uniforms)
-                }
-            }
+        ctx.graphics(shadowFbo) {
+            clearDepthBuffer()
         }
 
+        ctx.graphics(fbo) {
+            depthTest(LESS)
+            clearColor(0.2f, 0.2f, 0.2f, 1f)
+            clearColorBuffer()
+            clearDepthBuffer()
+        }
+
+        val (w, h) = ctx.graphics.dimensions
+        val offX = ctx.input.mouse.x - w / 2f
+        val offY = ctx.input.mouse.y - h / 2f
+
+        val s = 8f
+        shadowProjection.setOrtho(-s, s, -s, s, -s * 2, s * 2)
+        shadowView.setLookAt(0f, 0f, 0f, -2f, -3f, -1f, 0f, 1f, 0f)
+        render(shadowFbo, shadowView, shadowProjection)
+
+        val aspect = w.toFloat() / h
+        proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1024f)
+        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f).div(0.05f), Vector3(0f, 2.25f, 0f).div(0.05f), Vector3(0f, 1f, 0f))
+        render(fbo, view, proj)
+
         ctx.graphics {
-            state.clearColor(0f, 0f, 0f, 1f)
-            state.depthTest(DISABLED)
-            state.cullMode(CullingMode.DISABLED)
-            state.clearColorBuffer()
-            render(quad, composite, uniformMap("u_texture" to fbo.targets[0]))
+            clearColor(0f, 0f, 0f, 1f)
+            depthTest(DISABLED)
+            cullMode(CullingMode.DISABLED)
+            clearColorBuffer()
+            render(quad, composite, uniformMap("u_texture" to fbo.textures[0]))
         }
     }
 

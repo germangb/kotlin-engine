@@ -4,7 +4,6 @@ import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.math.*
-import com.github.germangb.engine.plugin.bullet.BodyType.DYNAMIC
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.heightfield.terrain
 import com.github.germangb.engine.utils.DummyTexture
@@ -91,7 +90,7 @@ class GameApplication(val ctx: Context) : Application, Game {
         terrain?.let {
             val size = terrain.size
             val shape = ctx.bullet.createHeightfield(size, size, terrain.data, terrainHeight / Short.MAX_VALUE, -terrainHeight, terrainHeight)
-            val body = world.createBody(shape, DYNAMIC, 0f, MAP_COLLISION, AGENT_COLLISION)
+            val body = world.addRigidBody(shape, 0f, MAP_COLLISION, AGENT_COLLISION)
 
             body.friction = 0.5f
             body.restitution = 0f
@@ -121,7 +120,7 @@ class GameApplication(val ctx: Context) : Application, Game {
         transform.translate(position).rotate(rotation)
 
         val shape = ctx.bullet.createBox(half)
-        val body = world.createBody(shape, DYNAMIC, 0f, MAP_COLLISION, AGENT_COLLISION)
+        val body = world.addRigidBody(shape, 0f, MAP_COLLISION, AGENT_COLLISION)
         body.friction = 0.5f
         body.restitution = 0f
         body.transform = transform
@@ -139,7 +138,7 @@ class GameApplication(val ctx: Context) : Application, Game {
             // create rigid body
             val transf = Matrix4().translate(agent.position)
             val shape = ctx.bullet.createCapsule(0.5f, 1f)
-            agent.body = world.createBody(shape, DYNAMIC, 1f, AGENT_COLLISION, MAP_COLLISION)
+            agent.body = world.addRigidBody(shape, 1f, AGENT_COLLISION, MAP_COLLISION)
 
             agent.body.friction = 1f
             agent.body.restitution = 0f
@@ -180,13 +179,13 @@ class GameApplication(val ctx: Context) : Application, Game {
 
                 if (aux.lengthSquared() > 0.001f) {
                     aux.normalize()
-                    aux.mul(if (it.walk == RUNNING) 4f else 2f)
+                    aux.mul(if (it.walk == RUNNING) 6f else 3f)
                 }
 
                 aux.y = velo.y
                 it.body.velocity = aux
             } else {
-                it.body.friction = 2f
+                it.body.friction = 4f
             }
 
             // update position

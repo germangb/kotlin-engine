@@ -1,5 +1,6 @@
 package com.github.germangb.engine.framework
 
+import com.github.germangb.engine.framework.TransformMode.RELATIVE
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Matrix4c
 import java.util.*
@@ -36,6 +37,7 @@ class DFSIterator(root: Actor) : Iterator<Actor> {
 
         fuckMe(root)
     }
+
     override fun hasNext() = stack.isNotEmpty()
     override fun next() = stack.pop()
 }
@@ -61,7 +63,7 @@ class Actor {
     private val iworldTransform = Matrix4()
 
     /** Transformation mode */
-    var transformMode = TransformMode.RELATIVE
+    var transformMode = RELATIVE
 
     /** Attached components */
     private val components = mutableListOf<Any>()
@@ -108,7 +110,7 @@ class Actor {
         if (iparent == null) {
             iworldTransform.set(transform)
         } else {
-            if (transformMode == TransformMode.RELATIVE) {
+            if (transformMode == RELATIVE) {
                 iworldTransform.set(iparent!!.iworldTransform)
                 iworldTransform.mul(transform)
             } else {

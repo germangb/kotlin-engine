@@ -1,15 +1,18 @@
 #ifdef LIGHTING_UTILS
 #ifndef LIGHTING_UTILS_GLSL
 #define LIGHTING_UTILS_GLSL
-#define SUN_DIR vec3(-4, 4, -2)
+#define SUN_DIR vec3(-4, 3, -2)
 
 float shadow_contrib(sampler2D shadow_map, vec3 shadow_position) {
+    if (abs(shadow_position.x) > .999 || abs(shadow_position.y) > .999) {
+        return 1.0;
+    }
+
     float light = 1;
     vec2 uv = shadow_position.xy * 0.5 + 0.5;
     float bias = 0.001;
 
-    vec2 texel = vec2(0.00125, 0.0);
-
+    vec2 texel = vec2(0.0025, 0.0);
     if (texture(shadow_map, uv + texel.yy).r*2-1 < shadow_position.z - bias) light -= 1/5.0;
     if (texture(shadow_map, uv + texel.xy).r*2-1 < shadow_position.z - bias) light -= 1/5.0;
     if (texture(shadow_map, uv - texel.xy).r*2-1 < shadow_position.z - bias) light -= 1/5.0;

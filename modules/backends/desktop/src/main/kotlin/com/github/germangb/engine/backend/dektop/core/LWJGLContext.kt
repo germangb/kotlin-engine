@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  */
 class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     /** Installed plugins */
-    val plugins = mutableMapOf<KClass<*>, Plugin>()
+    private val plugins = mutableMapOf<KClass<*>, Plugin>()
 
     override val graphics get() = runtime.gfx
     override val audio get() = runtime.audio

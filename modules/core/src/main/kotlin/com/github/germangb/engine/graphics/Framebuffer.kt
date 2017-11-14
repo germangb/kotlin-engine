@@ -20,6 +20,6 @@ interface Framebuffer: Destroyable {
     /** Framebuffer width */
     val dimensions: FramebufferDimensions
 
-    /** Each of the render targets accesible as a texture */
-    val targets: List<Texture>
+    /** Each of the render targets as a texture */
+    val textures: List<Texture>
 }

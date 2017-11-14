@@ -12,7 +12,7 @@ class GLFramebuffer(val gfx: GLGraphicsDevice,
                     val id: Int,
                     width: Int,
                     height: Int,
-                    override val targets: List<Texture>) : Framebuffer {
+                    override val textures: List<Texture>) : Framebuffer {
     init {
         try {
             gfx.ifbos.add(this)
@@ -24,10 +24,10 @@ class GLFramebuffer(val gfx: GLGraphicsDevice,
     override val dimensions = FramebufferDimensions(width, height)
 
     /** Draw buffers */
-    val drawBuffers = IntArray(targets.size, { GL_COLOR_ATTACHMENT0 + it })
+    val drawBuffers = IntArray(textures.size, { GL_COLOR_ATTACHMENT0 + it })
 
     override fun destroy() {
-        targets.forEach { it.destroy() }
+        textures.forEach { it.destroy() }
         gfx.ifbos.remove(this)
     }
 }

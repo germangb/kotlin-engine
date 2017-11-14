@@ -28,6 +28,8 @@ object UninstalledBulletPlugin : BulletPlugin {
     override fun createHeightfield(width: Int, height: Int, data: FloatBuffer, minHeight: Float, maxHeight: Float) = TODO("Bullet is not installed")
 
     override fun createWorld(gravity: Vector3c) = TODO("Bullet is not installed")
+
+    override fun createPoint2PointContraint(bodyA: RigidBody, bodyB: RigidBody, pivotA: Vector3c, pivotB: Vector3c) = TODO("Bullet is not installed")
 }
 
 /**

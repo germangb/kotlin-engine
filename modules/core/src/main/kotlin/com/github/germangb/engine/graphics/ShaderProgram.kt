@@ -2,6 +2,12 @@ package com.github.germangb.engine.graphics
 
 import com.github.germangb.engine.utils.Destroyable
 
+/** When compiling vertex shaders, this macro is defined. */
+val VERTEX_MACRO = "VERTEX_SHADER"
+
+/** When compiling fragment shaders, this macro is defined. */
+val FRAGMENT_MACRO = "FRAGMENT_SHADER"
+
 private val MAX_UNIFORMS = 1024
 
 /** Map shared among draw calls */
@@ -13,17 +19,10 @@ fun uniformMap(vararg pairs: Pair<String, Any>): Map<String, Any> {
     return pairs.toMap(sharedUniformMap)
 }
 
-/**
- * Shader program
- */
 interface ShaderProgram : Destroyable {
-    /**
-     * Vertex shader source
-     */
+    /** Vertex shader source */
     val vertex: String
 
-    /**
-     * Fragment shader source
-     */
+    /** Fragment shader source */
     val fragment: String
 }
