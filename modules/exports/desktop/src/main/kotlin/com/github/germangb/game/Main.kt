@@ -29,7 +29,6 @@ fun main(args: Array<String>) {
     val ctx = runtime.context
     ctx.installPlugins()
     runtime.start {
-        //Testbed(ctx)
-        PhysicsDemo(ctx)
+        Testbed(ctx)
     }
 }

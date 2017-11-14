@@ -3,9 +3,6 @@ package com.github.germangb.engine.plugin.bullet
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.utils.Destroyable
 
-/** Body type */
-enum class BodyType { DYNAMIC, KINEMATIC }
-
 /** Result of ray test */
 data class RayTestResult(val body: RigidBody, val position: Vector3c, val normal: Vector3c)
 

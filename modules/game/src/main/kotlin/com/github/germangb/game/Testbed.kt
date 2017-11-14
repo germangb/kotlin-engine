@@ -24,7 +24,6 @@ import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.math.*
-import com.github.germangb.engine.plugin.bullet.BodyType
 import com.github.germangb.engine.plugin.bullet.RigidBody
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
@@ -241,7 +240,7 @@ class Testbed(val ctx: Context) : Application {
         val actor = build?.let {
             root.attachChild {
                 it()
-                //transform.scale(0.05f)
+                transform.scale(0.05f)
             }
         }
 
@@ -627,7 +626,7 @@ class Testbed(val ctx: Context) : Application {
 
         val aspect = w.toFloat() / h
         proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1024f)
-        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f).div(0.05f), Vector3(0f, 2.25f, 0f).div(0.05f), Vector3(0f, 1f, 0f))
+        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
         render(fbo, view, proj)
 
         ctx.graphics {
