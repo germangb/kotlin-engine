@@ -6,6 +6,8 @@ layout(location = 4) in vec4 a_weights;
 
 out vec2 v_uv;
 out vec3 v_normal;
+out vec3 v_normal_view;
+out vec3 v_position;
 out vec4 v_shadow_position;
 
 layout (std140) uniform u_transforms{
@@ -28,5 +30,7 @@ void main () {
     gl_Position = u_projection * u_view * model * vec4(a_position, 1.0);
     v_shadow_position = u_shadow_viewproj * model * vec4(a_position, 1.0);
     v_normal = normalize((model * vec4(a_normal, 0.0)).xyz);
+    v_normal_view = normalize((u_view * model * vec4(a_normal, 0.0)).xyz);
+    v_position = (u_view * model * vec4(a_position, 1.0)).xyz;
     v_uv = a_uv;
 }

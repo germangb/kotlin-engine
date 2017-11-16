@@ -2,6 +2,7 @@ package com.github.germangb.engine.plugins.debug
 
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.core.Plugin
+import com.github.germangb.engine.core.getPlugin
 
 /**
  * Plugin interface
@@ -41,4 +42,4 @@ object UninstalledDebugUtils : DebugUtils {
 /**
  * Get debug plugin
  */
-val Context.debug get() = (getPlugin(DebugPlugin::class) as? DebugUtils) ?: UninstalledDebugUtils
+val Context.debug get() = (getPlugin<DebugPlugin>() as? DebugUtils) ?: UninstalledDebugUtils

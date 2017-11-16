@@ -23,7 +23,11 @@ import com.github.germangb.engine.graphics.TextureFilter.NEAREST
 import com.github.germangb.engine.graphics.VertexAttribute.*
 import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
+import com.github.germangb.engine.input.isPressed
 import com.github.germangb.engine.math.*
+import com.github.germangb.engine.plugin.bullet.ActivationState.DISABLE_DEACTIVATION
+import com.github.germangb.engine.plugin.bullet.DefaultMotionState
+import com.github.germangb.engine.plugin.bullet.MotionState
 import com.github.germangb.engine.plugin.bullet.RigidBody
 import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
@@ -35,9 +39,14 @@ import com.github.germangb.engine.utils.DummyTexture
 import org.intellij.lang.annotations.Language
 import java.text.NumberFormat
 
-val WORLD_FLAG = 0x1
-val RAGDOLL_FLAG = 0x2
-val PROPS_FLAG = 0x4
+class ActorMotionState(val actor: Actor) : MotionState {
+    override var worldTransform: Matrix4c
+        get() = actor.transform
+        set(value) {
+            actor.transform.set(value)
+            actor.computeTransforms()
+        }
+}
 
 class Testbed(val ctx: Context) : Application {
     val assetManager = NaiveAssetManager(ctx)
@@ -143,6 +152,8 @@ class Testbed(val ctx: Context) : Application {
         val frag = """
             in vec2 v_uv;
             in vec3 v_normal;
+            in vec3 v_normal_view;
+            in vec3 v_position;
             in vec4 v_shadow_position;
 
             out vec4 frag_color;
@@ -151,19 +162,26 @@ class Testbed(val ctx: Context) : Application {
             uniform sampler2D u_depth;
 
             #define LIGHT_UTILS
+            #define FOG_UTILS
             #include "shaders/utils.glsl"
 
             void main() {
-                float light = clamp(dot(v_normal, normalize(vec3(1, 0, 2))), 0.0, 1.0);
+                float light = dot(v_normal, normalize(LIGHT_DIR));
 
 
                 float shadow = shadow_contrib(v_shadow_position.xyz, u_depth);
-                light = min(light, shadow);
-
-                light = mix(0.5, 1, light);
 
                 vec4 color = texture(u_texture, v_uv);
-                color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
+                color.rgb = mix(color.rgb, color.rgb * 1.5, rim(v_normal_view));
+
+                light = mix(0, 1.0, smoothstep(-1, 1, light));
+                light = min(light, shadow);
+                light = mix(0.5, 1, light);
+
+                color *= light;
+                color.rgb = fog(color.rgb, v_position);
+
+                //color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
                 frag_color = vec4(color.rgb, 1.0);
             }
         """.trimMargin()
@@ -223,7 +241,8 @@ class Testbed(val ctx: Context) : Application {
                 vec4 color = texture(u_texture, v_uv);
                 color *= mix(0.5, 1, smoothstep(0.0, 1.0, light));
                 // fog
-                color.rgb = mix(color.rgb, vec3(0.2), clamp(abs(v_position.z) / 32 - 0.1, 0, 0.8));
+                //color.rgb = mix(color.rgb, vec3(0.2), clamp(abs(v_position.z) / 32 - 0.1, 0, 0.8));
+                color.rgb = fog(color.rgb, v_position.xyz);
                 frag_color = vec4(color.rgb, 1.0);
             }
             #endif
@@ -231,6 +250,8 @@ class Testbed(val ctx: Context) : Application {
         ctx.graphics.createShaderProgram(shader)
     }
     val root = Actor()
+    lateinit var player: Actor
+
     val animation by lazy {
         // load assimp scene with skinned mesh
         val file = ctx.files.getLocal("meshes/hellknight.md5mesh")
@@ -243,6 +264,8 @@ class Testbed(val ctx: Context) : Application {
                 transform.scale(0.05f)
             }
         }
+
+        actor?.computeTransforms()
 
         val animFile = ctx.files.getLocal("meshes/idle2.md5anim")
         ctx.assimp.loadScene(animFile, assetManager, ANIMATIONS)?.let { (_, anims, _) ->
@@ -327,37 +350,42 @@ class Testbed(val ctx: Context) : Application {
     }
 
     override fun init() {
+        val state = DefaultMotionState()
         if (hmap == null) {
             val floor = ctx.bullet.createBox(Vector3(16f, 0.02f, 16f))
-            val body = world.addRigidBody(floor, 0f, WORLD_FLAG, RAGDOLL_FLAG or PROPS_FLAG)
+            val body = ctx.bullet.createRigidBody(0f, state, floor)
             body.friction = 0.5f
             body.restitution = 0f
         } else {
             val height = ctx.bullet.createHeightfield(hmap.size, hmap.size, hmap.data, hmapHeight / Short.MAX_VALUE, -10f, 10f)
-            val body = world.addRigidBody(height, 0f, WORLD_FLAG, RAGDOLL_FLAG or PROPS_FLAG)
+            val body = ctx.bullet.createRigidBody(0f, state, height)
             body.friction = 0.75f
             body.restitution = 0f
+            world.addRigidBody(body)
         }
 
         root.attachChild {
             val tex = assetManager.getTexture("cube_texture") ?: DummyTexture
             addMeshInstancer(cube ?: DummyMesh, mapOf("diffuse" to tex))
 
-            fun cube(x: Float, y: Float, z: Float): Actor.() -> Unit = {
+            fun cube(x: Float, y: Float, z: Float, kinematic: Boolean = false): Actor.() -> Unit = {
                 transformMode = ABSOLUTE
+
                 transform.translate(x, y, z)
+
                 transform.rotateX(1f)
                 transform.rotateZ(0.2f)
                 val compShape = ctx.bullet.createCompound()
                 compShape.addChild(ctx.bullet.createBox(Vector3(1f)), Matrix4())
-                val body = world.addRigidBody(compShape, 1f, PROPS_FLAG, WORLD_FLAG or PROPS_FLAG)
-                body.friction = 0.5f
-                body.restitution = 0f
-                body.transform = transform
-                addMeshInstance()
-                addUpdate {
-                    body.transform.get(transform)
+                val body = ctx.bullet.createRigidBody(1f, ActorMotionState(this), compShape)
+                if (kinematic) {
+                    body.isKinematic = true
+                    body.activationState = DISABLE_DEACTIVATION
                 }
+                body.friction = 1f
+                body.restitution = 0.5f
+                world.addRigidBody(body)
+                addMeshInstance()
             }
 
             attachChild(cube(-4f, 12f, 2f))
@@ -366,6 +394,11 @@ class Testbed(val ctx: Context) : Application {
             attachChild(cube(0f, 4f, 4f))
             attachChild(cube(0f, 4f, -4f))
             attachChild(cube(0f, 8f, -4f))
+
+            player = attachChild(cube(1f, 1f, 0f, true))
+            player.transform.identity().translate(2f, 2f, 0f)
+
+            attachChild(cube(2f, 6f, 0f))
         }
 
         animation?.play(true)
@@ -385,10 +418,11 @@ class Testbed(val ctx: Context) : Application {
 
     fun debug() {
         val str = buildString {
-            appendln("> # textures = ${ctx.graphics.textures.size}")
-            appendln("> # meshes = ${ctx.graphics.meshes.size}")
-            appendln("> # shaders = ${ctx.graphics.shaderPrograms.size}")
-            appendln("> # framebuffers = ${ctx.graphics.framebuffers.size}")
+            appendln("FPS = ${ctx.time.fps}")
+            appendln("# textures = ${ctx.graphics.textures.size}")
+            appendln("# meshes = ${ctx.graphics.meshes.size}")
+            appendln("# shaders = ${ctx.graphics.shaderPrograms.size}")
+            appendln("# framebuffers = ${ctx.graphics.framebuffers.size}")
             appendln("-".repeat(16))
 
             val src = ctx.audio.sources
@@ -398,23 +432,24 @@ class Testbed(val ctx: Context) : Application {
             }
 
             appendln("-".repeat(16))
-            appendln("> # animations = ${animationManager.animations.size}")
+            appendln("# animations = ${animationManager.animations.size}")
             animationManager.animations.forEachIndexed { index, anim ->
                 val time = NumberFormat.getNumberInstance().format(animation?.time ?: 0)
                 appendln("> # $index [state = ${animation?.state}, timer = $time]")
-            }
-
-            appendln("-".repeat(16))
-            appendln("> # Rigid bodies = ${world.bodies.size}")
-            world.bodies.forEach {
-                val pos = it.transform.getTranslation(Vector3())
-                appendln("> ${pos.toString(NumberFormat.getNumberInstance())}")
             }
         }
         ctx.debug.add(str)
     }
 
     fun input() {
+        val v = 3f
+        if (KEY_UP.isPressed(ctx.input)) player.transform.translate(-ctx.time.delta * v, 0f, 0f)
+        if (KEY_DOWN.isPressed(ctx.input)) player.transform.translate(ctx.time.delta * v, 0f, 0f)
+        if (KEY_LEFT.isPressed(ctx.input)) player.transform.translate(0f, 0f, ctx.time.delta * v)
+        if (KEY_RIGHT.isPressed(ctx.input)) player.transform.translate(0f, 0f, -ctx.time.delta * v)
+        if (KEY_LEFT_SHIFT.isPressed(ctx.input)) player.transform.translate(0f, -ctx.time.delta * v, 0f)
+        if (KEY_SPACE.isPressed(ctx.input)) player.transform.translate(0f, ctx.time.delta * v, 0f)
+
         if (KEY_UP.isJustPressed(ctx.input)) ctx.debug.fontSize++
         if (KEY_DOWN.isJustPressed(ctx.input)) ctx.debug.fontSize--
         if (KEY_GRAVE_ACCENT.isJustPressed(ctx.input)) {
@@ -453,10 +488,10 @@ class Testbed(val ctx: Context) : Application {
 
                     // create rigid body
                     val shape = ctx.bullet.createBox(Vector3(1f))
-                    val body = world.addRigidBody(shape, 1f, RAGDOLL_FLAG, WORLD_FLAG)
-                    body.transform = actor.transform
+                    //val body = world.addRigidBody(1f, ActorMotionState(actor), shape)
+                    //body.transform = actor.transform
 
-                    bodies[actor] = body
+                    //bodies[actor] = body
 
                     // create constraint
                     bodies[actor.parent]?.let {
@@ -464,12 +499,12 @@ class Testbed(val ctx: Context) : Application {
                         val pivotB = Vector3()
                         actor.transform.getTranslation(pivotA)
                         actor.parent.worldTransform.getTranslation(pivotB)
-                        val const = ctx.bullet.createPoint2PointContraint(body, it, pivotA, pivotB)
-                        world.addConstraint(const)
+                        //val const = ctx.bullet.createPoint2PointContraint(body, it, pivotA, pivotB)
+                        //world.addConstraint(const)
                     }
 
                     actor.addUpdate {
-                        actor.transform.set(body.transform)
+                        //actor.transform.set(body.transform)
                     }
                 }
 
@@ -577,7 +612,12 @@ class Testbed(val ctx: Context) : Application {
         input()
         debug()
 
-        world.stepSimulation(ctx.time.delta)
+        val step = 1 / 120f
+        var acum = ctx.time.delta
+        while (acum > step) {
+            world.stepSimulation(step)
+            acum -= step
+        }
 
         if (!ragdoll) {
             animationManager.update(ctx.time.delta)
@@ -585,10 +625,10 @@ class Testbed(val ctx: Context) : Application {
             // update rigid joints according to rigid bodies
         }
 
+        root.computeTransforms()
+
         val bfs = root.breadthFirstTraversal()
         bfs.mapNotNull { it.updater }.forEach { it.update() }
-
-        root.computeTransforms()
 
         // compute skin transforms
         root.breadthFirstTraversal().forEach { actor ->
@@ -619,14 +659,14 @@ class Testbed(val ctx: Context) : Application {
         val offX = ctx.input.mouse.x - w / 2f
         val offY = ctx.input.mouse.y - h / 2f
 
-        val s = 8f
+        val s = 16f
         shadowProjection.setOrtho(-s, s, -s, s, -s * 2, s * 2)
-        shadowView.setLookAt(0f, 0f, 0f, -2f, -3f, -1f, 0f, 1f, 0f)
+        shadowView.setLookAt(0f, 0f, 0f, -1f, -1f, -1f, 0f, 1f, 0f)
         render(shadowFbo, shadowView, shadowProjection)
 
         val aspect = w.toFloat() / h
         proj.setPerspective(java.lang.Math.toRadians(55.0).toFloat(), aspect, 0.01f, 1024f)
-        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 3f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
+        view.setLookAt(Vector3(6f, 4.0f + offY * 0.004f, 0f + offX * 0.004f).mul(1.75f), Vector3(0f, 2.25f, 0f), Vector3(0f, 1f, 0f))
         render(fbo, view, proj)
 
         ctx.graphics {

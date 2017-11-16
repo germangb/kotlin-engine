@@ -18,10 +18,16 @@ interface PhysicsWorld : Destroyable {
     fun rayTestClosest(from: Vector3c, to: Vector3c): RayTestResult?
 
     /** Create a box rigid body */
-    fun addRigidBody(shape: PhysicsShape, mass: Float, group: Int, mask: Int): RigidBody
+    fun addRigidBody(body: RigidBody, group: Short, mask: Short)
+
+    /** Create a box rigid body */
+    fun addRigidBody(body: RigidBody)
 
     /** Adds a constraint to the world */
     fun addConstraint(constraint: PhysicsContraint)
+
+    /** Adds a raycast vehicle to the simulation */
+    fun addVehile(vehicle: RaycastVehicle)
 }
 
 

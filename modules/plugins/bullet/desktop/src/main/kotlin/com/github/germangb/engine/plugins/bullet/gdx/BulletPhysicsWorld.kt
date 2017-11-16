@@ -6,10 +6,7 @@ import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase
 import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
-import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
-import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.math.Vector3
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.plugin.bullet.*
@@ -66,29 +63,16 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
         world.addConstraint(constraint.btConstraint)
     }
 
-    override fun addRigidBody(shape: PhysicsShape, mass: Float, group: Int, mask: Int): RigidBody {
-        if (shape !is BulletPhysicsShape) throw IllegalArgumentException()
-        val collShape = shape.btShape
+    override fun addRigidBody(body: RigidBody) = addRigidBody(body, -1, -1)
 
-        // compute inertia momentum
-        //if (fixedRotation) auxVec0.setZero()
-        //else collShape.calculateLocalInertia(mass, auxVec0)
-        collShape.calculateLocalInertia(mass, auxVec0)
+    override fun addRigidBody(body: RigidBody, group: Short, mask: Short) {
+        if (body !is BulletRigidBody) throw IllegalArgumentException()
+        world.addRigidBody(body.body, group, mask)
+        ibodies.add(body)
+    }
 
-        val motionSate = btDefaultMotionState()
-        val btBody = btRigidBody(mass, motionSate, collShape, auxVec0)
-
-        world.addRigidBody(btBody, group.toShort(), mask.toShort())
-
-//        // check body type
-//        if (type == BodyType.KINEMATIC) {
-//            btBody.collisionFlags = btBody.collisionFlags or CF_KINEMATIC_OBJECT
-//            btBody.activationState = DISABLE_DEACTIVATION
-//        }
-
-        val rb = BulletRigidBody(this, btBody, motionSate)
-        btBody.userData = rb
-        ibodies.add(rb)
-        return rb
+    override fun addVehile(vehicle: RaycastVehicle) {
+        if (vehicle !is BulletRaycastVehicle) throw IllegalArgumentException()
+        world.addVehicle(vehicle.vehicle)
     }
 }

@@ -72,7 +72,7 @@ class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
         string.setLength(0)
 
         // compute height
-        val vel = ctx.time.delta * 512
+        val vel = ctx.time.delta * 1024
         debugHeight = numRows * fontSize + 4f
         offset = if (show) {
             minOf(offset + vel, debugHeight)

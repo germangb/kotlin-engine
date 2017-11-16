@@ -1,22 +1,49 @@
 package com.github.germangb.engine.plugins.bullet.gdx
 
+import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.ACTIVE_TAG
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.*
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
-import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.github.germangb.engine.math.*
-import com.github.germangb.engine.plugin.bullet.MotionState
+import com.github.germangb.engine.plugin.bullet.ActivationState
 import com.github.germangb.engine.plugin.bullet.RigidBody
 
 private val aux = GdxVector3()
 private val auxMat = GdxMatrix4()
 
-class BulletRigidBody(val world: BulletPhysicsWorld, val body: btRigidBody, ms: btMotionState) : RigidBody {
+class BulletRigidBody(val body: btRigidBody, override val motionState: BulletMotionState) : RigidBody {
+    companion object {
+        val Int.asEnum get() = ActivationState.values()[this - ACTIVE_TAG]
+        val ActivationState.asInt get() = ACTIVE_TAG + ordinal
+    }
+
+    override var isStatic: Boolean
+        get() = (body.collisionFlags and CF_STATIC_OBJECT) != 0
+        set(value) {
+            body.collisionFlags = body.collisionFlags or CF_STATIC_OBJECT
+        }
+
+    override var isKinematic: Boolean
+        get() = (body.collisionFlags and CF_KINEMATIC_OBJECT) != 0
+        set(value) {
+            body.collisionFlags = body.collisionFlags or CF_KINEMATIC_OBJECT
+        }
+
+    override var isCharacterObject: Boolean
+        get() = (body.collisionFlags and CF_CHARACTER_OBJECT) != 0
+        set(value) {
+            body.collisionFlags = body.collisionFlags or CF_CHARACTER_OBJECT
+        }
+
     var idata = null as Any?
+
+    override var activationState: ActivationState
+        get() = body.activationState.asEnum
+        set(value) = body.forceActivationState(value.asInt)
+
     val linear = Vector3()
     val linearf = Vector3()
     val angularf = Vector3()
     val iaux = Matrix4()
-
-    override val motionState = BulletMotionState(ms)
 
     override fun activate() {
         body.activate()
@@ -78,12 +105,5 @@ class BulletRigidBody(val world: BulletPhysicsWorld, val body: btRigidBody, ms: 
         set(value) {
             auxMat.set(value)
             body.worldTransform = auxMat
-            //body.motionState.setWorldTransform(auxMat)
         }
-
-    override fun destroy() {
-        world.ibodies.remove(this)
-        world.world.removeRigidBody(body)
-    }
-
 }

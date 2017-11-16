@@ -31,3 +31,8 @@ interface Context {
     /** Get a plugin that extends the capabilities of the framework */
     fun <T : Plugin> getPlugin(plug: KClass<T>): T?
 }
+
+/** Get plugin by type */
+inline fun <reified T : Plugin> Context.getPlugin(): T? {
+    return getPlugin(T::class)
+}

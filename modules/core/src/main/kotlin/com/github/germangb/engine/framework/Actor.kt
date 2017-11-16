@@ -60,6 +60,7 @@ class Actor {
 
     /** World transformation (immutable) */
     val worldTransform: Matrix4c get() = iworldTransform
+
     private val iworldTransform = Matrix4()
 
     /** Transformation mode */

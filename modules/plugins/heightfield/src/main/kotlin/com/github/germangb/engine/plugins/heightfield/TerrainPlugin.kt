@@ -2,6 +2,7 @@ package com.github.germangb.engine.plugins.heightfield
 
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.core.Plugin
+import com.github.germangb.engine.core.getPlugin
 import com.github.germangb.engine.files.FileHandle
 
 /**
@@ -19,4 +20,4 @@ object UninstalledTerrainPlugin : TerrainPlugin {
 }
 
 /** Get terrain plugin */
-val Context.terrain get() = (getPlugin(TerrainPlugin::class) as? TerrainLoader) ?: UninstalledTerrainPlugin
+val Context.terrain get() = (getPlugin<TerrainPlugin>() as? TerrainLoader) ?: UninstalledTerrainPlugin

@@ -2,7 +2,11 @@ package com.github.germangb.engine.plugins.bullet.gdx
 
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.badlogic.gdx.physics.bullet.collision.*
+import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.ACTIVE_TAG
+import com.badlogic.gdx.physics.bullet.dynamics.btDefaultVehicleRaycaster
 import com.badlogic.gdx.physics.bullet.dynamics.btPoint2PointConstraint
+import com.badlogic.gdx.physics.bullet.dynamics.btRaycastVehicle
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.utils.GdxNativesLoader
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.plugin.bullet.*
@@ -20,6 +24,28 @@ object DesktopBulletPlugin : BulletPlugin {
     override fun onPreInit() {
         GdxNativesLoader.load()
         Bullet.init()
+    }
+
+    override fun createRigidBody(mass: Float, motionState: MotionState, shape: PhysicsShape): RigidBody {
+        if (shape !is BulletPhysicsShape) throw IllegalArgumentException()
+        val collShape = shape.btShape
+        collShape.calculateLocalInertia(mass, auxVec0)
+        val state = BulletMotionState(motionState)
+        val btBody = btRigidBody(mass, state, collShape, auxVec0)
+        btBody.forceActivationState(ACTIVE_TAG)
+        val rb = BulletRigidBody(btBody, state)
+        btBody.userData = rb
+        return rb
+    }
+
+    override fun createRaycastVehicle(tuning: VehicleTuning, chasis: RigidBody, world: PhysicsWorld): RaycastVehicle {
+        if (world !is BulletPhysicsWorld) throw IllegalArgumentException()
+        if (chasis !is BulletRigidBody) throw IllegalArgumentException()
+
+        val btun = btRaycastVehicle.btVehicleTuning()
+        val vehicle = btRaycastVehicle(btun, chasis.body, btDefaultVehicleRaycaster(world.world))
+
+        return BulletRaycastVehicle(chasis, vehicle)
     }
 
     override fun createPoint2PointContraint(bodyA: RigidBody, bodyB: RigidBody, pivotA: Vector3c, pivotB: Vector3c): PhysicsContraint {
@@ -49,7 +75,7 @@ object DesktopBulletPlugin : BulletPlugin {
 
     override fun createBox(half: Vector3c) = BulletPhysicsShape(btBoxShape(auxVec0.set(half)))
 
-    override fun createShere(radius: Float) = BulletPhysicsShape(btSphereShape(radius))
+    override fun createShereShape(radius: Float) = BulletPhysicsShape(btSphereShape(radius))
 
     override fun createCapsule(radius: Float, height: Float) = BulletPhysicsShape(btCapsuleShape(radius, height))
 
