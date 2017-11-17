@@ -4,7 +4,7 @@ import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.github.germangb.engine.math.Matrix4
 import com.github.germangb.engine.plugin.bullet.MotionState
 
-/** Delegates get / set transform to the original motion state */
+/** Delegates getModule / set transform to the original motion state */
 class BulletMotionState(ms: MotionState) : MotionState by ms, btMotionState() {
     companion object {
         val ID = GdxMatrix4()

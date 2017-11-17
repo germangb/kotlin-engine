@@ -25,6 +25,6 @@ class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getModule(name: String) = plugins[name] as T?
+    override fun <T> getModule(name: String) = plugins[name] as? T?
 }
 

@@ -3,9 +3,7 @@ package com.github.germangb.engine.plugins.debug
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.plugins.debug.DebugUtils.Companion.MODULE_NAME
 
-/**
- * Debug plugin methods
- */
+/** Debug plugin methods */
 interface DebugUtils {
     companion object {
         val MODULE_NAME = "debug_utils"
@@ -26,9 +24,8 @@ interface DebugUtils {
  */
 object UninstalledDebugUtils : DebugUtils {
     override var fontSize = 0
-    private fun TODO(msg: String) = Unit
-    override fun add(str: CharSequence) = TODO("DebugUtils is uninstalled")
-    override fun toggle() = TODO("DebugUtils is uninstalled")
+    override fun add(str: CharSequence) = Unit
+    override fun toggle() = Unit
 }
 
 /**

@@ -6,15 +6,11 @@ import com.github.germangb.engine.plugin.bullet.BulletPhysics.Companion.MODULE_N
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
-/**
- * Get bullet plugin
- */
-val Context.bullet get() = getModule<BulletPhysics>(MODULE_NAME) ?: UninstalledBulletPlugin
+/** Get bullet plugin */
+val Context.bullet get() = getModule<BulletPhysics>(MODULE_NAME) ?: DummyBulletPhysics
 
-/**
- * For then bullet is not installed
- */
-object UninstalledBulletPlugin : BulletPhysics {
+/** For then bullet is not installed */
+object DummyBulletPhysics : BulletPhysics {
     override fun createBox(half: Vector3c) = TODO("Bullet is not installed")
     override fun createShereShape(radius: Float) = TODO("Bullet is not installed")
     override fun createCapsule(radius: Float, height: Float) = TODO("Bullet is not installed")

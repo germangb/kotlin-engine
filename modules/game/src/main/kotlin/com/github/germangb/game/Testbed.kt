@@ -25,11 +25,8 @@ import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.input.isPressed
 import com.github.germangb.engine.math.*
+import com.github.germangb.engine.plugin.bullet.*
 import com.github.germangb.engine.plugin.bullet.ActivationState.DISABLE_DEACTIVATION
-import com.github.germangb.engine.plugin.bullet.DefaultMotionState
-import com.github.germangb.engine.plugin.bullet.MotionState
-import com.github.germangb.engine.plugin.bullet.RigidBody
-import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug

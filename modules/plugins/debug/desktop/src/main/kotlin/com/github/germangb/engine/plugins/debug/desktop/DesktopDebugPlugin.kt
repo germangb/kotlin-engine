@@ -68,7 +68,7 @@ class DesktopDebugPlugin(val ctx: Context) : DesktopModule, DebugUtils {
         val (width, height) = ctx.graphics.dimensions
         nvgBeginFrame(nv, width, height, 1f)
 
-        // get paragraph
+        // getModule paragraph
         val numRows = nvgTextBreakLines(nv, string, width.toFloat(), rows)
         string.setLength(0)
 
@@ -87,7 +87,7 @@ class DesktopDebugPlugin(val ctx: Context) : DesktopModule, DebugUtils {
         nvgTranslate(nv, 0f, offset - debugHeight)
 
         nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.4f))
+        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 0.25f))
         nvgRect(nv, 0f, 0f, width.toFloat(), numRows * fontSize.toFloat())
         nvgFill(nv)
 
@@ -103,10 +103,10 @@ class DesktopDebugPlugin(val ctx: Context) : DesktopModule, DebugUtils {
             }
         }
 
-        nvgBeginPath(nv)
-        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
-        nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 4f)
-        nvgFill(nv)
+//        nvgBeginPath(nv)
+//        nvgFillColor(nv, color.rgba(0f, 0f, 0f, 1f))
+//        nvgRect(nv, 0f, numRows * fontSize.toFloat(), width.toFloat(), 4f)
+//        nvgFill(nv)
 
         // draw text and shit
         nvgTextAlign(nv, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
