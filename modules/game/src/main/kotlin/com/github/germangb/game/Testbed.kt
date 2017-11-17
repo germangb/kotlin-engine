@@ -14,7 +14,6 @@ import com.github.germangb.engine.graphics.*
 import com.github.germangb.engine.graphics.CullingMode.BACK
 import com.github.germangb.engine.graphics.CullingMode.FRONT
 import com.github.germangb.engine.graphics.InstanceAttribute.TRANSFORM
-import com.github.germangb.engine.graphics.TestFunction.DISABLED
 import com.github.germangb.engine.graphics.TestFunction.LESS
 import com.github.germangb.engine.graphics.TexelFormat.DEPTH24
 import com.github.germangb.engine.graphics.TexelFormat.RGB8
@@ -25,8 +24,11 @@ import com.github.germangb.engine.input.KeyboardKey.*
 import com.github.germangb.engine.input.isJustPressed
 import com.github.germangb.engine.input.isPressed
 import com.github.germangb.engine.math.*
-import com.github.germangb.engine.plugin.bullet.*
 import com.github.germangb.engine.plugin.bullet.ActivationState.DISABLE_DEACTIVATION
+import com.github.germangb.engine.plugin.bullet.DefaultMotionState
+import com.github.germangb.engine.plugin.bullet.MotionState
+import com.github.germangb.engine.plugin.bullet.RigidBody
+import com.github.germangb.engine.plugin.bullet.bullet
 import com.github.germangb.engine.plugins.assimp.ANIMATIONS
 import com.github.germangb.engine.plugins.assimp.assimp
 import com.github.germangb.engine.plugins.debug.debug
@@ -668,7 +670,7 @@ class Testbed(val ctx: Context) : Application {
 
         ctx.graphics {
             clearColor(0f, 0f, 0f, 1f)
-            depthTest(DISABLED)
+            depthTest(TestFunction.DISABLED)
             cullMode(CullingMode.DISABLED)
             clearColorBuffer()
             render(quad, composite, uniformMap("u_texture" to fbo.textures[0]))
