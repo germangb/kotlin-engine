@@ -1,9 +1,10 @@
-package com.github.germangb.engine.core
+package com.github.germangb.engine.backend.dektop.core
 
-/** Does nothing */
-private fun TODO() = Unit
+interface DesktopModule {
+    companion object {
+        fun TODO() = Unit
+    }
 
-interface Plugin {
     /** Called before init */
     fun onPreInit() = TODO()
 

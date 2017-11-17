@@ -32,6 +32,10 @@ val ALL = MESHES or ANIMATIONS or SCENE
  * Assimp API
  */
 interface AssimpLoader {
+    companion object {
+        val MODULE_NAME = "assimp_loader"
+    }
+
     /**
      * Load assimp scene
      */

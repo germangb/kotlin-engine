@@ -8,6 +8,10 @@ import java.nio.ShortBuffer
  * Physics provider interface
  */
 interface BulletPhysics {
+    companion object {
+        val MODULE_NAME = "bullet_physics"
+    }
+
     /** Create a bullet world */
     fun createWorld(gravity: Vector3c): PhysicsWorld
 

@@ -1,26 +1,20 @@
 package com.github.germangb.engine.plugin.bullet
 
 import com.github.germangb.engine.core.Context
-import com.github.germangb.engine.core.Plugin
-import com.github.germangb.engine.core.getPlugin
 import com.github.germangb.engine.math.Vector3c
+import com.github.germangb.engine.plugin.bullet.BulletPhysics.Companion.MODULE_NAME
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
 /**
- * Bullet plugin API
- */
-interface BulletPlugin : Plugin, BulletPhysics
-
-/**
  * Get bullet plugin
  */
-val Context.bullet get() = (getPlugin<BulletPlugin>() as? BulletPhysics) ?: UninstalledBulletPlugin
+val Context.bullet get() = getModule<BulletPhysics>(MODULE_NAME) ?: UninstalledBulletPlugin
 
 /**
  * For then bullet is not installed
  */
-object UninstalledBulletPlugin : BulletPlugin {
+object UninstalledBulletPlugin : BulletPhysics {
     override fun createBox(half: Vector3c) = TODO("Bullet is not installed")
     override fun createShereShape(radius: Float) = TODO("Bullet is not installed")
     override fun createCapsule(radius: Float, height: Float) = TODO("Bullet is not installed")

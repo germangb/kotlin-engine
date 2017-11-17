@@ -1,31 +1,23 @@
 package com.github.germangb.engine.plugins.debug
 
 import com.github.germangb.engine.core.Context
-import com.github.germangb.engine.core.Plugin
-import com.github.germangb.engine.core.getPlugin
-
-/**
- * Plugin interface
- */
-interface DebugPlugin : Plugin, DebugUtils
+import com.github.germangb.engine.plugins.debug.DebugUtils.Companion.MODULE_NAME
 
 /**
  * Debug plugin methods
  */
 interface DebugUtils {
-    /**
-     * Font size
-     */
+    companion object {
+        val MODULE_NAME = "debug_utils"
+    }
+
+    /** Font size */
     var fontSize: Int
 
-    /**
-     * Add string
-     */
+    /** Add string */
     fun add(str: CharSequence)
 
-    /**
-     * Toggle debug info
-     */
+    /** Toggle debug info */
     fun toggle()
 }
 
@@ -42,4 +34,4 @@ object UninstalledDebugUtils : DebugUtils {
 /**
  * Get debug plugin
  */
-val Context.debug get() = (getPlugin<DebugPlugin>() as? DebugUtils) ?: UninstalledDebugUtils
+val Context.debug get() = getModule<DebugUtils>(MODULE_NAME) ?: UninstalledDebugUtils

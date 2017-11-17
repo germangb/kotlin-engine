@@ -1,9 +1,10 @@
 package com.github.germangb.engine.assets.desktop
 
-import com.github.germangb.engine.assets.AssetLoaderPlugin
+import com.github.germangb.engine.assets.AssetLoader
 import com.github.germangb.engine.audio.Audio
 import com.github.germangb.engine.audio.VorbisSTBAudioDecoder
 import com.github.germangb.engine.audio.VorbisSTBStreamAudio
+import com.github.germangb.engine.backend.dektop.core.DesktopModule
 import com.github.germangb.engine.backend.dektop.core.LWJGLContext
 import com.github.germangb.engine.backend.dektop.core.stackMemory
 import com.github.germangb.engine.files.FileHandle
@@ -16,7 +17,7 @@ import org.lwjgl.stb.STBVorbis.*
 import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil.NULL
 
-class DesktopAssetLoader(val backend: LWJGLContext) : AssetLoaderPlugin {
+class DesktopAssetLoader(val backend: LWJGLContext) : DesktopModule, AssetLoader {
     /**
      * Load texture file
      */

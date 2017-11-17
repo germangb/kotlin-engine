@@ -1,7 +1,8 @@
 package com.github.germangb.engine.plugins.debug.desktop
 
+import com.github.germangb.engine.backend.dektop.core.DesktopModule
 import com.github.germangb.engine.core.Context
-import com.github.germangb.engine.plugins.debug.DebugPlugin
+import com.github.germangb.engine.plugins.debug.DebugUtils
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NVGTextRow
 import org.lwjgl.nanovg.NanoVG.*
@@ -11,7 +12,7 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import java.nio.ByteBuffer
 
-class DesktopDebugPlugin(val ctx: Context) : DebugPlugin {
+class DesktopDebugPlugin(val ctx: Context) : DesktopModule, DebugUtils {
     /** NanoVG context pointer */
     var nv = 0L
     var font = 0

@@ -28,7 +28,8 @@ class LWJGLRuntime(width: Int, height: Int) {
     var stencilBits = 8
     var samples = 0
 
-    val plugins = mutableListOf<Plugin>()
+    /** Register desktop modules */
+    val plugins = mutableListOf<DesktopModule>()
 
     init {
         if (!glfwInit()) {

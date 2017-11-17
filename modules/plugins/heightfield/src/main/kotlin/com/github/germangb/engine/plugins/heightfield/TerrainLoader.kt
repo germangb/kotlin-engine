@@ -31,6 +31,10 @@ class TerrainData<out T : Buffer>(private val ctx: Context, val data: T, val cha
  * Contains utilities for loading a terrain from a file
  */
 interface TerrainLoader {
+    companion object {
+        val MODULE_NAME = "terrain_loader"
+    }
+
     /** Load image as signed 16bit pixels */
     fun load16(file: FileHandle, desiredChannels: Int, createTexture: Boolean = true): TerrainData<ShortBuffer>?
 

@@ -8,6 +8,9 @@ import com.github.germangb.engine.graphics.*
  * Asset loader API
  */
 interface AssetLoader {
+    companion object {
+        val MODULE_NAME = "asset_loader"
+    }
     /**
      * Load a texture
      */

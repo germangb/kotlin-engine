@@ -1,11 +1,12 @@
 package com.github.engine.plugins.heightfield.desktop
 
+import com.github.germangb.engine.backend.dektop.core.DesktopModule
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
 import com.github.germangb.engine.graphics.TexelFormat
 import com.github.germangb.engine.graphics.TextureFilter.LINEAR
 import com.github.germangb.engine.plugins.heightfield.TerrainData
-import com.github.germangb.engine.plugins.heightfield.TerrainPlugin
+import com.github.germangb.engine.plugins.heightfield.TerrainLoader
 import com.github.germangb.engine.utils.DummyTexture
 import org.lwjgl.stb.STBImage.stbi_image_free
 import org.lwjgl.stb.STBImage.stbi_load_16
@@ -20,7 +21,7 @@ private fun Byte.toSigned() = if (this >= 0) this + Byte.MIN_VALUE else this - B
 /**
  * Desktop backend implementation
  */
-class DesktopHeightfieldPlugin(val ctx: Context) : TerrainPlugin {
+class DesktopHeightfieldPlugin(val ctx: Context) : DesktopModule, TerrainLoader {
     private val x = IntArray(1)
     private val y = IntArray(1)
     private val ch = IntArray(1)

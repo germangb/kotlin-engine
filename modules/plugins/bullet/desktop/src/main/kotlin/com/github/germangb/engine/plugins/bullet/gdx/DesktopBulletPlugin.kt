@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btPoint2PointConstraint
 import com.badlogic.gdx.physics.bullet.dynamics.btRaycastVehicle
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.utils.GdxNativesLoader
+import com.github.germangb.engine.backend.dektop.core.DesktopModule
 import com.github.germangb.engine.math.Vector3c
 import com.github.germangb.engine.plugin.bullet.*
 import com.github.germangb.engine.plugins.bullet.gdx.BulletPhysicsWorld.Companion.auxVec0
@@ -18,7 +19,7 @@ import java.nio.ShortBuffer
 /**
  * Bullet bullet plugin implementation
  */
-object DesktopBulletPlugin : BulletPlugin {
+object DesktopBulletPlugin : BulletPhysics, DesktopModule {
     val worlds = mutableListOf<BulletPhysicsWorld>()
 
     override fun onPreInit() {

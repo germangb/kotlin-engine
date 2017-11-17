@@ -1,16 +1,13 @@
 package com.github.germangb.engine.backend.dektop.core
 
 import com.github.germangb.engine.core.Context
-import com.github.germangb.engine.core.Plugin
-import com.github.germangb.engine.core.Time
-import kotlin.reflect.KClass
 
 /**
  * LWJGL based ctx
  */
 class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     /** Installed plugins */
-    private val plugins = mutableMapOf<KClass<*>, Plugin>()
+    private val plugins = mutableMapOf<String, DesktopModule>()
 
     override val graphics get() = runtime.gfx
     override val audio get() = runtime.audio
@@ -22,12 +19,12 @@ class LWJGLContext(val runtime: LWJGLRuntime) : Context {
     /**
      * Install plugin in backend
      */
-    fun <T : Plugin> install(type: KClass<T>, plugin: T) {
+    fun <T : DesktopModule> installModule(name: String, plugin: T) {
         runtime.plugins.add(plugin)
-        plugins.put(type, plugin)
+        plugins.put(name, plugin)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Plugin> getPlugin(plug: KClass<T>) = plugins[plug] as T?
+    override fun <T> getModule(name: String) = plugins[name] as T?
 }
 
