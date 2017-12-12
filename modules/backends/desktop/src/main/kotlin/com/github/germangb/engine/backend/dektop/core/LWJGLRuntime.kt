@@ -5,7 +5,7 @@ import com.github.germangb.engine.backend.dektop.files.DesktopFiles
 import com.github.germangb.engine.backend.dektop.graphics.GLGraphicsDevice
 import com.github.germangb.engine.backend.dektop.input.GLFWInputDevice
 import com.github.germangb.engine.core.Application
-import com.github.germangb.engine.core.Plugin
+//import com.github.germangb.engine.core.Plugin
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
