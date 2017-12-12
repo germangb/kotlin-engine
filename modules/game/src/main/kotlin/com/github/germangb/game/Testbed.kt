@@ -7,6 +7,7 @@ import com.github.germangb.engine.assets.NaiveAssetManager
 import com.github.germangb.engine.audio.AudioState.PLAYING
 import com.github.germangb.engine.core.Application
 import com.github.germangb.engine.core.Context
+import com.github.germangb.engine.files.readText
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.TransformMode.ABSOLUTE
 import com.github.germangb.engine.framework.components.*
@@ -54,7 +55,7 @@ class Testbed(val ctx: Context) : Application {
     init {
         assetManager.preloadAudio(ctx.files.getLocal("audio/birds.ogg"), "music")
         assetManager.preloadAudio(ctx.files.getLocal("audio/click.ogg"), "click", stream = false)
-        assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION, NORMAL, UV), arrayOf(TRANSFORM))
+        assetManager.preloadMesh(ctx.files.getLocal("meshes/cube.blend"), "cube_mesh", MeshUsage.STATIC, arrayOf(POSITION3, NORMAL, UV), arrayOf(TRANSFORM))
         assetManager.preloadTexture(ctx.files.getLocal("textures/cube.png"), "cube_texture", RGB8, NEAREST, NEAREST)
         assetManager.preloadTexture(ctx.files.getLocal("textures/dirt.jpg"), "dirt_texture", RGB8, LINEAR, LINEAR, true)
     }
@@ -146,7 +147,7 @@ class Testbed(val ctx: Context) : Application {
     }
     val skinShader = let {
         val vertFile = ctx.files.getLocal("shaders/skin.vert")
-        val vert = vertFile.read()?.bufferedReader()?.use { it.readText() } ?: ""
+        val vert = vertFile.readText()
         @Language("GLSL")
         val frag = """
             in vec2 v_uv;
@@ -323,8 +324,7 @@ class Testbed(val ctx: Context) : Application {
 
     val hmapShader = let {
         val file = ctx.files.getLocal("shaders/terrain.glsl")
-        val shader = file.read()?.bufferedReader()?.use { it.readText() } ?: ""
-        ctx.graphics.createShaderProgram(shader)
+        ctx.graphics.createShaderProgram(file.readText())
     }
     val proj = Matrix4()
     val view = Matrix4()
@@ -362,6 +362,8 @@ class Testbed(val ctx: Context) : Application {
             body.restitution = 0f
             world.addRigidBody(body)
         }
+
+        ctx.bullet
 
         root.attachChild {
             val tex = assetManager.getTexture("cube_texture") ?: DummyTexture

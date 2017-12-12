@@ -15,8 +15,6 @@ class BulletPhysicsWorld(gravity: Vector3c, val bullet: DesktopBulletPlugin) : P
     val world: btDynamicsWorld
     val ibodies = mutableListOf<RigidBody>()
 
-    override val bodies get() = ibodies
-
     companion object {
         val auxVec0 = GdxVector3()
         val auxVec1 = GdxVector3()

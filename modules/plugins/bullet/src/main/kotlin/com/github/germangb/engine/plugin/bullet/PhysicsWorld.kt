@@ -8,13 +8,10 @@ data class RayTestResult(val body: RigidBody, val position: Vector3c, val normal
 
 /** Dynamics world interface with functions to spawn rigid bodies and constraints */
 interface PhysicsWorld : Destroyable {
-    /** Bodies currently in world */
-    val bodies: List<RigidBody>
-
     /** Step bullet simulation */
     fun stepSimulation(dt: Float)
 
-    /** Get closest rigid body hit by raycast */
+    /** Get closest rigid body hit by ray */
     fun rayTestClosest(from: Vector3c, to: Vector3c): RayTestResult?
 
     /** Create a box rigid body */

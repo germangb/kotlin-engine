@@ -45,7 +45,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, instanceAtt
 
     fun VertexAttribute.addData(i: Int) {
         when (this) {
-            POSITION -> {
+            POSITION3 -> {
                 vertexData.putFloat(positions[i].x())
                 vertexData.putFloat(positions[i].y())
                 vertexData.putFloat(positions[i].z())

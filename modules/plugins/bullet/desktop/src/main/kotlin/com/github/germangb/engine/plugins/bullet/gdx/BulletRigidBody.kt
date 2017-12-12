@@ -7,38 +7,42 @@ import com.github.germangb.engine.math.*
 import com.github.germangb.engine.plugin.bullet.ActivationState
 import com.github.germangb.engine.plugin.bullet.RigidBody
 
-private val aux = GdxVector3()
-private val auxMat = GdxMatrix4()
-
 class BulletRigidBody(val body: btRigidBody, override val motionState: BulletMotionState) : RigidBody {
     companion object {
         val Int.asEnum get() = ActivationState.values()[this - ACTIVE_TAG]
         val ActivationState.asInt get() = ACTIVE_TAG + ordinal
+        private val aux = GdxVector3()
+        private val auxMat = GdxMatrix4()
     }
 
     override var isStatic: Boolean
         get() = (body.collisionFlags and CF_STATIC_OBJECT) != 0
         set(value) {
-            body.collisionFlags = body.collisionFlags or CF_STATIC_OBJECT
+            if (value) body.collisionFlags = body.collisionFlags or CF_STATIC_OBJECT
+            else body.collisionFlags = body.collisionFlags and CF_STATIC_OBJECT.inv()
         }
 
     override var isKinematic: Boolean
         get() = (body.collisionFlags and CF_KINEMATIC_OBJECT) != 0
         set(value) {
-            body.collisionFlags = body.collisionFlags or CF_KINEMATIC_OBJECT
+            if (value) body.collisionFlags = body.collisionFlags or CF_KINEMATIC_OBJECT
+            else body.collisionFlags = body.collisionFlags and CF_KINEMATIC_OBJECT.inv()
         }
 
     override var isCharacterObject: Boolean
         get() = (body.collisionFlags and CF_CHARACTER_OBJECT) != 0
         set(value) {
-            body.collisionFlags = body.collisionFlags or CF_CHARACTER_OBJECT
+            if (value) body.collisionFlags = body.collisionFlags or CF_CHARACTER_OBJECT
+            else body.collisionFlags = body.collisionFlags and CF_CHARACTER_OBJECT.inv()
         }
 
     var idata = null as Any?
 
     override var activationState: ActivationState
         get() = body.activationState.asEnum
-        set(value) = body.forceActivationState(value.asInt)
+        set(value) {
+            body.activationState = value.asInt
+        }
 
     val linear = Vector3()
     val linearf = Vector3()

@@ -8,6 +8,7 @@ import com.github.germangb.engine.assets.AssetManager
 import com.github.germangb.engine.assets.assets
 import com.github.germangb.engine.core.Context
 import com.github.germangb.engine.files.FileHandle
+import com.github.germangb.engine.files.read
 import com.github.germangb.engine.framework.Actor
 import com.github.germangb.engine.framework.components.addJoint
 import com.github.germangb.engine.framework.components.addMesh
@@ -81,11 +82,21 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
     val aiFlags = aiProcess_Triangulate or
             aiProcess_GenUVCoords or
             aiProcess_GenSmoothNormals or
-            //aiProcess_GenNormals or
             aiProcess_LimitBoneWeights or
             aiProcess_FlipUVs
 
-    val scene = aiImportFile(file.path, aiFlags) ?: return null
+    // load memory into buffer
+    val data = je_malloc(1024*1024*4)
+    file.read(data)
+    data.flip()
+
+    val extension = file.path.split("\\.").last()
+    val scene = aiImportFileFromMemory(data, aiFlags, extension)
+
+    data.clear()
+    je_free(data)
+
+    if (scene == null) return null
 
     // Load bones
 
@@ -119,7 +130,7 @@ fun loadActor(ctx: Context, file: FileHandle, manager: AssetManager, flags: Int)
     val meshes = if (flags and MESHES != 0) {
         List(scene.mNumMeshes()) {
             val aimesh = AIMesh.create(scene.mMeshes()[it])
-            val attrs = arrayOf(POSITION, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
+            val attrs = arrayOf(POSITION3, NORMAL, UV, JOINT_IDS, JOINT_WEIGHTS)
             val mesh = aiMeshToGL(aimesh, attrs, ctx.graphics, bones)
             val meshPath = "${file.path}/mesh_$it"
             manager.delegateMesh(mesh, meshPath)
@@ -195,7 +206,7 @@ fun aiMeshToGL(mesh: AIMesh, attributes: Array<out VertexAttribute>, gfx: Graphi
 
     fun VertexAttribute.addData(i: Int) {
         when (this) {
-            POSITION -> {
+            POSITION3 -> {
                 vertexData.putFloat(positions[i].x())
                 vertexData.putFloat(positions[i].y())
                 vertexData.putFloat(positions[i].z())

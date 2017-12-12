@@ -18,12 +18,12 @@ interface Texture : Destroyable {
     val height: Int
 
     /**
-     * Set pixel data, read from the given buffer
+     * Set pixel data, asInput from the given buffer
      */
     fun setPixels(data: ByteBuffer, x: Int, y: Int, width: Int, height: Int)
 
     /**
-     * Set pixel data, read from the given buffer
+     * Set pixel data, asInput from the given buffer
      */
     fun setPixels(data: ByteBuffer) = setPixels(data, 0, 0, width, height)
 

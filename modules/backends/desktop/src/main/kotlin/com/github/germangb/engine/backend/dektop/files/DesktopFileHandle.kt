@@ -16,12 +16,12 @@ class DesktopFileHandle(private val file: File) : FileHandle {
     override val path = file.path
 
     /**
-     * Check if user has read permissions
+     * Check if user has asInput permissions
      */
     override val isReadable = file.canRead()
 
     /**
-     * Check if user has write permissions
+     * Check if user has asOutput permissions
      */
     override val isWritable = file.canWrite()
 
@@ -46,21 +46,19 @@ class DesktopFileHandle(private val file: File) : FileHandle {
                 .toTypedArray()
     }
 
-    /**
-     * Get a file input stream of the file
-     */
-    override fun read() = try {
-        FileInputStream(file)
-    } catch (e: FileNotFoundException) {
-        null
-    }
+    /** Get a file output stream of the file */
+    override val outputStream
+        get() = try {
+            FileOutputStream(file)
+        } catch (e: FileNotFoundException) {
+            null
+        }
 
-    /**
-     * Get file output stream
-     */
-    override fun write() = try {
-        FileOutputStream(file)
-    } catch (e: FileNotFoundException) {
-        null
-    }
+    /** Get a file input stream of the file */
+    override val inputStream
+        get() = try {
+            FileInputStream(file)
+        } catch (e: FileNotFoundException) {
+            null
+        }
 }

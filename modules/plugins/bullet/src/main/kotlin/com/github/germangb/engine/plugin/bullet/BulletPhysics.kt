@@ -9,7 +9,7 @@ import java.nio.ShortBuffer
  */
 interface BulletPhysics {
     companion object {
-        val MODULE_NAME = "bullet_physics"
+        val MODULE_NAME = "bullet_physics_engine"
     }
 
     /** Create a bullet world */
