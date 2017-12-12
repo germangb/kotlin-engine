@@ -1,5 +1,6 @@
 dependencies {
     compile project(":modules:plugins:debug")
+    compile project(":modules:backends:desktop")
 }
 
 dependencies {

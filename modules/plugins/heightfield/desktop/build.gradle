@@ -1,4 +1,5 @@
 dependencies {
+    compile project(":modules:backends:desktop")
     compile project(":modules:plugins:heightfield")
 }
 

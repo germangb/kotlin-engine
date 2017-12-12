@@ -1,3 +1,5 @@
+//#version 450 core
+//#extension GL_GOOGLE_include_directive : enable
 layout(location = 0) in vec2 a_position;
 layout(location = 1) in mat4 a_transform;
 
@@ -15,6 +17,7 @@ uniform float u_max_height;
 uniform sampler2D u_height;
 
 #define TERRAIN_UTILS
+//#include <shaders/utils.glsl>
 #include "shaders/utils.glsl"
 
 void main() {
